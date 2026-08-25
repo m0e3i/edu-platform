@@ -32,11 +32,27 @@ export default function EduPlatform() {
     return 'student';
   });
 
+  const [currentUserData, setCurrentUserData] = useState<any>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('edu_current_user_data');
+      return saved ? JSON.parse(saved) : null;
+    }
+    return null;
+  });
+
   const [authMode, setAuthMode] = useState<'login' | 'register'>('register');
-  const [userEmailOrPhone, setUserEmailOrPhone] = useState('');
-  const [userPassword, setUserPassword] = useState('');
+  
+  // حقول التسجيل الجديدة (الإيميل، رقم التلفون، رقم ولي الأمر)
   const [inputRegName, setInputRegName] = useState('');
+  const [inputRegEmail, setInputRegEmail] = useState('');
+  const [inputRegPhone, setInputRegPhone] = useState('');
+  const [inputRegParentPhone, setInputRegParentPhone] = useState('');
+  const [inputRegPassword, setInputRegPassword] = useState('');
   const [inputRegRole, setInputRegRole] = useState<'student' | 'instructor'>('student');
+
+  // حقول تسجيل الدخول
+  const [loginIdentifier, setLoginIdentifier] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
 
   // قاعدة بيانات المستخدمين
   const [usersList, setUsersList] = useState<any[]>(() => {
@@ -45,11 +61,18 @@ export default function EduPlatform() {
       if (saved) return JSON.parse(saved);
     }
     return [
-      { name: 'أحمد المعلم', identifier: '01000000000', password: '123', role: 'instructor' }
+      { 
+        name: 'أحمد المعلم', 
+        email: 'teacher@edu.com', 
+        phone: '01000000000', 
+        parentPhone: '-', 
+        password: '123', 
+        role: 'instructor' 
+      }
     ];
   });
 
-  // الكورسات والفيديوهات
+  // الكورسات وفيديوهاتها
   const [courses, setCourses] = useState<any[]>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('edu_courses_list');
@@ -111,11 +134,12 @@ export default function EduPlatform() {
     { text: '', options: ['', '', '', ''], correctOption: 0 }
   ]);
 
-  // حالة الامتحان الحالي للطالب
+  // حالة الامتحان الحالي للطالب وحساب الوقت المنقضي بدقة
   const [activeExam, setActiveExam] = useState<any>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [studentAnswers, setStudentAnswers] = useState<{ [qId: number]: number }>({});
   const [examTimeLeft, setExamTimeLeft] = useState(0);
+  const [examStartTime, setExamStartTime] = useState<number>(0);
   const [antiCheatWarnings, setAntiCheatWarnings] = useState(0);
 
   // مزامنة التخزين المحلي
@@ -124,10 +148,11 @@ export default function EduPlatform() {
     localStorage.setItem('edu_logged_in', isLoggedIn ? 'true' : 'false');
     localStorage.setItem('edu_user_name', userName);
     localStorage.setItem('edu_user_role', userRole);
+    localStorage.setItem('edu_current_user_data', JSON.stringify(currentUserData));
     localStorage.setItem('edu_courses_list', JSON.stringify(courses));
     localStorage.setItem('edu_exams_list', JSON.stringify(exams));
     localStorage.setItem('edu_exam_results', JSON.stringify(examResults));
-  }, [usersList, isLoggedIn, userName, userRole, courses, exams, examResults]);
+  }, [usersList, isLoggedIn, userName, userRole, currentUserData, courses, exams, examResults]);
 
   // مراقبة مغادرة الشاشة (الغش)
   useEffect(() => {
@@ -137,10 +162,10 @@ export default function EduPlatform() {
         setAntiCheatWarnings(prev => {
           const nextVal = prev + 1;
           if (nextVal >= 3) {
-            showToast('⚠️ تم إنهاء الامتحان تلقائياً بسبب مغادرة الشاشة!');
+            showToast('⚠️ تم إنهاء الامتحان تلقائياً بسبب مغادرة الشاشة المتكررة!');
             submitExam(true);
           } else {
-            showToast(`⚠️ تنبيه (${nextVal}/3): ممنوع مغادرة نافذة الامتحان!`);
+            showToast(`⚠️ تنبيه غش (${nextVal}/3): ممنوع مغادرة نافذة الامتحان!`);
           }
           return nextVal;
         });
@@ -150,7 +175,7 @@ export default function EduPlatform() {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [activeExam, studentAnswers]);
 
-  // عداد الوقت
+  // عداد الوقت التنازلي للاختبار
   useEffect(() => {
     if (!activeExam || examTimeLeft <= 0) return;
     const timer = setInterval(() => {
@@ -167,32 +192,42 @@ export default function EduPlatform() {
     return () => clearInterval(timer);
   }, [activeExam, examTimeLeft]);
 
+  // معالجة التسجيل والدخول
   const handleAuthSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (authMode === 'register') {
-      const userExists = usersList.some(u => u.identifier === userEmailOrPhone);
+      const userExists = usersList.some(u => u.email === inputRegEmail || u.phone === inputRegPhone);
       if (userExists) {
-        showToast('هذا الحساب مسجل مسبقاً ⚠️');
+        showToast('هذا البريد أو رقم الهاتف مسجل مسبقاً ⚠️');
         setAuthMode('login');
         return;
       }
-      const newUser = { name: inputRegName, identifier: userEmailOrPhone, password: userPassword, role: inputRegRole };
+      const newUser = { 
+        name: inputRegName, 
+        email: inputRegEmail, 
+        phone: inputRegPhone, 
+        parentPhone: inputRegParentPhone, 
+        password: inputRegPassword, 
+        role: inputRegRole 
+      };
       setUsersList(prev => [...prev, newUser]);
       setUserName(inputRegName);
       setUserRole(inputRegRole);
+      setCurrentUserData(newUser);
       setIsLoggedIn(true);
       showToast(`أهلاً بك يا ${inputRegName}! 🎉`);
       setActiveTab('home');
     } else {
-      const foundUser = usersList.find(u => u.identifier === userEmailOrPhone && u.password === userPassword);
+      const foundUser = usersList.find(u => (u.email === loginIdentifier || u.phone === loginIdentifier) && u.password === loginPassword);
       if (foundUser) {
         setIsLoggedIn(true);
         setUserName(foundUser.name);
         setUserRole(foundUser.role);
+        setCurrentUserData(foundUser);
         showToast(`مرحباً بعودتك يا ${foundUser.name}! ✅`);
         setActiveTab('home');
       } else {
-        showToast('خطأ في البيانات المُدخلة ❌');
+        showToast('خطأ في البيانات المُدخلة (تأكد من البريد/الهاتف وكلمة المرور) ❌');
       }
     }
   };
@@ -211,7 +246,7 @@ export default function EduPlatform() {
           id: Date.now(),
           title: newVideoTitle,
           duration: newVideoDuration,
-          videoUrl: newVideoUrl || "https://www.w3schools.com/html/mov_bbb.mp4" // افتراضي إذا لم يضع رابطاً
+          videoUrl: newVideoUrl || "https://www.w3schools.com/html/mov_bbb.mp4"
         };
         return { ...c, lessons: [...c.lessons, newLesson] };
       }
@@ -238,7 +273,7 @@ export default function EduPlatform() {
     }
   };
 
-  // دوال إنشاء الأسئلة في الامتحان
+  // دوال بناء الأسئلة
   const handleAddQuestionToBuilder = () => {
     setBuilderQuestions([...builderQuestions, { text: '', options: ['', '', '', ''], correctOption: 0 }]);
   };
@@ -284,17 +319,22 @@ export default function EduPlatform() {
     setActiveTab('exams');
   };
 
-  // بدء وتسليم الامتحان للطالب
+  // بدء وتسليم الامتحان للطالب وحساب الوقت المستغرق
   const startExam = (exam: any) => {
     if (!isLoggedIn) {
       showToast('يجب تسجيل الدخول أولاً 🔒');
       setActiveTab('auth');
       return;
     }
+    if (userRole === 'instructor') {
+      showToast('حسابات المعلمين مخصصة للإدارة ولا تدخل كطالب للامتحان 👨‍🏫');
+      return;
+    }
     setActiveExam(exam);
     setCurrentQuestionIndex(0);
     setStudentAnswers({});
     setExamTimeLeft(exam.durationMinutes * 60);
+    setExamStartTime(Date.now());
     setAntiCheatWarnings(0);
     setActiveTab('exam-room');
     showToast('🚀 بدء الامتحان. حافظ على تركيزك!');
@@ -307,15 +347,25 @@ export default function EduPlatform() {
       if (studentAnswers[idx] === q.correctOption) score += 1;
     });
 
+    // حساب الوقت المستغرق بالدقائق والثواني
+    const elapsedTimeSeconds = Math.floor((Date.now() - examStartTime) / 1000);
+    const mins = Math.floor(elapsedTimeSeconds / 60);
+    const secs = elapsedTimeSeconds % 60;
+    const timeSpentStr = `${mins} دقيقة و ${secs} ثانية`;
+
     const total = activeExam.questions.length;
     const resultEntry = {
       id: Date.now(),
       examTitle: activeExam.title,
-      studentName: userName,
-      studentId: userEmailOrPhone,
+      studentName: currentUserData?.name || userName,
+      studentEmail: currentUserData?.email || 'غير متوفر',
+      studentPhone: currentUserData?.phone || 'غير متوفر',
+      parentPhone: currentUserData?.parentPhone || 'غير متوفر',
       score: score,
       total: total,
-      status: isForced ? 'موقوف (غش)' : 'تم التسليم بنجاح',
+      timeSpent: timeSpentStr,
+      warningsCount: antiCheatWarnings,
+      status: isForced ? 'موقوف بسبب الغش ⚠️' : 'تسليم طبيعي ✅',
       date: new Date().toLocaleDateString('ar-EG')
     };
 
@@ -345,7 +395,7 @@ export default function EduPlatform() {
 
           <nav className="hidden md:flex gap-6 font-medium text-sm">
             <button onClick={() => setActiveTab('home')} className={activeTab === 'home' ? 'text-indigo-500 font-bold' : ''}>الرئيسية</button>
-            <button onClick={() => setActiveTab('courses')} className={activeTab === 'courses' ? 'text-indigo-500 font-bold' : ''}>الكورسات وفيديوهاتها 🎥</button>
+            <button onClick={() => setActiveTab('courses')} className={activeTab === 'courses' ? 'text-indigo-500 font-bold' : ''}>الكورسات والفيديوهات 🎥</button>
             <button onClick={() => setActiveTab('exams')} className={activeTab === 'exams' ? 'text-indigo-500 font-bold' : ''}>الامتحانات 📝</button>
             {isLoggedIn && userRole === 'instructor' && (
               <button onClick={() => setActiveTab('instructor-dashboard')} className={activeTab === 'instructor-dashboard' ? 'text-amber-500 font-bold' : ''}>لوحة المعلم والتحكم 👨‍🏫</button>
@@ -362,7 +412,7 @@ export default function EduPlatform() {
                 <span className="text-xs bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-full font-bold border border-indigo-500/30">
                   {userRole === 'instructor' ? '👨‍🏫 ' : '🎓 '} {userName}
                 </span>
-                <button onClick={() => { setIsLoggedIn(false); showToast('تم تسجيل الخروج'); setActiveTab('home'); }} className="bg-rose-500/20 text-rose-400 text-xs px-3 py-1 rounded-lg">خروج</button>
+                <button onClick={() => { setIsLoggedIn(false); setCurrentUserData(null); showToast('تم تسجيل الخروج'); setActiveTab('home'); }} className="bg-rose-500/20 text-rose-400 text-xs px-3 py-1 rounded-lg">خروج</button>
               </div>
             ) : (
               <button onClick={() => { setAuthMode('login'); setActiveTab('auth'); }} className="bg-indigo-600 text-white px-4 py-2 rounded-xl font-semibold text-xs shadow">
@@ -380,7 +430,7 @@ export default function EduPlatform() {
           <div className="space-y-12 text-center">
             <div className={`rounded-3xl p-12 border shadow-2xl ${darkMode ? 'bg-gradient-to-r from-indigo-900 to-slate-900 border-indigo-800' : 'bg-indigo-600 text-white'}`}>
               <h1 className="text-3xl sm:text-5xl font-extrabold mb-4">منصة بداية التعليمية وإدارة الامتحانات</h1>
-              <p className="text-sm sm:text-lg mb-8 max-w-2xl mx-auto opacity-90">تحكم كامل للمعلم: رفع الفيديوهات، تصميم الامتحانات والأسئلة بمرونة، إدارة درجات وحذف النتائج.</p>
+              <p className="text-sm sm:text-lg mb-8 max-w-2xl mx-auto opacity-90">متابعة شاملة لبيانات الطلاب، أرقام أولياء الأمور، رصد الغش، والوقت المستغرق بالدقة.</p>
               <div className="flex justify-center gap-4">
                 <button onClick={() => setActiveTab('exams')} className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-6 py-3 rounded-xl font-bold shadow-lg transition">
                   استعرض الامتحانات 📝
@@ -393,7 +443,7 @@ export default function EduPlatform() {
           </div>
         )}
 
-        {/* استعراض الكورسات والفيديوهات للجميع */}
+        {/* الكورسات وفيديوهاتها */}
         {activeTab === 'courses' && (
           <div className="space-y-8">
             <h2 className="text-2xl sm:text-3xl font-bold">الكورسات ودروس الفيديو 📚</h2>
@@ -464,10 +514,10 @@ export default function EduPlatform() {
             <div className="flex justify-between items-center border-b pb-4 border-slate-700">
               <div>
                 <h2 className="text-xl font-bold text-indigo-400">{activeExam.title}</h2>
-                <p className="text-xs text-rose-400 mt-1">⚠️ تنبيهات الغش: {antiCheatWarnings} / 3</p>
+                <p className="text-xs text-rose-400 mt-1">⚠️ تنبيهات مغادرة الشاشة (الغش): {antiCheatWarnings} / 3</p>
               </div>
               <div className="bg-rose-500/20 border border-rose-500/40 text-rose-300 px-4 py-2 rounded-xl text-sm font-bold">
-                ⏳ الوقت: {Math.floor(examTimeLeft / 60)}:{(examTimeLeft % 60).toString().padStart(2, '0')}
+                ⏳ الوقت المتبقي: {Math.floor(examTimeLeft / 60)}:{(examTimeLeft % 60).toString().padStart(2, '0')}
               </div>
             </div>
 
@@ -506,9 +556,9 @@ export default function EduPlatform() {
 
         {/* لوحة التحكم والتحكم الشامل للمعلم */}
         {activeTab === 'instructor-dashboard' && isLoggedIn && userRole === 'instructor' && (
-          <div className="space-y-12 max-w-4xl mx-auto">
+          <div className="space-y-12 max-w-5xl mx-auto">
             
-            {/* 1. قسم إضافة الفيديوهات للكورسات (بروابط أو بدون) */}
+            {/* 1. قسم إضافة الفيديوهات للكورسات */}
             <div className={`p-8 rounded-3xl border shadow-2xl space-y-6 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
               <h2 className="text-2xl font-bold text-indigo-400">🎥 لوحة المعلم: إضافة فيديوهات للدروس</h2>
               <form onSubmit={handleAddVideoToCourse} className="space-y-4">
@@ -531,9 +581,8 @@ export default function EduPlatform() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium mb-1">رابط الفيديو (اختياري - يترك فارغاً أو يُوضع رابط مباشر MP4)</label>
+                  <label className="block text-xs font-medium mb-1">رابط الفيديو (اختياري)</label>
                   <input type="text" value={newVideoUrl} onChange={e => setNewVideoUrl(e.target.value)} placeholder="https://... أو اتركه فارغاً" className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
-                  <p className="text-[10px] text-slate-400 mt-1">* يمكنك إضافة الفيديو برابط أو بدون رابط (سيتم تشغيل فيديو تجريبي افتراضي تلقائياً).</p>
                 </div>
                 <button type="submit" className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-xl text-xs font-bold transition">
                   + إرسال ونشر الفيديو في الكورس
@@ -541,10 +590,9 @@ export default function EduPlatform() {
               </form>
             </div>
 
-            {/* 2. قسم إنشاء الامتحانات والأسئلة وتحديد الإجابة الصحيحة */}
+            {/* 2. تصميم الامتحانات وإضافة الأسئلة */}
             <div className={`p-8 rounded-3xl border shadow-2xl space-y-6 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
               <h2 className="text-2xl font-bold text-amber-500">📝 تصميم امتحان جديد وإضافة الأسئلة</h2>
-              
               <form onSubmit={handleSaveFullExam} className="space-y-6">
                 <div className="space-y-4 border-b pb-6 border-slate-700">
                   <div>
@@ -557,7 +605,6 @@ export default function EduPlatform() {
                   </div>
                 </div>
 
-                {/* قسم الأسئلة الديناميكية */}
                 <div className="space-y-6">
                   <div className="flex justify-between items-center">
                     <h3 className="font-bold text-indigo-400 text-sm">أسئلة الامتحان والتصحيح الآلي ({builderQuestions.length})</h3>
@@ -611,10 +658,10 @@ export default function EduPlatform() {
               </form>
             </div>
 
-            {/* 3. سجل نتائج الطلاب مع زر الحذف */}
+            {/* 3. سجل نتائج الطلاب الشامل (الإيميل، التلفون، ولي الأمر، الوقت، الغش) */}
             <div className={`p-8 rounded-3xl border shadow-2xl space-y-4 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
               <div className="flex justify-between items-center">
-                <h3 className="text-xl font-bold text-indigo-400">📊 سجل نتائج الطلاب ودرجاتهم</h3>
+                <h3 className="text-xl font-bold text-indigo-400">📊 سجل تفاصيل الطلاب والنتائج والوقت وحالات الغش</h3>
                 {examResults.length > 0 && (
                   <button onClick={handleDeleteAllResults} className="bg-rose-600 hover:bg-rose-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition">
                     🗑️ مسح وحذف كل النتائج
@@ -630,22 +677,31 @@ export default function EduPlatform() {
                     <thead className={`border-b ${darkMode ? 'border-slate-700 text-slate-400' : 'border-slate-200 text-slate-600'}`}>
                       <tr>
                         <th className="p-3">اسم الطالب</th>
-                        <th className="p-3">الهاتف/الإيميل</th>
-                        <th className="p-3">عنوان الامتحان</th>
-                        <th className="p-3">الدرجة النهائية</th>
-                        <th className="p-3">الحالة</th>
-                        <th className="p-3">التاريخ</th>
+                        <th className="p-3">البريد الإلكتروني</th>
+                        <th className="p-3">رقم التلفون</th>
+                        <th className="p-3">تلفون ولي الأمر</th>
+                        <th className="p-3">الامتحان</th>
+                        <th className="p-3">الدرجة</th>
+                        <th className="p-3">الوقت المستغرق</th>
+                        <th className="p-3">حالة الغش / الإنذارات</th>
+                        <th className="p-3">الحالة والتاريخ</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-800">
                       {examResults.map((res: any) => (
                         <tr key={res.id}>
                           <td className="p-3 font-bold">{res.studentName}</td>
-                          <td className="p-3 text-slate-400">{res.studentId}</td>
+                          <td className="p-3 text-slate-400">{res.studentEmail}</td>
+                          <td className="p-3 text-slate-300">{res.studentPhone}</td>
+                          <td className="p-3 text-amber-400 font-bold">{res.parentPhone}</td>
                           <td className="p-3">{res.examTitle}</td>
                           <td className="p-3 font-bold text-emerald-400">{res.score} / {res.total}</td>
-                          <td className="p-3 text-amber-400">{res.status}</td>
-                          <td className="p-3 text-slate-400">{res.date}</td>
+                          <td className="p-3 font-semibold text-indigo-300">{res.timeSpent}</td>
+                          <td className="p-3 text-rose-400">⚠️ {res.warningsCount} إنذارات</td>
+                          <td className="p-3">
+                            <span className="block font-bold">{res.status}</span>
+                            <span className="text-[10px] text-slate-400">{res.date}</span>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -657,38 +713,60 @@ export default function EduPlatform() {
           </div>
         )}
 
-        {/* نافذة تسجيل الدخول والتسجيل */}
+        {/* نافذة تسجيل الدخول والتسجيل بالشروط الجديدة */}
         {activeTab === 'auth' && (
           <div className={`max-w-md mx-auto p-8 rounded-3xl border shadow-2xl ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
             <div className="flex justify-center gap-4 mb-6 border-b pb-4 border-slate-700">
               <button onClick={() => setAuthMode('register')} className={`font-bold text-sm ${authMode === 'register' ? 'text-indigo-500 border-b-2 border-indigo-500' : 'text-slate-400'}`}>حساب جديد</button>
               <button onClick={() => setAuthMode('login')} className={`font-bold text-sm ${authMode === 'login' ? 'text-indigo-500 border-b-2 border-indigo-500' : 'text-slate-400'}`}>دخول</button>
             </div>
+
             <form onSubmit={handleAuthSubmit} className="space-y-4">
-              {authMode === 'register' && (
+              {authMode === 'register' ? (
                 <>
                   <div>
                     <label className="block text-xs font-medium mb-1">الاسم الكامل</label>
-                    <input type="text" required value={inputRegName} onChange={e => setInputRegName(e.target.value)} placeholder="اسمك..." className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                    <input type="text" required value={inputRegName} onChange={e => setInputRegName(e.target.value)} placeholder="اسم الطالب..." className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium mb-1">البريد الإلكتروني</label>
+                    <input type="email" required value={inputRegEmail} onChange={e => setInputRegEmail(e.target.value)} placeholder="student@mail.com" className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium mb-1">رقم التلفون الشخصي</label>
+                    <input type="text" required value={inputRegPhone} onChange={e => setInputRegPhone(e.target.value)} placeholder="010xxxxxxxx" className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium mb-1">رقم تلفون ولي الأمر</label>
+                    <input type="text" required value={inputRegParentPhone} onChange={e => setInputRegParentPhone(e.target.value)} placeholder="011xxxxxxxx" className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
                   </div>
                   <div>
                     <label className="block text-xs font-medium mb-1">نوع الحساب</label>
-                    <select value={inputRegRole} onChange={e => setUserRole(e.target.value as any)} className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white">
+                    <select value={inputRegRole} onChange={e => setInputRegRole(e.target.value as any)} className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white">
                       <option value="student">طالب</option>
                       <option value="instructor">معلم</option>
                     </select>
                   </div>
+                  <div>
+                    <label className="block text-xs font-medium mb-1">كلمة المرور</label>
+                    <input type="password" required value={inputRegPassword} onChange={e => setInputRegPassword(e.target.value)} placeholder="••••" className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <label className="block text-xs font-medium mb-1">البريد الإلكتروني أو رقم التلفون</label>
+                    <input type="text" required value={loginIdentifier} onChange={e => setLoginIdentifier(e.target.value)} placeholder="أدخل إيميلك أو تلفونك..." className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium mb-1">كلمة المرور</label>
+                    <input type="password" required value={loginPassword} onChange5={(e: any) => setLoginPassword(e.target.value)} value-password={loginPassword} onChange={e => setLoginPassword(e.target.value)} placeholder="••••" className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                  </div>
                 </>
               )}
-              <div>
-                <label className="block text-xs font-medium mb-1">الهاتف أو البريد</label>
-                <input type="text" required value={userEmailOrPhone} onChange={e => setUserEmailOrPhone(e.target.value)} placeholder="010..." className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
-              </div>
-              <div>
-                <label className="block text-xs font-medium mb-1">كلمة المرور</label>
-                <input type="password" required value={userPassword} onChange={e => setUserPassword(e.target.value)} placeholder="••••" className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
-              </div>
-              <button type="submit" className="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold text-sm">{authMode === 'register' ? 'حفظ الحساب' : 'تسجيل الدخول'}</button>
+              <button type="submit" className="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold text-sm">
+                {authMode === 'register' ? 'حفظ وتفعيل الحساب' : 'تسجيل الدخول'}
+              </button>
             </form>
           </div>
         )}
