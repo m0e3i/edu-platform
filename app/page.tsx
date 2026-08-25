@@ -12,7 +12,7 @@ export default function EduPlatform() {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  // حالة تسجيل الدخول الحالية
+  // حالة تسجيل الدخول
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('edu_logged_in') === 'true';
@@ -38,15 +38,12 @@ export default function EduPlatform() {
   const [inputRegName, setInputRegName] = useState('');
   const [inputRegRole, setInputRegRole] = useState<'student' | 'instructor'>('student');
 
-  // قاعدة بيانات المستخدمين المسجلين محلياً (تخزين دائم)
+  // قاعدة بيانات المستخدمين
   const [usersList, setUsersList] = useState<any[]>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('edu_users_database');
-      if (saved) {
-        return JSON.parse(saved);
-      }
+      if (saved) return JSON.parse(saved);
     }
-    // مستخدم افتراضي أول دخول للمعلم
     return [
       { name: 'أحمد المعلم', identifier: '01000000000', password: '123', role: 'instructor' }
     ];
@@ -57,30 +54,14 @@ export default function EduPlatform() {
     {
       id: 1,
       title: "أساسيات برمجة الويب (HTML & CSS)",
-      instructor: "أحمد العبد",
+      instructor: "أحمد المعلم",
       category: "برمجة وتطوير",
       price: "مجاناً 🎁",
       image: "https://images.unsplash.com/photo-1587620962725-abab7fe55159?w=600&auto=format&fit=crop&q=80",
-      description: "تعلم من الصفر كيفية بناء وتصميم صفحات الإنترنت الاحترافية باستخدام أحدث تقنيات HTML5 و CSS3.",
+      description: "تعلم من الصفر كيفية بناء وتصميم صفحات الإنترنت الاحترافية.",
       duration: "6 ساعات",
       lessons: [
-        { id: 101, title: "الدرس الأول: مقدمة عن عالم الويب وكيف يعمل", duration: "10 دقائق", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" },
-        { id: 102, title: "الدرس الثاني: الهيكل الأساسي لصفحة HTML", duration: "25 دقيقة", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" },
-        { id: 103, title: "الدرس الثالث: تنسيق العناصر وتلوينها بـ CSS", duration: "30 دقيقة", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" }
-      ]
-    },
-    {
-      id: 2,
-      title: "تطوير تطبيقات الجوال بـ React Native",
-      instructor: "محمود حسن",
-      category: "تطوير التطبيقات",
-      price: "250 ج.م",
-      image: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=600&auto=format&fit=crop&q=80",
-      description: "ابنِ تطبيقات أندرويد و iOS حقيقية باستخدام لغة JavaScript ومكتبة React Native بكفاءة عالية.",
-      duration: "10 ساعات",
-      lessons: [
-        { id: 201, title: "الدرس الأول: تهيئة بيئة العمل ومقدمة React Native", duration: "20 دقيقة", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" },
-        { id: 202, title: "الدرس الثاني: بناء الواجهات الأولى", duration: "35 دقيقة", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" }
+        { id: 101, title: "الدرس الأول: مقدمة عن عالم الويب", duration: "10 دقائق", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" }
       ]
     }
   ]);
@@ -104,19 +85,49 @@ export default function EduPlatform() {
     return {};
   });
 
-  // حقول لوحة المعلم
-  const [newCourseTitle, setNewCourseTitle] = useState('');
-  const [newCourseCategory, setNewCourseCategory] = useState('برمجة وتطوير');
-  const [newCoursePrice, setNewCoursePrice] = useState('مجاناً 🎁');
-  const [newCourseDesc, setNewCourseDesc] = useState('');
-  const [newCourseImage, setNewCourseImage] = useState('');
-  const [tempLessons, setTempLessons] = useState<any[]>([
-    { id: 1, title: 'الدرس التمهيدي والمقدمة', duration: '10 دقائق', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4' }
-  ]);
-  const [currentLessonTitle, setCurrentLessonTitle] = useState('');
-  const [currentLessonVideo, setCurrentLessonVideo] = useState('');
+  // ================= نظام الامتحانات والدرجات =================
+  const [exams, setExams] = useState<any[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('edu_exams_list');
+      if (saved) return JSON.parse(saved);
+    }
+    return [
+      {
+        id: 1,
+        title: "اختبار أساسيات HTML و CSS",
+        instructor: "أحمد المعلم",
+        durationMinutes: 5,
+        questions: [
+          { id: 1, text: "ما هي لغة استخدام تصميم صفحات الويب؟", options: ["HTML", "Python", "Java", "C++"], correctOption: 0 },
+          { id: 2, text: "أي وسم يُستخدم لعمل رابط (Link)؟", options: ["<p>", "<a>", "<img>", "<div>"], correctOption: 1 }
+        ]
+      }
+    ];
+  });
 
-  // حفظ التغييرات بقاعدة بيانات المستخدمين وقيم الجلسة في LocalStorage تلقائياً
+  const [examResults, setExamResults] = useState<any[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('edu_exam_results');
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  });
+
+  // حالة الامتحان الحالي للطالب
+  const [activeExam, setActiveExam] = useState<any>(null);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [studentAnswers, setStudentAnswers] = useState<{ [qId: number]: number }>({});
+  const [examTimeLeft, setExamTimeLeft] = useState(0);
+  const [antiCheatWarnings, setAntiCheatWarnings] = useState(0);
+
+  // حالات لوحة المعلم لإنشاء امتحان جديد
+  const [newExamTitle, setNewExamTitle] = useState('');
+  const [newExamDuration, setNewExamDuration] = useState(10);
+  const [examQuestions, setExamQuestions] = useState<any[]>([
+    { text: '', options: ['', '', '', ''], correctOption: 0 }
+  ]);
+
+  // مزامنة التخزين المحلي
   useEffect(() => {
     localStorage.setItem('edu_users_database', JSON.stringify(usersList));
     localStorage.setItem('edu_logged_in', isLoggedIn ? 'true' : 'false');
@@ -124,134 +135,146 @@ export default function EduPlatform() {
     localStorage.setItem('edu_user_role', userRole);
     localStorage.setItem('edu_my_courses', JSON.stringify(myCourses));
     localStorage.setItem('edu_completed_lessons', JSON.stringify(completedLessons));
-  }, [usersList, isLoggedIn, userName, userRole, myCourses, completedLessons]);
+    localStorage.setItem('edu_exams_list', JSON.stringify(exams));
+    localStorage.setItem('edu_exam_results', JSON.stringify(examResults));
+  }, [usersList, isLoggedIn, userName, userRole, myCourses, completedLessons, exams, examResults]);
+
+  // مراقبة الغش (مغادرة التبويب) أثناء الامتحان
+  useEffect(() => {
+    if (!activeExam) return;
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        setAntiCheatWarnings(prev => {
+          const nextVal = prev + 1;
+          if (nextVal >= 3) {
+            showToast('⚠️ تم إنهاء الامتحان تلقائياً بسبب محاولة مغادرة الشاشة المتكررة!');
+            submitExam(true);
+          } else {
+            showToast(`⚠️ تنبيه (${nextVal}/3): ممنوع مغادرة نافذة الامتحان!`);
+          }
+          return nextVal;
+        });
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [activeExam, studentAnswers]);
+
+  // عداد الوقت التنازلي للامتحان
+  useEffect(() => {
+    if (!activeExam || examTimeLeft <= 0) return;
+    const timer = setInterval(() => {
+      setExamTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          showToast('⏰ انتهى وقت الامتحان!');
+          submitExam(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [activeExam, examTimeLeft]);
 
   const handleAuthSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (authMode === 'register') {
-      // التحقق هل الرقم/الإيميل مسجل مسبقاً
       const userExists = usersList.some(u => u.identifier === userEmailOrPhone);
       if (userExists) {
-        showToast('هذا الحساب مسجل من قبل، يرجى تسجيل الدخول مباشرة ⚠️');
+        showToast('هذا الحساب مسجل من قبل، يرجى تسجيل الدخول ⚠️');
         setAuthMode('login');
         return;
       }
-
-      const newUser = {
-        name: inputRegName,
-        identifier: userEmailOrPhone,
-        password: userPassword,
-        role: inputRegRole
-      };
-
+      const newUser = { name: inputRegName, identifier: userEmailOrPhone, password: userPassword, role: inputRegRole };
       setUsersList(prev => [...prev, newUser]);
       setUserName(inputRegName);
       setUserRole(inputRegRole);
       setIsLoggedIn(true);
-      showToast(`أهلاً بك يا ${inputRegName}! تم إنشاء الحساب وحفظه بنجاح 🎉`);
+      showToast(`أهلاً بك يا ${inputRegName}! تم إنشاء الحساب بنجاح 🎉`);
       setActiveTab('home');
     } else {
-      // عملية تسجيل الدخول
       const foundUser = usersList.find(u => u.identifier === userEmailOrPhone && u.password === userPassword);
       if (foundUser) {
         setIsLoggedIn(true);
         setUserName(foundUser.name);
         setUserRole(foundUser.role);
-        showToast(`مرحباً بعودتك يا ${foundUser.name}! تم تسجيل الدخول بنجاح ✅`);
+        showToast(`مرحباً بعودتك يا ${foundUser.name}! ✅`);
         setActiveTab('home');
       } else {
-        showToast('خطأ: البريد/الهاتف أو كلمة المرور غير صحيحة ❌');
+        showToast('خطأ في بيانات الدخول ❌');
       }
     }
   };
 
-  const handleEnrollCourse = (course: any) => {
+  const startExam = (exam: any) => {
     if (!isLoggedIn) {
-      showToast('يجب تسجيل الدخول أولاً للانضمام للكورس 🔒');
+      showToast('يجب تسجيل الدخول أولاً لعمل الامتحان 🔒');
       setActiveTab('auth');
       return;
     }
-    if (!myCourses.some(c => c.id === course.id)) {
-      setMyCourses(prev => [...prev, course]);
-      showToast('تم الانضمام للكورس بنجاح ومبروك البداية! 🚀');
-    }
-    setSelectedCourse(course);
-    setActiveLesson(course.lessons[0]);
-    setActiveTab('course-player');
+    setActiveExam(exam);
+    setCurrentQuestionIndex(0);
+    setStudentAnswers({});
+    setExamTimeLeft(exam.durationMinutes * 60);
+    setAntiCheatWarnings(0);
+    setActiveTab('exam-room');
+    showToast('🚀 بدء الامتحان. حافظ على تركيزك ولا تغادر النافذة!');
   };
 
-  const handleAddLessonToNewCourse = () => {
-    if (!currentLessonTitle) {
-      showToast('يرجى كتابة عنوان الدرس أولاً');
-      return;
-    }
-    const newLessonItem = {
-      id: Date.now(),
-      title: currentLessonTitle,
-      duration: '15 دقيقة',
-      videoUrl: currentLessonVideo || 'https://www.w3schools.com/html/mov_bbb.mp4'
-    };
-    setTempLessons([...tempLessons, newLessonItem]);
-    setCurrentLessonTitle('');
-    setCurrentLessonVideo('');
-    showToast('تمت إضافة الدرس للقائمة بنجاح ➕');
-  };
+  const submitExam = (isForced = false) => {
+    if (!activeExam) return;
 
-  const handleSaveCourseSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!isLoggedIn || userRole !== 'instructor') {
-      showToast('عذراً، هذه الصلاحية خاصة بالمعلمين فقط.');
-      return;
-    }
-
-    const newCourseObj = {
-      id: Date.now(),
-      title: newCourseTitle,
-      instructor: userName,
-      category: newCourseCategory,
-      price: newCoursePrice,
-      image: newCourseImage || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&auto=format&fit=crop&q=80",
-      description: newCourseDesc,
-      duration: `${tempLessons.length * 20} دقيقة`,
-      lessons: tempLessons
-    };
-
-    setCourses([newCourseObj, ...courses]);
-    showToast('تم نشر الكورس بكل دروبه بنجاح وأصبح متاحاً للطلاب! 🌟');
-    
-    setNewCourseTitle('');
-    setNewCourseDesc('');
-    setNewCourseImage('');
-    setTempLessons([{ id: Date.now(), title: 'الدرس التمهيدي', duration: '10 دقائق', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4' }]);
-    setActiveTab('courses');
-  };
-
-  const toggleLessonComplete = (lessonId: number) => {
-    const courseId = selectedCourse.id;
-    const currentList = completedLessons[courseId] || [];
-    let updatedList;
-    if (currentList.includes(lessonId)) {
-      updatedList = currentList.filter(id => id !== lessonId);
-    } else {
-      updatedList = [...currentList, lessonId];
-      showToast('عاش! تم إكمال الدرس بنجاح ⭐');
-    }
-    setCompletedLessons({
-      ...completedLessons,
-      [courseId]: updatedList
+    // حساب الدرجة
+    let score = 0;
+    activeExam.questions.forEach((q: any, idx: number) => {
+      if (studentAnswers[idx] === q.correctOption) {
+        score += 1;
+      }
     });
+
+    const total = activeExam.questions.length;
+    const resultEntry = {
+      id: Date.now(),
+      examTitle: activeExam.title,
+      studentName: userName,
+      studentId: userEmailOrPhone,
+      score: score,
+      total: total,
+      status: isForced ? 'موقوف (حالة غش)' : 'تم التسليم بنجاح',
+      date: new Date().toLocaleDateString('ar-EG')
+    };
+
+    setExamResults(prev => [resultEntry, ...prev]);
+    showToast(`🏁 انتهى الامتحان! درجتك: ${score} من ${total}`);
+    setActiveExam(null);
+    setActiveTab('exams');
   };
 
-  const calculateProgress = (courseId: number, totalLessons: number) => {
-    const completed = (completedLessons[courseId] || []).length;
-    if (totalLessons === 0) return 0;
-    return Math.round((completed / totalLessons) * 100);
+  const handleSaveNewExam = (e: React.FormEvent) => {
+    e.preventDefault();
+    const newExamObj = {
+      id: Date.now(),
+      title: newExamTitle,
+      instructor: userName,
+      durationMinutes: Number(newExamDuration),
+      questions: examQuestions
+    };
+    setExams([newExamObj, ...exams]);
+    showToast('✨ تم نشر الامتحان بنجاح للطلاب!');
+    setNewExamTitle('');
+    setExamQuestions([{ text: '', options: ['', '', '', ''], correctOption: 0 }]);
+    setActiveTab('exams');
   };
 
   return (
     <div className={`min-h-screen font-sans relative transition-colors duration-300 ${darkMode ? 'bg-[#0f172a] text-slate-100' : 'bg-slate-50 text-slate-900'}`} dir="rtl">
       
-      {/* إشعار الـ Toast */}
+      {/* إشعارات الـ Toast */}
       {toastMessage && (
         <div className="fixed bottom-6 left-6 z-50 bg-indigo-600 text-white px-5 py-3 rounded-2xl shadow-2xl font-bold text-xs sm:text-sm animate-bounce border border-indigo-400">
           {toastMessage}
@@ -259,92 +282,213 @@ export default function EduPlatform() {
       )}
 
       {/* الشريط العلوي */}
-      <header className={`border-b sticky top-0 z-40 shadow-md transition-colors duration-300 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
+      <header className={`border-b sticky top-0 z-40 shadow-md ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
-          <div className="text-xl sm:text-2xl font-bold tracking-wider flex items-center gap-2 cursor-pointer" onClick={() => setActiveTab('home')}>
+          <div className="text-xl sm:text-2xl font-bold tracking-wider cursor-pointer" onClick={() => setActiveTab('home')}>
             <span className="text-indigo-500">EDU</span>
             <span className={darkMode ? 'text-white' : 'text-slate-800'}>BEDAYA</span>
           </div>
 
           <nav className="hidden md:flex gap-6 font-medium text-sm">
-            <button onClick={() => setActiveTab('home')} className={`transition ${activeTab === 'home' ? 'text-indigo-500 font-bold' : 'hover:text-indigo-500'}`}>الرئيسية</button>
-            <button onClick={() => setActiveTab('courses')} className={`transition ${activeTab === 'courses' ? 'text-indigo-500 font-bold' : 'hover:text-indigo-500'}`}>الكورسات</button>
-            <button onClick={() => setActiveTab('my-courses')} className={`transition ${activeTab === 'my-courses' ? 'text-indigo-500 font-bold' : 'hover:text-indigo-500'}`}>كورساتي 📚</button>
+            <button onClick={() => setActiveTab('home')} className={activeTab === 'home' ? 'text-indigo-500 font-bold' : ''}>الرئيسية</button>
+            <button onClick={() => setActiveTab('courses')} className={activeTab === 'courses' ? 'text-indigo-500 font-bold' : ''}>الكورسات</button>
+            <button onClick={() => setActiveTab('exams')} className={activeTab === 'exams' ? 'text-indigo-500 font-bold' : ''}>الامتحانات 📝</button>
+            <button onClick={() => setActiveTab('my-courses')} className={activeTab === 'my-courses' ? 'text-indigo-500 font-bold' : ''}>كورساتي 📚</button>
             {isLoggedIn && userRole === 'instructor' && (
-              <button onClick={() => setActiveTab('instructor-dashboard')} className={`transition ${activeTab === 'instructor-dashboard' ? 'text-amber-500 font-bold' : 'hover:text-amber-500'}`}>لوحة المعلم 👨‍🏫</button>
+              <button onClick={() => setActiveTab('instructor-dashboard')} className={activeTab === 'instructor-dashboard' ? 'text-amber-500 font-bold' : ''}>لوحة المعلم 👨‍🏫</button>
             )}
           </nav>
 
           <div className="flex items-center gap-3">
-            <button 
-              onClick={() => setDarkMode(!darkMode)} 
-              className={`p-2 rounded-xl text-xs font-bold border transition ${darkMode ? 'bg-slate-800 border-slate-700 text-amber-400' : 'bg-slate-200 border-slate-300 text-slate-700'}`}
-            >
+            <button onClick={() => setDarkMode(!darkMode)} className="p-2 rounded-xl text-xs font-bold border border-slate-700 bg-slate-800 text-amber-400">
               {darkMode ? '☀️ نهار' : '🌙 ليل'}
             </button>
 
             {isLoggedIn ? (
               <div className="flex items-center gap-3">
-                <span className="text-xs sm:text-sm bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-full font-bold border border-indigo-500/30">
-                  {userRole === 'instructor' ? '👨‍🏫 معلم: ' : '🎓 طالب: '} {userName}
+                <span className="text-xs bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-full font-bold border border-indigo-500/30">
+                  {userRole === 'instructor' ? '👨‍🏫 ' : '🎓 '} {userName}
                 </span>
-                <button onClick={() => { setIsLoggedIn(false); showToast('تم تسجيل الخروج بنجاح'); setActiveTab('home'); }} className="bg-rose-500/20 text-rose-400 text-xs px-3 py-1.5 rounded-lg">خروج</button>
+                <button onClick={() => { setIsLoggedIn(false); showToast('تم تسجيل الخروج'); setActiveTab('home'); }} className="bg-rose-500/20 text-rose-400 text-xs px-3 py-1 rounded-lg">خروج</button>
               </div>
             ) : (
-              <button onClick={() => { setAuthMode('login'); setActiveTab('auth'); }} className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl font-semibold text-xs sm:text-sm shadow">
-                تسجيل الدخول / إنشاء حساب
+              <button onClick={() => { setAuthMode('login'); setActiveTab('auth'); }} className="bg-indigo-600 text-white px-4 py-2 rounded-xl font-semibold text-xs shadow">
+                دخول / تسجيل
               </button>
             )}
           </div>
         </div>
       </header>
 
-      {/* المحتوى */}
+      {/* المحتوى الرئيسي */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-10 min-h-[600px]">
 
         {activeTab === 'home' && (
-          <div className="space-y-12">
-            <div className={`rounded-3xl p-8 sm:p-12 border text-center shadow-2xl transition-colors duration-300 ${darkMode ? 'bg-gradient-to-r from-indigo-900 to-slate-900 border-indigo-800/50' : 'bg-gradient-to-r from-indigo-600 to-indigo-800 text-white border-indigo-500'}`}>
-              <h1 className="text-3xl sm:text-5xl font-extrabold mb-4">
-                طور مهاراتك وانطلق في مستقبلك مع <span className="text-amber-400">بداية التعليمية</span>
-              </h1>
-              <p className={`text-sm sm:text-lg mb-8 max-w-2xl mx-auto ${darkMode ? 'text-slate-300' : 'text-indigo-100'}`}>
-                منصة تعليمية متكاملة تتيح تتبع نسبة إنجازك للكورسات وتتيح للمعلمين إدارة وإضافة عدة دروس بكل سهولة.
-              </p>
+          <div className="space-y-12 text-center">
+            <div className={`rounded-3xl p-12 border shadow-2xl ${darkMode ? 'bg-gradient-to-r from-indigo-900 to-slate-900 border-indigo-800' : 'bg-indigo-600 text-white'}`}>
+              <h1 className="text-3xl sm:text-5xl font-extrabold mb-4">منصة بداية التعليمية والامتحانات المتقدمة</h1>
+              <p className="text-sm sm:text-lg mb-8 max-w-2xl mx-auto opacity-90">تابع دروسك وامتحن بنظام حماية ذكي يضمن النزاهة وسجل درجات دقيق.</p>
               <div className="flex justify-center gap-4 flex-wrap">
-                <button onClick={() => setActiveTab('courses')} className="bg-white text-indigo-900 hover:bg-indigo-50 px-6 py-3 rounded-xl font-bold shadow-lg transition">
-                  استعرض الكورسات المتاحة 🚀
+                <button onClick={() => setActiveTab('exams')} className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-6 py-3 rounded-xl font-bold shadow-lg transition">
+                  ابدأ الامتحانات المتاحة 📝
                 </button>
-                {(!isLoggedIn || userRole === 'instructor') && (
-                  <button onClick={() => { if(!isLoggedIn) { setAuthMode('register'); setActiveTab('auth'); } else { setActiveTab('instructor-dashboard'); }}} className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-6 py-3 rounded-xl font-bold shadow-lg transition">
-                    أضف كورسك الخاص كمعلم 👨‍🏫
-                  </button>
-                )}
               </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'exams' && (
+          <div className="space-y-6">
+            <h2 className="text-2xl sm:text-3xl font-bold">الامتحانات الاختبارية المتاحة 📝</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+              {exams.map(exam => (
+                <div key={exam.id} className={`p-6 rounded-2xl border flex flex-col justify-between ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
+                  <div>
+                    <span className="text-xs bg-amber-500/20 text-amber-400 px-3 py-1 rounded-full">امتحان معتمد</span>
+                    <h3 className="text-xl font-bold mt-3 mb-2">{exam.title}</h3>
+                    <p className="text-xs text-slate-400 mb-4">المعلم: {exam.instructor} • المدة: {exam.durationMinutes} دقائق • عدد الأسئلة: {exam.questions.length}</p>
+                  </div>
+                  <button onClick={() => startExam(exam)} className="bg-indigo-600 hover:bg-indigo-500 text-white w-full py-2.5 rounded-xl text-xs font-bold transition">
+                    دخول الامتحان الآن 🚀
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* غرفة الامتحان وحماية الغش */}
+        {activeTab === 'exam-room' && activeExam && (
+          <div className={`max-w-3xl mx-auto p-8 rounded-3xl border shadow-2xl space-y-6 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
+            <div className="flex justify-between items-center border-b pb-4 border-slate-700">
+              <div>
+                <h2 className="text-xl font-bold text-indigo-400">{activeExam.title}</h2>
+                <p className="text-xs text-rose-400 mt-1">⚠️ تحذيرات الغش (مغادرة الشاشة): {antiCheatWarnings} / 3</p>
+              </div>
+              <div className="bg-rose-500/20 border border-rose-500/40 text-rose-300 px-4 py-2 rounded-xl text-sm font-bold">
+                ⏳ الوقت المتبقي: {Math.floor(examTimeLeft / 60)}:{(examTimeLeft % 60).toString().padStart(2, '0')}
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="font-bold text-base">
+                السؤال {currentQuestionIndex + 1} من {activeExam.questions.length}:
+              </h3>
+              <p className="text-lg bg-slate-900/40 p-4 rounded-xl border border-slate-800">
+                {activeExam.questions[currentQuestionIndex].text}
+              </p>
+
+              <div className="space-y-2 pt-2">
+                {activeExam.questions[currentQuestionIndex].options.map((opt: string, optIdx: number) => (
+                  <label key={optIdx} className={`flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition ${studentAnswers[currentQuestionIndex] === optIdx ? 'bg-indigo-600/30 border-indigo-500 text-indigo-300 font-bold' : 'bg-slate-900/20 border-slate-800 hover:bg-slate-800'}`}>
+                    <input 
+                      type="radio" 
+                      name={`question-${currentQuestionIndex}`} 
+                      checked={studentAnswers[currentQuestionIndex] === optIdx}
+                      onChange={() => setStudentAnswers({...studentAnswers, [currentQuestionIndex]: optIdx})}
+                      className="accent-indigo-500"
+                    />
+                    <span className="text-sm">{opt}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex justify-between pt-4 border-t border-slate-700">
+              <button 
+                disabled={currentQuestionIndex === 0}
+                onClick={() => setCurrentQuestionIndex(prev => prev - 1)}
+                className="px-4 py-2 bg-slate-800 text-xs rounded-xl disabled:opacity-50"
+              >
+                السابق
+              </button>
+
+              {currentQuestionIndex < activeExam.questions.length - 1 ? (
+                <button 
+                  onClick={() => setCurrentQuestionIndex(prev => prev + 1)}
+                  className="px-6 py-2 bg-indigo-600 text-xs font-bold rounded-xl"
+                >
+                  التالي
+                </button>
+              ) : (
+                <button 
+                  onClick={() => submitExam(false)}
+                  className="px-6 py-2 bg-emerald-600 text-xs font-bold rounded-xl shadow-lg"
+                >
+                  تسليم الامتحان النهائي ✅
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* لوحة تحكم المعلم (إنشاء امتحانات ورصد الدرجات) */}
+        {activeTab === 'instructor-dashboard' && isLoggedIn && userRole === 'instructor' && (
+          <div className="space-y-10 max-w-4xl mx-auto">
+            <div className={`p-8 rounded-3xl border shadow-2xl space-y-6 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
+              <h2 className="text-2xl font-bold text-amber-500">👨‍🏫 لوحة المعلم: إنشاء امتحان جديد</h2>
+              
+              <form onSubmit={handleSaveNewExam} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-medium mb-1">عنوان الامتحان</label>
+                  <input type="text" required value={newExamTitle} onChange={e => setNewExamTitle(e.target.value)} placeholder="مثال: امتحان الجافاسكريبت الشامل" className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium mb-1">مدة الامتحان (بالدقائق)</label>
+                  <input type="number" required value={newExamDuration} onChange={e => setNewExamDuration(Number(e.target.value))} className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                </div>
+
+                <button type="submit" className="w-full bg-amber-600 hover:bg-amber-500 text-white py-3 rounded-xl font-bold text-sm shadow-lg transition">
+                  نشر الامتحان للطلاب 🚀
+                </button>
+              </form>
+            </div>
+
+            {/* جدول نتائج الطلاب المرتبطة بالمنصة */}
+            <div className={`p-8 rounded-3xl border shadow-2xl space-y-4 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
+              <h3 className="text-xl font-bold text-indigo-400">📊 سجل نتائج الطلاب المرتبطة بالمنصة</h3>
+              {examResults.length === 0 ? (
+                <p className="text-xs text-slate-400">لا توجد نتائج مسجلة حتى الآن.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-right text-xs">
+                    <thead className={`border-b ${darkMode ? 'border-slate-700 text-slate-400' : 'border-slate-200 text-slate-600'}`}>
+                      <tr>
+                        <th className="p-3">اسم الطالب</th>
+                        <th className="p-3">الرقم/الإيميل</th>
+                        <th className="p-3">عنوان الامتحان</th>
+                        <th className="p-3">الدرجة</th>
+                        <th className="p-3">الحالة</th>
+                        <th className="p-3">التاريخ</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800">
+                      {examResults.map((res: any) => (
+                        <tr key={res.id}>
+                          <td className="p-3 font-bold">{res.studentName}</td>
+                          <td className="p-3 text-slate-400">{res.studentId}</td>
+                          <td className="p-3">{res.examTitle}</td>
+                          <td className="p-3 font-bold text-emerald-400">{res.score} / {res.total}</td>
+                          <td className="p-3 text-amber-400">{res.status}</td>
+                          <td className="p-3 text-slate-400">{res.date}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </div>
         )}
 
         {activeTab === 'courses' && (
           <div className="space-y-6">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-2">جميع الكورسات والدروس 📚</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+            <h2 className="text-2xl font-bold">جميع الكورسات 📚</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {courses.map(course => (
-                <div key={course.id} className={`rounded-2xl overflow-hidden border flex flex-col justify-between transition-colors duration-300 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200 shadow-md'}`}>
-                  <div>
-                    <img src={course.image} alt={course.title} className="w-full h-44 object-cover" />
-                    <div className="p-5">
-                      <span className="text-xs bg-indigo-500/20 text-indigo-400 px-2.5 py-1 rounded-md">{course.category}</span>
-                      <h3 className={`font-bold text-lg mt-3 mb-2 ${darkMode ? 'text-white' : 'text-slate-800'}`}>{course.title}</h3>
-                      <p className="text-xs text-slate-400 mb-4">المدرب: {course.instructor} • {course.lessons.length} دروس</p>
-                    </div>
-                  </div>
-                  <div className={`p-5 pt-0 flex items-center justify-between border-t mt-2 ${darkMode ? 'border-slate-800' : 'border-slate-100'}`}>
-                    <span className="font-bold text-indigo-500 text-sm">{course.price}</span>
-                    <button onClick={() => handleEnrollCourse(course)} className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition">
-                      ابدأ التعلم الآن
-                    </button>
-                  </div>
+                <div key={course.id} className={`p-5 rounded-2xl border ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
+                  <h3 className="font-bold text-lg mb-2">{course.title}</h3>
+                  <p className="text-xs text-slate-400 mb-4">المدرب: {course.instructor}</p>
                 </div>
               ))}
             </div>
@@ -352,222 +496,44 @@ export default function EduPlatform() {
         )}
 
         {activeTab === 'auth' && (
-          <div className={`max-w-md mx-auto p-8 rounded-3xl border shadow-2xl transition-colors duration-300 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
-            <div className={`flex justify-center gap-4 mb-6 border-b pb-4 ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
-              <button onClick={() => setAuthMode('register')} className={`font-bold text-sm pb-1 ${authMode === 'register' ? 'text-indigo-500 border-b-2 border-indigo-500' : 'text-slate-400'}`}>إنشاء حساب جديد</button>
-              <button onClick={() => setAuthMode('login')} className={`font-bold text-sm pb-1 ${authMode === 'login' ? 'text-indigo-500 border-b-2 border-indigo-500' : 'text-slate-400'}`}>تسجيل الدخول</button>
+          <div className={`max-w-md mx-auto p-8 rounded-3xl border shadow-2xl ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
+            <div className="flex justify-center gap-4 mb-6 border-b pb-4 border-slate-700">
+              <button onClick={() => setAuthMode('register')} className={`font-bold text-sm ${authMode === 'register' ? 'text-indigo-500 border-b-2 border-indigo-500' : 'text-slate-400'}`}>حساب جديد</button>
+              <button onClick={() => setAuthMode('login')} className={`font-bold text-sm ${authMode === 'login' ? 'text-indigo-500 border-b-2 border-indigo-500' : 'text-slate-400'}`}>دخول</button>
             </div>
             <form onSubmit={handleAuthSubmit} className="space-y-4">
               {authMode === 'register' && (
                 <>
                   <div>
-                    <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>الاسم الكامل</label>
-                    <input type="text" required value={inputRegName} onChange={e => setInputRegName(e.target.value)} placeholder="اكتب اسمك..." className={`w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:border-indigo-500 ${darkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`} />
+                    <label className="block text-xs font-medium mb-1">الاسم الكامل</label>
+                    <input type="text" required value={inputRegName} onChange={e => setInputRegName(e.target.value)} placeholder="اسمك..." className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
                   </div>
                   <div>
-                    <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>نوع الحساب</label>
-                    <select value={inputRegRole} onChange={e => setInputRegRole(e.target.value as 'student' | 'instructor')} className={`w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:border-indigo-500 ${darkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}>
-                      <option value="student">طالب (للدراسة ومتابعة الكورسات)</option>
-                      <option value="instructor">معلم (لإنشاء وإدارة الكورسات)</option>
+                    <label className="block text-xs font-medium mb-1">نوع الحساب</label>
+                    <select value={inputRegRole} onChange={e => setInputRegRole(e.target.value as any)} className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white">
+                      <option value="student">طالب</option>
+                      <option value="instructor">معلم</option>
                     </select>
                   </div>
                 </>
               )}
               <div>
-                <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>رقم الهاتف أو البريد الإلكتروني</label>
-                <input type="text" required value={userEmailOrPhone} onChange={e => setUserEmailOrPhone(e.target.value)} placeholder="01012345678" className={`w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:border-indigo-500 ${darkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`} />
+                <label className="block text-xs font-medium mb-1">الهاتف أو البريد</label>
+                <input type="text" required value={userEmailOrPhone} onChange={e => setUserEmailOrPhone(e.target.value)} placeholder="010..." className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
               </div>
               <div>
-                <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>كلمة المرور</label>
-                <input type="password" required value={userPassword} onChange={e => setUserPassword(e.target.value)} placeholder="••••••••" className={`w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:border-indigo-500 ${darkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`} />
+                <label className="block text-xs font-medium mb-1">كلمة المرور</label>
+                <input type="password" required value={userPassword} onChange={e => setUserPassword(e.target.value)} placeholder="••••" className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
               </div>
-              <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl font-bold text-sm shadow-lg transition">{authMode === 'register' ? 'إتمام التسجيل وحفظ الحساب' : 'تسجيل الدخول'}</button>
+              <button type="submit" className="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold text-sm">{authMode === 'register' ? 'حفظ الحساب' : 'تسجيل الدخول'}</button>
             </form>
-          </div>
-        )}
-
-        {activeTab === 'course-player' && selectedCourse && (
-          <div className="space-y-6">
-            <div className={`p-6 rounded-2xl border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-colors duration-300 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
-              <div>
-                <span className="text-xs bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-full">{selectedCourse.category}</span>
-                <h1 className={`text-2xl sm:text-3xl font-extrabold mt-2 ${darkMode ? 'text-white' : 'text-slate-800'}`}>{selectedCourse.title}</h1>
-                <p className="text-slate-400 text-xs mt-1">المدرب: {selectedCourse.instructor}</p>
-              </div>
-
-              <div className="w-full sm:w-64 bg-slate-800/50 p-3 rounded-xl border border-slate-700/50">
-                <div className="flex justify-between text-xs mb-1 font-bold">
-                  <span className="text-indigo-400">نسبة إنجاز الكورس</span>
-                  <span className="text-emerald-400">{calculateProgress(selectedCourse.id, selectedCourse.lessons.length)}%</span>
-                </div>
-                <div className="w-full bg-slate-900 h-2.5 rounded-full overflow-hidden">
-                  <div 
-                    className="bg-gradient-to-r from-indigo-500 to-emerald-400 h-full transition-all duration-500" 
-                    style={{ width: `${calculateProgress(selectedCourse.id, selectedCourse.lessons.length)}%` }}
-                  ></div>
-                </div>
-              </div>
-
-              <button onClick={() => setActiveTab('my-courses')} className={`px-4 py-2 rounded-xl text-xs font-bold border transition ${darkMode ? 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300'}`}>
-                العودة لكورساتي ↩
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 space-y-4">
-                <div className={`p-4 rounded-2xl border space-y-4 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
-                  <div className="aspect-video bg-black rounded-xl overflow-hidden relative border border-slate-800 shadow-inner">
-                    {activeLesson ? (
-                      <video key={activeLesson.videoUrl} controls className="w-full h-full object-cover" poster={selectedCourse.image}>
-                        <source src={activeLesson.videoUrl} type="video/mp4" />
-                      </video>
-                    ) : (
-                      <div className="flex items-center justify-center h-full text-slate-500">اختر درساً للبدء</div>
-                    )}
-                  </div>
-                  <div className="flex justify-between items-center pt-2">
-                    <h3 className={`font-bold text-base ${darkMode ? 'text-indigo-300' : 'text-indigo-600'}`}>{activeLesson?.title}</h3>
-                    {activeLesson && (
-                      <button 
-                        onClick={() => toggleLessonComplete(activeLesson.id)}
-                        className={`px-4 py-2 rounded-xl text-xs font-bold transition ${(completedLessons[selectedCourse.id] || []).includes(activeLesson.id) ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
-                      >
-                        {(completedLessons[selectedCourse.id] || []).includes(activeLesson.id) ? 'تم إكمال الدرس ✔' : 'تحديد كمكتمل ⭕'}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className={`p-5 rounded-2xl border flex flex-col ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
-                <h3 className={`font-bold text-base mb-4 border-b pb-3 flex justify-between items-center ${darkMode ? 'border-slate-800 text-white' : 'border-slate-100 text-slate-800'}`}>
-                  <span>محتوى الكورس</span>
-                  <span className="text-xs text-indigo-400">{selectedCourse.lessons.length} دروس</span>
-                </h3>
-                <div className="space-y-2.5">
-                  {selectedCourse.lessons.map((lesson: any, index: number) => {
-                    const isDone = (completedLessons[selectedCourse.id] || []).includes(lesson.id);
-                    return (
-                      <div 
-                        key={lesson.id}
-                        onClick={() => setActiveLesson(lesson)}
-                        className={`p-3 rounded-xl cursor-pointer transition flex items-center justify-between border ${activeLesson?.id === lesson.id ? 'bg-indigo-600/20 border-indigo-500/50 text-indigo-400 font-bold' : darkMode ? 'bg-slate-900/60 border-slate-800 hover:bg-slate-800 text-slate-300' : 'bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-700'}`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${darkMode ? 'bg-slate-800 text-indigo-400' : 'bg-slate-200 text-indigo-600'}`}>{index + 1}</span>
-                          <span className="text-xs">{lesson.title}</span>
-                        </div>
-                        <span className={`text-xs ${isDone ? 'text-emerald-400 font-bold' : 'text-slate-500'}`}>{isDone ? '✔' : '○'}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'instructor-dashboard' && isLoggedIn && userRole === 'instructor' && (
-          <div className={`max-w-2xl mx-auto p-8 rounded-3xl border shadow-2xl space-y-8 transition-colors duration-300 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
-            <div>
-              <h2 className="text-2xl font-bold text-amber-500 mb-2">👨‍🏫 لوحة المعلم المتقدمة لإنشاء الكورسات</h2>
-              <p className={`text-xs ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>أضف كورساً جديداً مع إضافة عدة دروس ورابط كل درس بكل سهولة.</p>
-            </div>
-
-            <form onSubmit={handleSaveCourseSubmit} className="space-y-5">
-              <div>
-                <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>عنوان الكورس الرئيسي</label>
-                <input type="text" required value={newCourseTitle} onChange={e => setNewCourseTitle(e.target.value)} placeholder="مثال: احتراف قواعد البيانات" className={`w-full px-4 py-2.5 rounded-xl border text-sm ${darkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`} />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>التصنيف</label>
-                  <select value={newCourseCategory} onChange={e => setNewCourseCategory(e.target.value)} className={`w-full px-4 py-2.5 rounded-xl border text-sm ${darkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}>
-                    <option value="برمجة وتطوير">برمجة وتطوير</option>
-                    <option value="تطوير التطبيقات">تطوير التطبيقات</option>
-                  </select>
-                </div>
-                <div>
-                  <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>السعر</label>
-                  <input type="text" required value={newCoursePrice} onChange={e => setNewCoursePrice(e.target.value)} placeholder="مجاناً 🎁" className={`w-full px-4 py-2.5 rounded-xl border text-sm ${darkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`} />
-                </div>
-              </div>
-              <div>
-                <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>وصف الكورس</label>
-                <textarea required rows={2} value={newCourseDesc} onChange={e => setNewCourseDesc(e.target.value)} placeholder="نبذة عن الكورس..." className={`w-full px-4 py-2.5 rounded-xl border text-sm ${darkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`} />
-              </div>
-              <div>
-                <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>رابط صورة الغلاف</label>
-                <input type="url" value={newCourseImage} onChange={e => setNewCourseImage(e.target.value)} placeholder="https://..." className={`w-full px-4 py-2.5 rounded-xl border text-sm ${darkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`} />
-              </div>
-
-              <div className={`p-4 rounded-2xl border space-y-3 ${darkMode ? 'bg-slate-900/50 border-slate-700' : 'bg-slate-50 border-slate-300'}`}>
-                <h4 className="font-bold text-xs text-indigo-400">إضافة دروس لهذا الكورس ({tempLessons.length} دروس مُضافَة)</h4>
-                
-                <div className="space-y-2">
-                  <input type="text" value={currentLessonTitle} onChange={e => setCurrentLessonTitle(e.target.value)} placeholder="عنوان الدرس (مثال: الدرس الأول: التثبيت)" className={`w-full px-3 py-2 rounded-xl border text-xs ${darkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-900'}`} />
-                  <input type="url" value={currentLessonVideo} onChange={e => setCurrentLessonVideo(e.target.value)} placeholder="رابط فيديو الدرس (اختياري - افتراضي متاح)" className={`w-full px-3 py-2 rounded-xl border text-xs ${darkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-900'}`} />
-                  <button type="button" onClick={handleAddLessonToNewCourse} className="w-full bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-xl font-bold text-xs transition">
-                    + إضافة هذا الدرس لقائمة الكورس
-                  </button>
-                </div>
-
-                <div className="text-[11px] text-slate-400 space-y-1">
-                  {tempLessons.map((l, idx) => (
-                    <div key={l.id} className="flex justify-between items-center bg-slate-800/60 px-2 py-1 rounded">
-                      <span>{idx + 1}. {l.title}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <button type="submit" className="w-full bg-amber-600 hover:bg-amber-500 text-white py-3 rounded-xl font-bold text-sm shadow-lg transition">
-                نشر الكورس بالكامل الآن 🚀
-              </button>
-            </form>
-          </div>
-        )}
-
-        {activeTab === 'my-courses' && (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold mb-2">كورساتي المسجلة 🎓</h2>
-            {myCourses.length === 0 ? (
-              <div className={`text-center py-16 rounded-3xl border ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
-                <p className="text-slate-400 text-sm mb-4">ليس لديك أي كورسات مسجلة حتى الآن.</p>
-                <button onClick={() => setActiveTab('courses')} className="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition">تصفح الكورسات</button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {myCourses.map(course => (
-                  <div key={course.id} className={`p-5 rounded-2xl border flex flex-col justify-between transition-colors duration-300 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
-                    <div>
-                      <h3 className="font-bold text-lg text-indigo-400 mb-2">{course.title}</h3>
-                      <p className="text-xs text-slate-400 mb-4">المدرب: {course.instructor}</p>
-                      
-                      <div className="w-full bg-slate-900/50 p-2 rounded-xl border border-slate-700/50 mb-2">
-                        <div className="flex justify-between text-xs mb-1">
-                          <span className="text-slate-400">الإنجاز:</span>
-                          <span className="text-emerald-400 font-bold">{calculateProgress(course.id, course.lessons.length)}%</span>
-                        </div>
-                        <div className="w-full bg-slate-950 h-2 rounded-full overflow-hidden">
-                          <div className="bg-emerald-400 h-full transition-all duration-300" style={{ width: `${calculateProgress(course.id, course.lessons.length)}%` }}></div>
-                        </div>
-                      </div>
-                    </div>
-                    <button onClick={() => { setSelectedCourse(course); setActiveLesson(course.lessons[0]); setActiveTab('course-player'); }} className="mt-4 bg-indigo-600 hover:bg-indigo-500 text-white w-full py-2.5 rounded-xl text-xs font-bold transition">
-                      متابعة الدروس والمشاهدة ▶️
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         )}
 
       </main>
 
-      <footer className={`border-t py-6 text-center text-xs transition-colors duration-300 ${darkMode ? 'bg-[#1e293b] border-slate-800 text-slate-400' : 'bg-white border-slate-200 text-slate-600'}`}>
-        <p>© 2026 EduBedaya. جميع الحقوق محفوظة للمنصة التعليمية.</p>
+      <footer className={`border-t py-6 text-center text-xs ${darkMode ? 'bg-[#1e293b] border-slate-800 text-slate-400' : 'bg-white border-slate-200 text-slate-600'}`}>
+        <p>© 2026 EduBedaya. جميع الحقوق محفوظة.</p>
       </footer>
     </div>
   );
