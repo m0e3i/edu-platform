@@ -5,14 +5,14 @@ export default function EduPlatform() {
   const [darkMode, setDarkMode] = useState(true);
   const [activeTab, setActiveTab] = useState('home');
   
-  // نظام الإشعارات العصرية (Toast)
+  // نظام الإشعارات
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  // 1. استرجاع البيانات من LocalStorage عند فتح الموقع لضمان عدم ضياعها
+  // حالة تسجيل الدخول الحالية
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('edu_logged_in') === 'true';
@@ -38,14 +38,21 @@ export default function EduPlatform() {
   const [inputRegName, setInputRegName] = useState('');
   const [inputRegRole, setInputRegRole] = useState<'student' | 'instructor'>('student');
 
-  const [registeredUser, setRegisteredUser] = useState({ 
-    name: 'أحمد المعلم', 
-    identifier: '01000000000', 
-    password: '123', 
-    role: 'instructor' as 'student' | 'instructor' 
+  // قاعدة بيانات المستخدمين المسجلين محلياً (تخزين دائم)
+  const [usersList, setUsersList] = useState<any[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('edu_users_database');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    }
+    // مستخدم افتراضي أول دخول للمعلم
+    return [
+      { name: 'أحمد المعلم', identifier: '01000000000', password: '123', role: 'instructor' }
+    ];
   });
 
-  // الكورسات الأساسية والمضافة
+  // الكورسات
   const [courses, setCourses] = useState([
     {
       id: 1,
@@ -78,7 +85,6 @@ export default function EduPlatform() {
     }
   ]);
 
-  // كورسات الطالب المحفوظة محلياً
   const [myCourses, setMyCourses] = useState<any[]>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('edu_my_courses');
@@ -98,47 +104,63 @@ export default function EduPlatform() {
     return {};
   });
 
-  // حقول لوحة المعلم لإنشاء الدروس المتعددة
+  // حقول لوحة المعلم
   const [newCourseTitle, setNewCourseTitle] = useState('');
   const [newCourseCategory, setNewCourseCategory] = useState('برمجة وتطوير');
   const [newCoursePrice, setNewCoursePrice] = useState('مجاناً 🎁');
   const [newCourseDesc, setNewCourseDesc] = useState('');
   const [newCourseImage, setNewCourseImage] = useState('');
-  
-  // قائمة مؤقتة للدروس أثناء إنشاء المعلم للكورس
   const [tempLessons, setTempLessons] = useState<any[]>([
     { id: 1, title: 'الدرس التمهيدي والمقدمة', duration: '10 دقائق', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4' }
   ]);
   const [currentLessonTitle, setCurrentLessonTitle] = useState('');
   const [currentLessonVideo, setCurrentLessonVideo] = useState('');
 
-  // حفظ التغييرات في LocalStorage تلقائياً
+  // حفظ التغييرات بقاعدة بيانات المستخدمين وقيم الجلسة في LocalStorage تلقائياً
   useEffect(() => {
+    localStorage.setItem('edu_users_database', JSON.stringify(usersList));
     localStorage.setItem('edu_logged_in', isLoggedIn ? 'true' : 'false');
     localStorage.setItem('edu_user_name', userName);
     localStorage.setItem('edu_user_role', userRole);
     localStorage.setItem('edu_my_courses', JSON.stringify(myCourses));
     localStorage.setItem('edu_completed_lessons', JSON.stringify(completedLessons));
-  }, [isLoggedIn, userName, userRole, myCourses, completedLessons]);
+  }, [usersList, isLoggedIn, userName, userRole, myCourses, completedLessons]);
 
   const handleAuthSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (authMode === 'register') {
-      setRegisteredUser({ name: inputRegName, identifier: userEmailOrPhone, password: userPassword, role: inputRegRole });
+      // التحقق هل الرقم/الإيميل مسجل مسبقاً
+      const userExists = usersList.some(u => u.identifier === userEmailOrPhone);
+      if (userExists) {
+        showToast('هذا الحساب مسجل من قبل، يرجى تسجيل الدخول مباشرة ⚠️');
+        setAuthMode('login');
+        return;
+      }
+
+      const newUser = {
+        name: inputRegName,
+        identifier: userEmailOrPhone,
+        password: userPassword,
+        role: inputRegRole
+      };
+
+      setUsersList(prev => [...prev, newUser]);
       setUserName(inputRegName);
       setUserRole(inputRegRole);
       setIsLoggedIn(true);
-      showToast(`أهلاً بك يا ${inputRegName}! تم إنشاء الحساب بنجاح 🎉`);
+      showToast(`أهلاً بك يا ${inputRegName}! تم إنشاء الحساب وحفظه بنجاح 🎉`);
       setActiveTab('home');
     } else {
-      if (userEmailOrPhone === registeredUser.identifier && userPassword === registeredUser.password) {
+      // عملية تسجيل الدخول
+      const foundUser = usersList.find(u => u.identifier === userEmailOrPhone && u.password === userPassword);
+      if (foundUser) {
         setIsLoggedIn(true);
-        setUserName(registeredUser.name);
-        setUserRole(registeredUser.role);
-        showToast('مرحباً بعودتك! تم تسجيل الدخول بنجاح ✅');
+        setUserName(foundUser.name);
+        setUserRole(foundUser.role);
+        showToast(`مرحباً بعودتك يا ${foundUser.name}! تم تسجيل الدخول بنجاح ✅`);
         setActiveTab('home');
       } else {
-        showToast('خطأ: بيانات الدخول غير صحيحة ❌');
+        showToast('خطأ: البريد/الهاتف أو كلمة المرور غير صحيحة ❌');
       }
     }
   };
@@ -197,7 +219,6 @@ export default function EduPlatform() {
     setCourses([newCourseObj, ...courses]);
     showToast('تم نشر الكورس بكل دروبه بنجاح وأصبح متاحاً للطلاب! 🌟');
     
-    // إعادة التعيين
     setNewCourseTitle('');
     setNewCourseDesc('');
     setNewCourseImage('');
@@ -230,14 +251,14 @@ export default function EduPlatform() {
   return (
     <div className={`min-h-screen font-sans relative transition-colors duration-300 ${darkMode ? 'bg-[#0f172a] text-slate-100' : 'bg-slate-50 text-slate-900'}`} dir="rtl">
       
-      {/* إشعار الـ Toast العائم */}
+      {/* إشعار الـ Toast */}
       {toastMessage && (
         <div className="fixed bottom-6 left-6 z-50 bg-indigo-600 text-white px-5 py-3 rounded-2xl shadow-2xl font-bold text-xs sm:text-sm animate-bounce border border-indigo-400">
           {toastMessage}
         </div>
       )}
 
-      {/* شريط التنقل العلوي */}
+      {/* الشريط العلوي */}
       <header className={`border-b sticky top-0 z-40 shadow-md transition-colors duration-300 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
           <div className="text-xl sm:text-2xl font-bold tracking-wider flex items-center gap-2 cursor-pointer" onClick={() => setActiveTab('home')}>
@@ -278,10 +299,9 @@ export default function EduPlatform() {
         </div>
       </header>
 
-      {/* المحتوى الرئيسي */}
+      {/* المحتوى */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-10 min-h-[600px]">
 
-        {/* 1. الرئيسية */}
         {activeTab === 'home' && (
           <div className="space-y-12">
             <div className={`rounded-3xl p-8 sm:p-12 border text-center shadow-2xl transition-colors duration-300 ${darkMode ? 'bg-gradient-to-r from-indigo-900 to-slate-900 border-indigo-800/50' : 'bg-gradient-to-r from-indigo-600 to-indigo-800 text-white border-indigo-500'}`}>
@@ -305,7 +325,6 @@ export default function EduPlatform() {
           </div>
         )}
 
-        {/* 2. استعراض الكورسات */}
         {activeTab === 'courses' && (
           <div className="space-y-6">
             <h2 className="text-2xl sm:text-3xl font-bold mb-2">جميع الكورسات والدروس 📚</h2>
@@ -332,7 +351,6 @@ export default function EduPlatform() {
           </div>
         )}
 
-        {/* 3. التسجيل */}
         {activeTab === 'auth' && (
           <div className={`max-w-md mx-auto p-8 rounded-3xl border shadow-2xl transition-colors duration-300 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
             <div className={`flex justify-center gap-4 mb-6 border-b pb-4 ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
@@ -363,12 +381,11 @@ export default function EduPlatform() {
                 <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>كلمة المرور</label>
                 <input type="password" required value={userPassword} onChange={e => setUserPassword(e.target.value)} placeholder="••••••••" className={`w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:border-indigo-500 ${darkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`} />
               </div>
-              <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl font-bold text-sm shadow-lg transition">{authMode === 'register' ? 'إتمام التسجيل وانطلاق' : 'تسجيل الدخول'}</button>
+              <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl font-bold text-sm shadow-lg transition">{authMode === 'register' ? 'إتمام التسجيل وحفظ الحساب' : 'تسجيل الدخول'}</button>
             </form>
           </div>
         )}
 
-        {/* 4. مشغل الدروس */}
         {activeTab === 'course-player' && selectedCourse && (
           <div className="space-y-6">
             <div className={`p-6 rounded-2xl border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-colors duration-300 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
@@ -450,7 +467,6 @@ export default function EduPlatform() {
           </div>
         )}
 
-        {/* 5. لوحة تحكم المعلم (مع إمكانية إضافة عدة دروس) */}
         {activeTab === 'instructor-dashboard' && isLoggedIn && userRole === 'instructor' && (
           <div className={`max-w-2xl mx-auto p-8 rounded-3xl border shadow-2xl space-y-8 transition-colors duration-300 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
             <div>
@@ -485,7 +501,6 @@ export default function EduPlatform() {
                 <input type="url" value={newCourseImage} onChange={e => setNewCourseImage(e.target.value)} placeholder="https://..." className={`w-full px-4 py-2.5 rounded-xl border text-sm ${darkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`} />
               </div>
 
-              {/* قسم إضافة الدروس المتعددة */}
               <div className={`p-4 rounded-2xl border space-y-3 ${darkMode ? 'bg-slate-900/50 border-slate-700' : 'bg-slate-50 border-slate-300'}`}>
                 <h4 className="font-bold text-xs text-indigo-400">إضافة دروس لهذا الكورس ({tempLessons.length} دروس مُضافَة)</h4>
                 
@@ -513,7 +528,6 @@ export default function EduPlatform() {
           </div>
         )}
 
-        {/* 6. كورساتي */}
         {activeTab === 'my-courses' && (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold mb-2">كورساتي المسجلة 🎓</h2>
