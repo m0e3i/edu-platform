@@ -49,32 +49,28 @@ export default function EduPlatform() {
     ];
   });
 
-  // الكورسات
-  const [courses, setCourses] = useState([
-    {
-      id: 1,
-      title: "أساسيات برمجة الويب (HTML & CSS)",
-      instructor: "أحمد المعلم",
-      category: "برمجة وتطوير",
-      price: "مجاناً 🎁",
-      image: "https://images.unsplash.com/photo-1587620962725-abab7fe55159?w=600&auto=format&fit=crop&q=80",
-      description: "تعلم من الصفر كيفية بناء وتصميم صفحات الإنترنت الاحترافية.",
-      duration: "6 ساعات",
-      lessons: [
-        { id: 101, title: "الدرس الأول: مقدمة عن عالم الويب", duration: "10 دقائق", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" }
-      ]
-    }
-  ]);
-
-  const [myCourses, setMyCourses] = useState<any[]>(() => {
+  // الكورسات والفيديوهات
+  const [courses, setCourses] = useState<any[]>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('edu_my_courses');
-      return saved ? JSON.parse(saved) : [];
+      const saved = localStorage.getItem('edu_courses_list');
+      if (saved) return JSON.parse(saved);
     }
-    return [];
+    return [
+      {
+        id: 1,
+        title: "أساسيات برمجة الويب (HTML & CSS)",
+        instructor: "أحمد المعلم",
+        category: "برمجة وتطوير",
+        price: "مجاناً 🎁",
+        description: "تعلم من الصفر كيفية بناء وتصميم صفحات الإنترنت الاحترافية.",
+        lessons: [
+          { id: 101, title: "الدرس الأول: مقدمة عن عالم الويب", duration: "10 دقائق", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" }
+        ]
+      }
+    ];
   });
 
-  // نظام الامتحانات والدرجات
+  // نظام الامتحانات والأسئلة والنتائج
   const [exams, setExams] = useState<any[]>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('edu_exams_list');
@@ -102,6 +98,19 @@ export default function EduPlatform() {
     return [];
   });
 
+  // حقول إضافة فيديو جديد بواسطة المعلم
+  const [selectedCourseForVideo, setSelectedCourseForVideo] = useState<number>(1);
+  const [newVideoTitle, setNewVideoTitle] = useState('');
+  const [newVideoDuration, setNewVideoDuration] = useState('10 دقائق');
+  const [newVideoUrl, setNewVideoUrl] = useState('');
+
+  // حقول لوحة المعلم لإنشاء امتحان جديد بالأسئلة والخيارات
+  const [newExamTitle, setNewExamTitle] = useState('');
+  const [newExamDuration, setNewExamDuration] = useState(10);
+  const [builderQuestions, setBuilderQuestions] = useState<any[]>([
+    { text: '', options: ['', '', '', ''], correctOption: 0 }
+  ]);
+
   // حالة الامتحان الحالي للطالب
   const [activeExam, setActiveExam] = useState<any>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -109,27 +118,18 @@ export default function EduPlatform() {
   const [examTimeLeft, setExamTimeLeft] = useState(0);
   const [antiCheatWarnings, setAntiCheatWarnings] = useState(0);
 
-  // حقول لوحة المعلم لإنشاء امتحان جديد بالكامل مع الأسئلة
-  const [newExamTitle, setNewExamTitle] = useState('');
-  const [newExamDuration, setNewExamDuration] = useState(10);
-  
-  // قائمة الأسئلة المؤقتة أثناء الإنشاء
-  const [builderQuestions, setBuilderQuestions] = useState<any[]>([
-    { text: '', options: ['', '', '', ''], correctOption: 0 }
-  ]);
-
   // مزامنة التخزين المحلي
   useEffect(() => {
     localStorage.setItem('edu_users_database', JSON.stringify(usersList));
     localStorage.setItem('edu_logged_in', isLoggedIn ? 'true' : 'false');
     localStorage.setItem('edu_user_name', userName);
     localStorage.setItem('edu_user_role', userRole);
-    localStorage.setItem('edu_my_courses', JSON.stringify(myCourses));
+    localStorage.setItem('edu_courses_list', JSON.stringify(courses));
     localStorage.setItem('edu_exams_list', JSON.stringify(exams));
     localStorage.setItem('edu_exam_results', JSON.stringify(examResults));
-  }, [usersList, isLoggedIn, userName, userRole, myCourses, exams, examResults]);
+  }, [usersList, isLoggedIn, userName, userRole, courses, exams, examResults]);
 
-  // مراقبة الغش (مغادرة التبويب)
+  // مراقبة مغادرة الشاشة (الغش)
   useEffect(() => {
     if (!activeExam) return;
     const handleVisibilityChange = () => {
@@ -172,7 +172,7 @@ export default function EduPlatform() {
     if (authMode === 'register') {
       const userExists = usersList.some(u => u.identifier === userEmailOrPhone);
       if (userExists) {
-        showToast('هذا الحساب مسجل من قبل ⚠️');
+        showToast('هذا الحساب مسجل مسبقاً ⚠️');
         setAuthMode('login');
         return;
       }
@@ -192,52 +192,53 @@ export default function EduPlatform() {
         showToast(`مرحباً بعودتك يا ${foundUser.name}! ✅`);
         setActiveTab('home');
       } else {
-        showToast('خطأ في البيانات ❌');
+        showToast('خطأ في البيانات المُدخلة ❌');
       }
     }
   };
 
-  const startExam = (exam: any) => {
-    if (!isLoggedIn) {
-      showToast('يجب تسجيل الدخول أولاً 🔒');
-      setActiveTab('auth');
+  // دوال المعلم للإدارة
+  const handleAddVideoToCourse = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newVideoTitle) {
+      showToast('يرجى كتابة عنوان الفيديو!');
       return;
     }
-    setActiveExam(exam);
-    setCurrentQuestionIndex(0);
-    setStudentAnswers({});
-    setExamTimeLeft(exam.durationMinutes * 60);
-    setAntiCheatWarnings(0);
-    setActiveTab('exam-room');
-    showToast('🚀 بدء الامتحان. حافظ على تركيزك!');
-  };
 
-  const submitExam = (isForced = false) => {
-    if (!activeExam) return;
-    let score = 0;
-    activeExam.questions.forEach((q: any, idx: number) => {
-      if (studentAnswers[idx] === q.correctOption) score += 1;
+    const updatedCourses = courses.map(c => {
+      if (c.id === Number(selectedCourseForVideo)) {
+        const newLesson = {
+          id: Date.now(),
+          title: newVideoTitle,
+          duration: newVideoDuration,
+          videoUrl: newVideoUrl || "https://www.w3schools.com/html/mov_bbb.mp4" // افتراضي إذا لم يضع رابطاً
+        };
+        return { ...c, lessons: [...c.lessons, newLesson] };
+      }
+      return c;
     });
 
-    const total = activeExam.questions.length;
-    const resultEntry = {
-      id: Date.now(),
-      examTitle: activeExam.title,
-      studentName: userName,
-      studentId: userEmailOrPhone,
-      score: score,
-      total: total,
-      status: isForced ? 'موقوف (غش)' : 'تم التسليم بنجاح',
-      date: new Date().toLocaleDateString('ar-EG')
-    };
-
-    setExamResults(prev => [resultEntry, ...prev]);
-    showToast(`🏁 انتهى الامتحان! درجتك: ${score} من ${total}`);
-    setActiveExam(null);
-    setActiveTab('exams');
+    setCourses(updatedCourses);
+    showToast('🎥 تمت إضافة الفيديو بنجاح للكورس!');
+    setNewVideoTitle('');
+    setNewVideoUrl('');
   };
 
-  // دوال لوحة المعلم لإضافة الأسئلة ديناميكياً
+  const handleDeleteExam = (examId: number) => {
+    if (confirm('هل أنت متأكد من حذف هذا الامتحان نهائياً؟')) {
+      setExams(exams.filter(ex => ex.id !== examId));
+      showToast('🗑️ تم حذف الامتحان بنجاح');
+    }
+  };
+
+  const handleDeleteAllResults = () => {
+    if (confirm('هل أنت متأكد من مسح جميع نتائج الطلاب؟')) {
+      setExamResults([]);
+      showToast('🧹 تم مسح سجل النتائج بنجاح');
+    }
+  };
+
+  // دوال إنشاء الأسئلة في الامتحان
   const handleAddQuestionToBuilder = () => {
     setBuilderQuestions([...builderQuestions, { text: '', options: ['', '', '', ''], correctOption: 0 }]);
   };
@@ -283,6 +284,47 @@ export default function EduPlatform() {
     setActiveTab('exams');
   };
 
+  // بدء وتسليم الامتحان للطالب
+  const startExam = (exam: any) => {
+    if (!isLoggedIn) {
+      showToast('يجب تسجيل الدخول أولاً 🔒');
+      setActiveTab('auth');
+      return;
+    }
+    setActiveExam(exam);
+    setCurrentQuestionIndex(0);
+    setStudentAnswers({});
+    setExamTimeLeft(exam.durationMinutes * 60);
+    setAntiCheatWarnings(0);
+    setActiveTab('exam-room');
+    showToast('🚀 بدء الامتحان. حافظ على تركيزك!');
+  };
+
+  const submitExam = (isForced = false) => {
+    if (!activeExam) return;
+    let score = 0;
+    activeExam.questions.forEach((q: any, idx: number) => {
+      if (studentAnswers[idx] === q.correctOption) score += 1;
+    });
+
+    const total = activeExam.questions.length;
+    const resultEntry = {
+      id: Date.now(),
+      examTitle: activeExam.title,
+      studentName: userName,
+      studentId: userEmailOrPhone,
+      score: score,
+      total: total,
+      status: isForced ? 'موقوف (غش)' : 'تم التسليم بنجاح',
+      date: new Date().toLocaleDateString('ar-EG')
+    };
+
+    setExamResults(prev => [resultEntry, ...prev]);
+    showToast(`🏁 انتهى الامتحان! درجتك: ${score} من ${total}`);
+    setActiveExam(null);
+    setActiveTab('exams');
+  };
+
   return (
     <div className={`min-h-screen font-sans relative transition-colors duration-300 ${darkMode ? 'bg-[#0f172a] text-slate-100' : 'bg-slate-50 text-slate-900'}`} dir="rtl">
       
@@ -303,10 +345,10 @@ export default function EduPlatform() {
 
           <nav className="hidden md:flex gap-6 font-medium text-sm">
             <button onClick={() => setActiveTab('home')} className={activeTab === 'home' ? 'text-indigo-500 font-bold' : ''}>الرئيسية</button>
-            <button onClick={() => setActiveTab('courses')} className={activeTab === 'courses' ? 'text-indigo-500 font-bold' : ''}>الكورسات</button>
+            <button onClick={() => setActiveTab('courses')} className={activeTab === 'courses' ? 'text-indigo-500 font-bold' : ''}>الكورسات وفيديوهاتها 🎥</button>
             <button onClick={() => setActiveTab('exams')} className={activeTab === 'exams' ? 'text-indigo-500 font-bold' : ''}>الامتحانات 📝</button>
             {isLoggedIn && userRole === 'instructor' && (
-              <button onClick={() => setActiveTab('instructor-dashboard')} className={activeTab === 'instructor-dashboard' ? 'text-amber-500 font-bold' : ''}>لوحة المعلم 👨‍🏫</button>
+              <button onClick={() => setActiveTab('instructor-dashboard')} className={activeTab === 'instructor-dashboard' ? 'text-amber-500 font-bold' : ''}>لوحة المعلم والتحكم 👨‍🏫</button>
             )}
           </nav>
 
@@ -331,21 +373,64 @@ export default function EduPlatform() {
         </div>
       </header>
 
-      {/* المحتوى */}
+      {/* المحتوى الرئيسي */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-10 min-h-[600px]">
 
         {activeTab === 'home' && (
           <div className="space-y-12 text-center">
             <div className={`rounded-3xl p-12 border shadow-2xl ${darkMode ? 'bg-gradient-to-r from-indigo-900 to-slate-900 border-indigo-800' : 'bg-indigo-600 text-white'}`}>
               <h1 className="text-3xl sm:text-5xl font-extrabold mb-4">منصة بداية التعليمية وإدارة الامتحانات</h1>
-              <p className="text-sm sm:text-lg mb-8 max-w-2xl mx-auto opacity-90">يمكن للمعلمين الآن إضافة امتحاناتهم بكامل أسئلتها وخياراتها بكل سهولة.</p>
-              <button onClick={() => setActiveTab('exams')} className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-6 py-3 rounded-xl font-bold shadow-lg transition">
-                استعرض الامتحانات المتاحة 📝
-              </button>
+              <p className="text-sm sm:text-lg mb-8 max-w-2xl mx-auto opacity-90">تحكم كامل للمعلم: رفع الفيديوهات، تصميم الامتحانات والأسئلة بمرونة، إدارة درجات وحذف النتائج.</p>
+              <div className="flex justify-center gap-4">
+                <button onClick={() => setActiveTab('exams')} className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-6 py-3 rounded-xl font-bold shadow-lg transition">
+                  استعرض الامتحانات 📝
+                </button>
+                <button onClick={() => setActiveTab('courses')} className="bg-indigo-700 hover:bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition">
+                  استعرض الكورسات والفيديوهات 🎥
+                </button>
+              </div>
             </div>
           </div>
         )}
 
+        {/* استعراض الكورسات والفيديوهات للجميع */}
+        {activeTab === 'courses' && (
+          <div className="space-y-8">
+            <h2 className="text-2xl sm:text-3xl font-bold">الكورسات ودروس الفيديو 📚</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {courses.map(course => (
+                <div key={course.id} className={`p-6 rounded-3xl border shadow-lg space-y-4 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
+                  <div>
+                    <span className="text-xs bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-full">{course.category}</span>
+                    <h3 className="text-xl font-bold mt-3">{course.title}</h3>
+                    <p className="text-xs text-slate-400 mt-1">المدرب: {course.instructor}</p>
+                    <p className="text-sm mt-2 opacity-80">{course.description}</p>
+                  </div>
+
+                  <div className="space-y-3 pt-3 border-t border-slate-700">
+                    <h4 className="text-xs font-bold text-amber-400">الفيديوهات والدروس ({course.lessons.length}):</h4>
+                    {course.lessons.map((lesson: any) => (
+                      <div key={lesson.id} className="p-3 bg-slate-900/40 rounded-xl border border-slate-800 space-y-2">
+                        <div className="flex justify-between items-center text-xs font-bold">
+                          <span>📺 {lesson.title}</span>
+                          <span className="text-slate-400">{lesson.duration}</span>
+                        </div>
+                        {lesson.videoUrl && (
+                          <video controls className="w-full h-40 rounded-lg bg-black object-cover mt-1">
+                            <source src={lesson.videoUrl} type="video/mp4" />
+                            متصفحك لا يدعم عرض الفيديو.
+                          </video>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* قائمة الامتحانات */}
         {activeTab === 'exams' && (
           <div className="space-y-6">
             <h2 className="text-2xl sm:text-3xl font-bold">الامتحانات المتاحة للطلاب 📝</h2>
@@ -355,11 +440,18 @@ export default function EduPlatform() {
                   <div>
                     <span className="text-xs bg-amber-500/20 text-amber-400 px-3 py-1 rounded-full">امتحان معتمد</span>
                     <h3 className="text-xl font-bold mt-3 mb-2">{exam.title}</h3>
-                    <p className="text-xs text-slate-400 mb-4">المعلم: {exam.instructor} • المدة: {exam.durationMinutes} دقائق • عدد الأسئلة: {exam.questions.length}</p>
+                    <p className="text-xs text-slate-400 mb-4">المعلم: {exam.instructor} • المدة: {exam.durationMinutes} دقائق • الأسئلة: {exam.questions.length}</p>
                   </div>
-                  <button onClick={() => startExam(exam)} className="bg-indigo-600 hover:bg-indigo-500 text-white w-full py-2.5 rounded-xl text-xs font-bold transition">
-                    دخول الامتحان الآن 🚀
-                  </button>
+                  <div className="flex gap-2">
+                    <button onClick={() => startExam(exam)} className="bg-indigo-600 hover:bg-indigo-500 text-white flex-1 py-2.5 rounded-xl text-xs font-bold transition">
+                      دخول الامتحان الآن 🚀
+                    </button>
+                    {isLoggedIn && userRole === 'instructor' && (
+                      <button onClick={() => handleDeleteExam(exam.id)} className="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition" title="حذف الامتحان">
+                        🗑️ حذف
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -412,11 +504,46 @@ export default function EduPlatform() {
           </div>
         )}
 
-        {/* لوحة المعلم المتقدمة لإضافة الامتحان والأسئلة */}
+        {/* لوحة التحكم والتحكم الشامل للمعلم */}
         {activeTab === 'instructor-dashboard' && isLoggedIn && userRole === 'instructor' && (
-          <div className="space-y-10 max-w-3xl mx-auto">
+          <div className="space-y-12 max-w-4xl mx-auto">
+            
+            {/* 1. قسم إضافة الفيديوهات للكورسات (بروابط أو بدون) */}
             <div className={`p-8 rounded-3xl border shadow-2xl space-y-6 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
-              <h2 className="text-2xl font-bold text-amber-500">👨‍🏫 لوحة المعلم: تصميم امتحان وإضافة الأسئلة</h2>
+              <h2 className="text-2xl font-bold text-indigo-400">🎥 لوحة المعلم: إضافة فيديوهات للدروس</h2>
+              <form onSubmit={handleAddVideoToCourse} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-medium mb-1">اختر الكورس المستهدف</label>
+                  <select value={selectedCourseForVideo} onChange={e => setSelectedCourseForVideo(Number(e.target.value))} className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white">
+                    {courses.map(c => (
+                      <option key={c.id} value={c.id}>{c.title}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium mb-1">عنوان الدرس / الفيديو</label>
+                    <input type="text" required value={newVideoTitle} onChange={e => setNewVideoTitle(e.target.value)} placeholder="مثال: الدرس الثاني: التنسيقات CSS" className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium mb-1">مدة الفيديو</label>
+                    <input type="text" value={newVideoDuration} onChange={e => setNewVideoDuration(e.target.value)} placeholder="مثال: 15 دقيقة" className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium mb-1">رابط الفيديو (اختياري - يترك فارغاً أو يُوضع رابط مباشر MP4)</label>
+                  <input type="text" value={newVideoUrl} onChange={e => setNewVideoUrl(e.target.value)} placeholder="https://... أو اتركه فارغاً" className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                  <p className="text-[10px] text-slate-400 mt-1">* يمكنك إضافة الفيديو برابط أو بدون رابط (سيتم تشغيل فيديو تجريبي افتراضي تلقائياً).</p>
+                </div>
+                <button type="submit" className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-xl text-xs font-bold transition">
+                  + إرسال ونشر الفيديو في الكورس
+                </button>
+              </form>
+            </div>
+
+            {/* 2. قسم إنشاء الامتحانات والأسئلة وتحديد الإجابة الصحيحة */}
+            <div className={`p-8 rounded-3xl border shadow-2xl space-y-6 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
+              <h2 className="text-2xl font-bold text-amber-500">📝 تصميم امتحان جديد وإضافة الأسئلة</h2>
               
               <form onSubmit={handleSaveFullExam} className="space-y-6">
                 <div className="space-y-4 border-b pb-6 border-slate-700">
@@ -430,10 +557,10 @@ export default function EduPlatform() {
                   </div>
                 </div>
 
-                {/* قسم إنشاء وإضافة الأسئلة ديناميكياً */}
+                {/* قسم الأسئلة الديناميكية */}
                 <div className="space-y-6">
                   <div className="flex justify-between items-center">
-                    <h3 className="font-bold text-indigo-400 text-sm">أسئلة الامتحان ({builderQuestions.length})</h3>
+                    <h3 className="font-bold text-indigo-400 text-sm">أسئلة الامتحان والتصحيح الآلي ({builderQuestions.length})</h3>
                     <button type="button" onClick={handleAddQuestionToBuilder} className="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold">
                       + إضافة سؤال جديد
                     </button>
@@ -441,9 +568,7 @@ export default function EduPlatform() {
 
                   {builderQuestions.map((q, qIndex) => (
                     <div key={qIndex} className="p-4 rounded-2xl border border-slate-700 bg-slate-900/40 space-y-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs font-bold text-amber-400">السؤال رقم {qIndex + 1}</span>
-                      </div>
+                      <span className="text-xs font-bold text-amber-400">السؤال رقم {qIndex + 1}</span>
                       <input 
                         type="text" 
                         required 
@@ -461,7 +586,7 @@ export default function EduPlatform() {
                               name={`correct-opt-${qIndex}`} 
                               checked={q.correctOption === optIndex}
                               onChange={() => handleCorrectOptionChange(qIndex, optIndex)}
-                              title="حدد كإجابة صحيحة"
+                              title="حدد كإجابة صحيحة للتصحيح الآلي"
                               className="accent-emerald-500"
                             />
                             <input 
@@ -475,20 +600,28 @@ export default function EduPlatform() {
                           </div>
                         ))}
                       </div>
-                      <p className="text-[10px] text-emerald-400">* اضغط على الدائرة بجانب الخيار الصحيح لتحديده.</p>
+                      <p className="text-[10px] text-emerald-400">* اضغط على الدائرة الخضراء بجانب الخيار الصحيح لاعتماده في حساب درجات الطلاب.</p>
                     </div>
                   ))}
                 </div>
 
                 <button type="submit" className="w-full bg-amber-600 hover:bg-amber-500 text-white py-3 rounded-xl font-bold text-sm shadow-lg transition">
-                  نشر الامتحان بالأسئلة للطلاب 🚀
+                  نشر الامتحان بالأسئلة وإتاحتها للطلاب 🚀
                 </button>
               </form>
             </div>
 
-            {/* سجل نتائج الطلاب */}
+            {/* 3. سجل نتائج الطلاب مع زر الحذف */}
             <div className={`p-8 rounded-3xl border shadow-2xl space-y-4 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
-              <h3 className="text-xl font-bold text-indigo-400">📊 سجل نتائج الطلاب في الامتحانات</h3>
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-bold text-indigo-400">📊 سجل نتائج الطلاب ودرجاتهم</h3>
+                {examResults.length > 0 && (
+                  <button onClick={handleDeleteAllResults} className="bg-rose-600 hover:bg-rose-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition">
+                    🗑️ مسح وحذف كل النتائج
+                  </button>
+                )}
+              </div>
+
               {examResults.length === 0 ? (
                 <p className="text-xs text-slate-400">لا توجد نتائج مسجلة حتى الآن.</p>
               ) : (
@@ -497,9 +630,9 @@ export default function EduPlatform() {
                     <thead className={`border-b ${darkMode ? 'border-slate-700 text-slate-400' : 'border-slate-200 text-slate-600'}`}>
                       <tr>
                         <th className="p-3">اسم الطالب</th>
-                        <th className="p-3">الرقم/الإيميل</th>
+                        <th className="p-3">الهاتف/الإيميل</th>
                         <th className="p-3">عنوان الامتحان</th>
-                        <th className="p-3">الدرجة</th>
+                        <th className="p-3">الدرجة النهائية</th>
                         <th className="p-3">الحالة</th>
                         <th className="p-3">التاريخ</th>
                       </tr>
@@ -520,23 +653,11 @@ export default function EduPlatform() {
                 </div>
               )}
             </div>
+
           </div>
         )}
 
-        {activeTab === 'courses' && (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold">جميع الكورسات 📚</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {courses.map(course => (
-                <div key={course.id} className={`p-5 rounded-2xl border ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
-                  <h3 className="font-bold text-lg mb-2">{course.title}</h3>
-                  <p className="text-xs text-slate-400">المدرب: {course.instructor}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
+        {/* نافذة تسجيل الدخول والتسجيل */}
         {activeTab === 'auth' && (
           <div className={`max-w-md mx-auto p-8 rounded-3xl border shadow-2xl ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
             <div className="flex justify-center gap-4 mb-6 border-b pb-4 border-slate-700">
