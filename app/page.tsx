@@ -44,7 +44,7 @@ export default function EduPlatform() {
     }
   ]);
 
-  // الكورسات (يستطيع المعلم الآن إنشاء كورسات جديدة بالكامل)
+  // الكورسات
   const [courses, setCourses] = useState<any[]>([
     {
       id: 1,
@@ -105,24 +105,24 @@ export default function EduPlatform() {
   // تحميل البيانات من التخزين المحلي
   useEffect(() => {
     try {
-      const savedUsers = localStorage.getItem('edu_users_db_v3');
+      const savedUsers = localStorage.getItem('edu_users_db_v4');
       if (savedUsers) setUsersList(JSON.parse(savedUsers));
 
-      const savedCourses = localStorage.getItem('edu_courses_v3');
+      const savedCourses = localStorage.getItem('edu_courses_v4');
       if (savedCourses) setCourses(JSON.parse(savedCourses));
 
-      const savedExams = localStorage.getItem('edu_exams_v3');
+      const savedExams = localStorage.getItem('edu_exams_v4');
       if (savedExams) setExams(JSON.parse(savedExams));
 
-      const savedResults = localStorage.getItem('edu_results_v3');
+      const savedResults = localStorage.getItem('edu_results_v4');
       if (savedResults) setExamResults(JSON.parse(savedResults));
 
-      const logged = localStorage.getItem('edu_logged_v3');
+      const logged = localStorage.getItem('edu_logged_v4');
       if (logged === 'true') {
         setIsLoggedIn(true);
-        setUserName(localStorage.getItem('edu_uname_v3') || '');
-        setUserRole((localStorage.getItem('edu_urole_v3') as any) || 'student');
-        const uData = localStorage.getItem('edu_ucdata_v3');
+        setUserName(localStorage.getItem('edu_uname_v4') || '');
+        setUserRole((localStorage.getItem('edu_urole_v4') as any) || 'student');
+        const uData = localStorage.getItem('edu_ucdata_v4');
         if (uData) setCurrentUserData(JSON.parse(uData));
       }
     } catch (e) {
@@ -133,39 +133,54 @@ export default function EduPlatform() {
   // حفظ البيانات تلقائياً
   useEffect(() => {
     try {
-      localStorage.setItem('edu_users_db_v3', JSON.stringify(usersList));
-      localStorage.setItem('edu_courses_v3', JSON.stringify(courses));
-      localStorage.setItem('edu_exams_v3', JSON.stringify(exams));
-      localStorage.setItem('edu_results_v3', JSON.stringify(examResults));
-      localStorage.setItem('edu_logged_v3', isLoggedIn ? 'true' : 'false');
-      localStorage.setItem('edu_uname_v3', userName);
-      localStorage.setItem('edu_urole_v3', userRole);
-      localStorage.setItem('edu_ucdata_v3', JSON.stringify(currentUserData));
+      localStorage.setItem('edu_users_db_v4', JSON.stringify(usersList));
+      localStorage.setItem('edu_courses_v4', JSON.stringify(courses));
+      localStorage.setItem('edu_exams_v4', JSON.stringify(exams));
+      localStorage.setItem('edu_results_v4', JSON.stringify(examResults));
+      localStorage.setItem('edu_logged_v4', isLoggedIn ? 'true' : 'false');
+      localStorage.setItem('edu_uname_v4', userName);
+      localStorage.setItem('edu_urole_v4', userRole);
+      localStorage.setItem('edu_ucdata_v4', JSON.stringify(currentUserData));
     } catch (e) {
       console.error(e);
     }
   }, [usersList, courses, exams, examResults, isLoggedIn, userName, userRole, currentUserData]);
 
-  // مراقبة الغش ومغادرة الشاشة
+  // 🛡️ نظام مكافحة الغش المتقدم: رصد مغادرة الشاشة أو فقدان التركيز (Split Screen & Window Blur)
   useEffect(() => {
     if (!activeExam) return;
+
+    const handleViolation = (reason: string) => {
+      setAntiCheatWarnings(prev => {
+        const nextVal = prev + 1;
+        if (nextVal >= 3) {
+          showToast(`⚠️ تم إنهاء الامتحان تلقائياً بسبب ${reason} (3 محاولات)!`);
+          submitExam(true);
+        } else {
+          showToast(`⚠️ تنبيه غش (${nextVal}/3): ممنوع ${reason}!`);
+        }
+        return nextVal;
+      });
+    };
+
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        setAntiCheatWarnings(prev => {
-          const nextVal = prev + 1;
-          if (nextVal >= 3) {
-            showToast('⚠️ تم إنهاء الامتحان تلقائياً بسبب مغادرة الشاشة 3 مرات!');
-            submitExam(true);
-          } else {
-            showToast(`⚠️ تنبيه غش (${nextVal}/3): ممنوع مغادرة نافذة الامتحان!`);
-          }
-          return nextVal;
-        });
+        handleViolation('مغادرة نافذة الامتحان');
       }
     };
+
+    const handleWindowBlur = () => {
+      handleViolation('فقدان تركيز الشاشة أو فتح نافذة مزدوجة');
+    };
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [activeExam, studentAnswers]);
+    window.addEventListener('blur', handleWindowBlur);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('blur', handleWindowBlur);
+    };
+  }, [activeExam]);
 
   // عداد الوقت للاختبار
   useEffect(() => {
@@ -394,7 +409,7 @@ export default function EduPlatform() {
           <div className="space-y-12 text-center">
             <div className={`rounded-3xl p-12 border shadow-2xl ${darkMode ? 'bg-gradient-to-r from-indigo-900 to-slate-900 border-indigo-800' : 'bg-indigo-600 text-white'}`}>
               <h1 className="text-3xl sm:text-5xl font-extrabold mb-4">منصة بداية التعليمية الذكية</h1>
-              <p className="text-sm sm:text-lg mb-8 max-w-2xl mx-auto opacity-90">متابعة شاملة لبيانات الطلاب، أرقام أولياء الأمور، رصد الغش، والوقت المستغرق بالدقة.</p>
+              <p className="text-sm sm:text-lg mb-8 max-w-2xl mx-auto opacity-90">متابعة شاملة لبيانات الطلاب، أرقام أولياء الأمور، رصد الغش المتقدم (Split Screen & Focus Loss)، والوقت المستغرق بدقة.</p>
               <div className="flex justify-center gap-4">
                 <button onClick={() => setActiveTab('exams')} className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-6 py-3 rounded-xl font-bold shadow-lg transition">
                   الامتحانات الحالية 📝
@@ -458,7 +473,7 @@ export default function EduPlatform() {
               {exams.map(exam => (
                 <div key={exam.id} className={`p-6 rounded-2xl border flex flex-col justify-between ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
                   <div>
-                    <span className="text-xs bg-amber-500/20 text-amber-400 px-3 py-1 rounded-full">امتحان معتمد</span>
+                    <span className="text-xs bg-amber-500/20 text-amber-400 px-3 py-1 rounded-full">امتحان مؤمن ذكي</span>
                     <h3 className="text-xl font-bold mt-3 mb-2">{exam.title}</h3>
                     <p className="text-xs text-slate-400 mb-4">المعلم: {exam.instructor} • المدة: {exam.durationMinutes} دقائق • الأسئلة: {exam.questions.length}</p>
                   </div>
@@ -471,13 +486,18 @@ export default function EduPlatform() {
           </div>
         )}
 
-        {/* غرفة الامتحان */}
+        {/* غرفة الامتحان المؤمّنة */}
         {activeTab === 'exam-room' && activeExam && (
-          <div className={`max-w-3xl mx-auto p-8 rounded-3xl border shadow-2xl space-y-6 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
+          <div 
+            onCopy={(e) => e.preventDefault()} 
+            onPaste={(e) => e.preventDefault()} 
+            onContextMenu={(e) => e.preventDefault()}
+            className={`max-w-3xl mx-auto p-8 rounded-3xl border shadow-2xl space-y-6 select-none ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}
+          >
             <div className="flex justify-between items-center border-b pb-4 border-slate-700">
               <div>
                 <h2 className="text-xl font-bold text-indigo-400">{activeExam.title}</h2>
-                <p className="text-xs text-rose-400 mt-1">⚠️ نظام الغش (مغادرة الشاشة): {antiCheatWarnings} / 3</p>
+                <p className="text-xs text-rose-400 mt-1">🛡️ نظام مكافحة الغش (مغادرة/تقسيم الشاشة): {antiCheatWarnings} / 3</p>
               </div>
               <div className="bg-rose-500/20 border border-rose-500/40 text-rose-300 px-4 py-2 rounded-xl text-sm font-bold">
                 ⏳ الوقت المتبقي: {Math.floor(examTimeLeft / 60)}:{(examTimeLeft % 60).toString().padStart(2, '0')}
@@ -659,7 +679,7 @@ export default function EduPlatform() {
                         <th className="p-3">الامتحان</th>
                         <th className="p-3">الدرجة</th>
                         <th className="p-3">الوقت المستغرق ⏱️</th>
-                        <th className="p-3">نظام الغش ⚠️</th>
+                        <th className="p-3">نظام الغش (إنذارات) ⚠️</th>
                         <th className="p-3">التاريخ والحالة</th>
                       </tr>
                     </thead>
