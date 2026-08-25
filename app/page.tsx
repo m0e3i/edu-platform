@@ -101,28 +101,29 @@ export default function EduPlatform() {
   const [examTimeLeft, setExamTimeLeft] = useState(0);
   const [examStartTime, setExamStartTime] = useState<number>(0);
   const [antiCheatWarnings, setAntiCheatWarnings] = useState(0);
+  const [cheatLogDetails, setCheatLogDetails] = useState<string[]>([]);
 
   // تحميل البيانات
   useEffect(() => {
     try {
-      const savedUsers = localStorage.getItem('edu_users_db_v5');
+      const savedUsers = localStorage.getItem('edu_users_db_v6');
       if (savedUsers) setUsersList(JSON.parse(savedUsers));
 
-      const savedCourses = localStorage.getItem('edu_courses_v5');
+      const savedCourses = localStorage.getItem('edu_courses_v6');
       if (savedCourses) setCourses(JSON.parse(savedCourses));
 
-      const savedExams = localStorage.getItem('edu_exams_v5');
+      const savedExams = localStorage.getItem('edu_exams_v6');
       if (savedExams) setExams(JSON.parse(savedExams));
 
-      const savedResults = localStorage.getItem('edu_results_v5');
+      const savedResults = localStorage.getItem('edu_results_v6');
       if (savedResults) setExamResults(JSON.parse(savedResults));
 
-      const logged = localStorage.getItem('edu_logged_v5');
+      const logged = localStorage.getItem('edu_logged_v6');
       if (logged === 'true') {
         setIsLoggedIn(true);
-        setUserName(localStorage.getItem('edu_uname_v5') || '');
-        setUserRole((localStorage.getItem('edu_urole_v5') as any) || 'student');
-        const uData = localStorage.getItem('edu_ucdata_v5');
+        setUserName(localStorage.getItem('edu_uname_v6') || '');
+        setUserRole((localStorage.getItem('edu_urole_v6') as any) || 'student');
+        const uData = localStorage.getItem('edu_ucdata_v6');
         if (uData) setCurrentUserData(JSON.parse(uData));
       }
     } catch (e) {
@@ -133,31 +134,35 @@ export default function EduPlatform() {
   // حفظ البيانات
   useEffect(() => {
     try {
-      localStorage.setItem('edu_users_db_v5', JSON.stringify(usersList));
-      localStorage.setItem('edu_courses_v5', JSON.stringify(courses));
-      localStorage.setItem('edu_exams_v5', JSON.stringify(exams));
-      localStorage.setItem('edu_results_v5', JSON.stringify(examResults));
-      localStorage.setItem('edu_logged_v5', isLoggedIn ? 'true' : 'false');
-      localStorage.setItem('edu_uname_v5', userName);
-      localStorage.setItem('edu_urole_v5', userRole);
-      localStorage.setItem('edu_ucdata_v5', JSON.stringify(currentUserData));
+      localStorage.setItem('edu_users_db_v6', JSON.stringify(usersList));
+      localStorage.setItem('edu_courses_v6', JSON.stringify(courses));
+      localStorage.setItem('edu_exams_v6', JSON.stringify(exams));
+      localStorage.setItem('edu_results_v6', JSON.stringify(examResults));
+      localStorage.setItem('edu_logged_v6', isLoggedIn ? 'true' : 'false');
+      localStorage.setItem('edu_uname_v6', userName);
+      localStorage.setItem('edu_urole_v6', userRole);
+      localStorage.setItem('edu_ucdata_v6', JSON.stringify(currentUserData));
     } catch (e) {
       console.error(e);
     }
   }, [usersList, courses, exams, examResults, isLoggedIn, userName, userRole, currentUserData]);
 
-  // رصد الغش المتقدم (Visibility Change + Window Blur)
+  // رصد الغش المتقدم (Visibility Change + Window Blur + Dual Screen / Split Screen detection)
   useEffect(() => {
     if (!activeExam) return;
 
     const handleCheatEvent = (reason: string) => {
+      const timeNow = new Date().toLocaleTimeString('ar-EG');
+      const logMsg = `[${timeNow}] ${reason}`;
+      
+      setCheatLogDetails(prev => [...prev, logMsg]);
       setAntiCheatWarnings(prev => {
         const nextVal = prev + 1;
         if (nextVal >= 3) {
-          showToast(`⚠️ تم إنهاء الامتحان تلقائياً بسبب: ${reason} (تجاوز 3 إنذارات)!`);
+          showToast(`⚠️ تم إنهاء الامتحان تلقائياً بسبب: ${reason} (تجاوز 3 محاولات خروج)!`);
           submitExam(true, reason);
         } else {
-          showToast(`⚠️ إنذار غش (${nextVal}/3) [${reason}]: ممنوع مغادرة نافذة الامتحان أو فتح شاشة جانبية!`);
+          showToast(`⚠️ محاولة خروج (${nextVal}/3): ${reason}! ممنوع مغادرة نافذة الامتحان.`);
         }
         return nextVal;
       });
@@ -170,7 +175,7 @@ export default function EduPlatform() {
     };
 
     const handleWindowBlur = () => {
-      handleCheatEvent('فقدان التركيز على النافذة (احتمال تقسيم الشاشة أو فتح تطبيق خارجي)');
+      handleCheatEvent('فقدان التركيز على الشاشة (احتمال شاشة مزدوجة أو تطبيق خارجي)');
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
@@ -180,7 +185,7 @@ export default function EduPlatform() {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('blur', handleWindowBlur);
     };
-  }, [activeExam, studentAnswers]);
+  }, [activeExam]);
 
   // عداد الوقت للاختبار
   useEffect(() => {
@@ -318,8 +323,9 @@ export default function EduPlatform() {
     setExamTimeLeft(exam.durationMinutes * 60);
     setExamStartTime(Date.now());
     setAntiCheatWarnings(0);
+    setCheatLogDetails([]);
     setActiveTab('exam-room');
-    showToast('🚀 بدأ الامتحان. ممنوع مغادرة الشاشة أو تصغير النافذة!');
+    showToast('🚀 بدأ الامتحان بنظام الحماية الفائق (ممنوع مغادرة الشاشة)!');
   };
 
   const submitExam = (isForced = false, reason = 'تسليم طبيعي ✅') => {
@@ -352,6 +358,7 @@ export default function EduPlatform() {
       total: activeExam.questions.length,
       timeSpent: timeSpentStr,
       warningsCount: antiCheatWarnings,
+      cheatLogs: [...cheatLogDetails],
       status: isForced ? `موقوف (${reason}) ⚠️` : 'تسليم طبيعي ✅',
       date: new Date().toLocaleDateString('ar-EG')
     };
@@ -416,7 +423,7 @@ export default function EduPlatform() {
           <div className="space-y-12 text-center">
             <div className={`rounded-3xl p-12 border shadow-2xl ${darkMode ? 'bg-gradient-to-r from-indigo-900 to-slate-900 border-indigo-800' : 'bg-indigo-600 text-white'}`}>
               <h1 className="text-3xl sm:text-5xl font-extrabold mb-4">منصة بداية التعليمية الذكية</h1>
-              <p className="text-sm sm:text-lg mb-8 max-w-2xl mx-auto opacity-90">متابعة شاملة لبيانات الطلاب، منع الغش المتقدم (تتبع النوافذ والشاشات المزدوجة)، والوقت المستغرق بدقة.</p>
+              <p className="text-sm sm:text-lg mb-8 max-w-2xl mx-auto opacity-90">نظام متكامل يتيح متابعة دقيقة وشاملة لبيانات الطلاب وأداءهم، مع نظام متقدم لمنع الغش (تتبع محاولات الخروج والشاشات المزدوجة)، وحساب الوقت المستغرق.</p>
               <div className="flex justify-center gap-4">
                 <button onClick={() => setActiveTab('exams')} className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-6 py-3 rounded-xl font-bold shadow-lg transition">
                   الامتحانات الحالية 📝
@@ -493,7 +500,7 @@ export default function EduPlatform() {
           </div>
         )}
 
-        {/* غرفة الامتحان مع منع النسخ ورصد فقدان التركيز والشاشات المزدوجة */}
+        {/* غرفة الامتحان مع رصد الخروج والشاشات المزدوجة بدقة */}
         {activeTab === 'exam-room' && activeExam && (
           <div 
             onCopy={(e) => e.preventDefault()} 
@@ -504,7 +511,7 @@ export default function EduPlatform() {
             <div className="flex justify-between items-center border-b pb-4 border-slate-700">
               <div>
                 <h2 className="text-xl font-bold text-indigo-400">{activeExam.title}</h2>
-                <p className="text-xs text-rose-400 mt-1">⚠️ إنذارات الغش (مغادرة النافذة / تقسيم الشاشة): {antiCheatWarnings} / 3</p>
+                <p className="text-xs text-rose-400 mt-1">⚠️ محاولات مغادرة الشاشة / الشاشات المزدوجة: {antiCheatWarnings} / 3</p>
               </div>
               <div className="bg-rose-500/20 border border-rose-500/40 text-rose-300 px-4 py-2 rounded-xl text-sm font-bold">
                 ⏳ الوقت المتبقي: {Math.floor(examTimeLeft / 60)}:{(examTimeLeft % 60).toString().padStart(2, '0')}
@@ -544,11 +551,11 @@ export default function EduPlatform() {
           </div>
         )}
 
-        {/* لوحة المعلم الكاملة وميزات إنشاء الكورسات (لا تظهر إلا للمعلم المسجل دخوله) */}
+        {/* لوحة المعلم الكاملة وميزات إنشاء الكورسات والتقارير التفصيلية */}
         {activeTab === 'instructor-dashboard' && isLoggedIn && userRole === 'instructor' && (
           <div className="space-y-12 max-w-6xl mx-auto">
             
-            {/* 1. إنشاء كورس جديد وتسميته */}
+            {/* 1. إنشاء كورس جديد */}
             <div className={`p-8 rounded-3xl border shadow-2xl space-y-6 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
               <h2 className="text-2xl font-bold text-amber-400">📚 إنشاء كورس جديد وتسميته</h2>
               <form onSubmit={handleCreateNewCourse} className="space-y-4">
@@ -663,30 +670,31 @@ export default function EduPlatform() {
               </form>
             </div>
 
-            {/* 4. سجل النتائج المتكامل مع رصد الغش */}
+            {/* 4. تقارير الأداء التفصيلية وسجل الغش ومحاولات الخروج والشاشات المزدوجة */}
             <div className={`p-8 rounded-3xl border shadow-2xl space-y-4 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
               <div className="flex justify-between items-center">
-                <h3 className="text-xl font-bold text-indigo-400">📊 سجل تفاصيل الطلاب والنتائج وأرقام أولياء الأمور وتنبيهات الغش الشاشي</h3>
+                <h3 className="text-xl font-bold text-indigo-400">📊 تقارير الأداء التفصيلية، محاولات الخروج، وأرقام أولياء الأمور</h3>
                 {examResults.length > 0 && (
                   <button onClick={() => setExamResults([])} className="bg-rose-600 text-white px-3 py-1.5 rounded-xl text-xs font-bold">مسح السجل</button>
                 )}
               </div>
 
               {examResults.length === 0 ? (
-                <p className="text-xs text-slate-400">لا توجد نتائج اختبارات مسجلة حتى الآن.</p>
+                <p className="text-xs text-slate-400">لا توجد نتائج اختبارات أو تقارير مسجلة حتى الآن.</p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-right text-xs">
                     <thead className={`border-b ${darkMode ? 'border-slate-700 text-slate-400' : 'border-slate-200 text-slate-600'}`}>
                       <tr>
                         <th className="p-3">الطالب</th>
-                        <th className="p-3">الإيميل</th>
+                        <th className="p-3">البريد</th>
                         <th className="p-3">تلفون الطالب</th>
                         <th className="p-3">تلفون ولي الأمر 📞</th>
                         <th className="p-3">الامتحان</th>
                         <th className="p-3">الدرجة</th>
-                        <th className="p-3">الوقت ⏱️</th>
-                        <th className="p-3">إنذارات الغش ⚠️</th>
+                        <th className="p-3">الوقت المستغرق ⏱️</th>
+                        <th className="p-3">عدد محاولات الخروج ⚠️</th>
+                        <th className="p-3">سجل أحداث الخروج الشاشي</th>
                         <th className="p-3">الحالة والتاريخ</th>
                       </tr>
                     </thead>
@@ -700,7 +708,18 @@ export default function EduPlatform() {
                           <td className="p-3">{res.examTitle}</td>
                           <td className="p-3 font-bold text-emerald-400">{res.score} / {res.total}</td>
                           <td className="p-3 font-semibold text-indigo-300">{res.timeSpent}</td>
-                          <td className="p-3 text-rose-400 font-bold">⚠️ {res.warningsCount} تنبيهات</td>
+                          <td className="p-3 text-rose-400 font-bold">🚨 {res.warningsCount} محاولات</td>
+                          <td className="p-3 max-w-xs">
+                            {res.cheatLogs && res.cheatLogs.length > 0 ? (
+                              <div className="space-y-1 text-[10px] text-rose-300 bg-rose-950/30 p-2 rounded-lg border border-rose-900/50">
+                                {res.cheatLogs.map((log: string, lIdx: number) => (
+                                  <div key={lIdx}>• {log}</div>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="text-emerald-400 font-medium">سليم (لا محاولات خروج)</span>
+                            )}
+                          </td>
                           <td className="p-3">
                             <span className="block font-bold">{res.status}</span>
                             <span className="text-[10px] text-slate-400">{res.date}</span>
