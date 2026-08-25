@@ -28,11 +28,11 @@ export default function EduPlatform() {
   const [inputRegPassword, setInputRegPassword] = useState('');
   const [inputRegRole, setInputRegRole] = useState<'student' | 'instructor'>('student');
 
-  // حقول تسجيل الدخول
+  // حقول تسجيل الدخول (البريد أو الهاتف + كلمة المرور)
   const [loginIdentifier, setLoginIdentifier] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
 
-  // قاعدة بيانات المستخدمين
+  // قاعدة بيانات المستخدمين (تشمل المعلم الافتراضي وأي طالب/معلم يسجل جديد ويتم حفظهم نهائياً)
   const [usersList, setUsersList] = useState<any[]>([
     { 
       name: 'أحمد المعلم', 
@@ -106,25 +106,25 @@ export default function EduPlatform() {
   // تحميل البيانات وحالة تسجيل الدخول عند فتح المتصفح أو عمل Refresh
   useEffect(() => {
     try {
-      const savedUsers = localStorage.getItem('edu_users_db_v7');
+      const savedUsers = localStorage.getItem('edu_users_db_v8');
       if (savedUsers) setUsersList(JSON.parse(savedUsers));
 
-      const savedCourses = localStorage.getItem('edu_courses_v7');
+      const savedCourses = localStorage.getItem('edu_courses_v8');
       if (savedCourses) setCourses(JSON.parse(savedCourses));
 
-      const savedExams = localStorage.getItem('edu_exams_v7');
+      const savedExams = localStorage.getItem('edu_exams_v8');
       if (savedExams) setExams(JSON.parse(savedExams));
 
-      const savedResults = localStorage.getItem('edu_results_v7');
+      const savedResults = localStorage.getItem('edu_results_v8');
       if (savedResults) setExamResults(JSON.parse(savedResults));
 
       // استرجاع حالة تسجيل الدخول بشكل دائم
-      const logged = localStorage.getItem('edu_logged_v7');
+      const logged = localStorage.getItem('edu_logged_v8');
       if (logged === 'true') {
         setIsLoggedIn(true);
-        setUserName(localStorage.getItem('edu_uname_v7') || '');
-        setUserRole((localStorage.getItem('edu_urole_v7') as any) || 'student');
-        const uData = localStorage.getItem('edu_ucdata_v7');
+        setUserName(localStorage.getItem('edu_uname_v8') || '');
+        setUserRole((localStorage.getItem('edu_urole_v8') as any) || 'student');
+        const uData = localStorage.getItem('edu_ucdata_v8');
         if (uData) setCurrentUserData(JSON.parse(uData));
       }
     } catch (e) {
@@ -132,19 +132,19 @@ export default function EduPlatform() {
     }
   }, []);
 
-  // حفظ البيانات وتثبيت حالة تسجيل الدخول تلقائياً في التخزين المحلي
+  // حفظ البيانات وقاعدة بيانات المستخدمين وحالة تسجيل الدخول تلقائياً في التخزين المحلي
   useEffect(() => {
     try {
-      localStorage.setItem('edu_users_db_v7', JSON.stringify(usersList));
-      localStorage.setItem('edu_courses_v7', JSON.stringify(courses));
-      localStorage.setItem('edu_exams_v7', JSON.stringify(exams));
-      localStorage.setItem('edu_results_v7', JSON.stringify(examResults));
+      localStorage.setItem('edu_users_db_v8', JSON.stringify(usersList));
+      localStorage.setItem('edu_courses_v8', JSON.stringify(courses));
+      localStorage.setItem('edu_exams_v8', JSON.stringify(exams));
+      localStorage.setItem('edu_results_v8', JSON.stringify(examResults));
       
       // حفظ بيانات الجلسة الدائمة
-      localStorage.setItem('edu_logged_v7', isLoggedIn ? 'true' : 'false');
-      localStorage.setItem('edu_uname_v7', userName);
-      localStorage.setItem('edu_urole_v7', userRole);
-      localStorage.setItem('edu_ucdata_v7', JSON.stringify(currentUserData));
+      localStorage.setItem('edu_logged_v8', isLoggedIn ? 'true' : 'false');
+      localStorage.setItem('edu_uname_v8', userName);
+      localStorage.setItem('edu_urole_v8', userRole);
+      localStorage.setItem('edu_ucdata_v8', JSON.stringify(currentUserData));
     } catch (e) {
       console.error(e);
     }
@@ -207,13 +207,13 @@ export default function EduPlatform() {
     return () => clearInterval(timer);
   }, [activeExam, examTimeLeft]);
 
-  // تسجيل الدخول
+  // إدارة تسجيل الحساب الجديد أو تسجيل الدخول بناءً على بيانات المستخدمين المحفوظة
   const handleAuthSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (authMode === 'register') {
       const userExists = usersList.some(u => u.email === inputRegEmail || u.phone === inputRegPhone);
       if (userExists) {
-        showToast('هذا البريد أو رقم الهاتف مسجل مسبقاً ⚠️');
+        showToast('هذا البريد أو رقم الهاتف مسجل مسبقاً ⚠️ يرجى تسجيل الدخول مباشرة');
         setAuthMode('login');
         return;
       }
@@ -225,37 +225,45 @@ export default function EduPlatform() {
         password: inputRegPassword, 
         role: inputRegRole 
       };
-      setUsersList(prev => [...prev, newUser]);
+      
+      // إضافة المستخدم الجديد لقاعدة البيانات وحفظه نهائياً
+      const updatedList = [...usersList, newUser];
+      setUsersList(updatedList);
+      
       setUserName(inputRegName);
       setUserRole(inputRegRole);
       setCurrentUserData(newUser);
       setIsLoggedIn(true);
-      showToast(`أهلاً بك يا ${inputRegName}! 🎉 تم تسجيل حسابك بنجاح وحفظ جلستك الدائمة`);
+      showToast(`أهلاً بك يا ${inputRegName}! 🎉 تم تسجيل حسابك وحفظ بيانات الدخول بنجاح`);
       setActiveTab('home');
     } else {
-      const foundUser = usersList.find(u => (u.email === loginIdentifier || u.phone === loginIdentifier) && u.password === loginPassword);
+      // التحقق من المطابقة في قاعدة البيانات المسجلة مسبقاً
+      const foundUser = usersList.find(u => 
+        (u.email === loginIdentifier || u.phone === loginIdentifier) && u.password === loginPassword
+      );
+
       if (foundUser) {
         setIsLoggedIn(true);
         setUserName(foundUser.name);
         setUserRole(foundUser.role);
         setCurrentUserData(foundUser);
-        showToast(`مرحباً بعودتك يا ${foundUser.name}! ✅ تم حفظ دخولك الدائم`);
+        showToast(`مرحباً بعودتك يا ${foundUser.name}! ✅ تم تسجيل الدخول واستعادة بياناتك بنجاح`);
         setActiveTab('home');
       } else {
-        showToast('خطأ في البيانات (تأكد من البريد/الهاتف وكلمة المرور) ❌');
+        showToast('خطأ في البيانات (تأكد من البريد أو رقم الهاتف وكلمة المرور الصحيحة) ❌');
       }
     }
   };
 
-  // تسجيل الخروج اليدوي (يتم مسح الجلسة الدائمة فقط عند الضغط هنا)
+  // تسجيل الخروج اليدوي (مسح الجلسة فقط عند رغبة المستخدم في الخروج)
   const handleLogout = () => {
     setIsLoggedIn(false);
     setUserName('');
     setCurrentUserData(null);
-    localStorage.removeItem('edu_logged_v7');
-    localStorage.removeItem('edu_uname_v7');
-    localStorage.removeItem('edu_urole_v7');
-    localStorage.removeItem('edu_ucdata_v7');
+    localStorage.removeItem('edu_logged_v8');
+    localStorage.removeItem('edu_uname_v8');
+    localStorage.removeItem('edu_urole_v8');
+    localStorage.removeItem('edu_ucdata_v8');
     showToast('تم تسجيل الخروج بنجاح');
     setActiveTab('home');
   };
@@ -439,7 +447,7 @@ export default function EduPlatform() {
           <div className="space-y-12 text-center">
             <div className={`rounded-3xl p-12 border shadow-2xl ${darkMode ? 'bg-gradient-to-r from-indigo-900 to-slate-900 border-indigo-800' : 'bg-indigo-600 text-white'}`}>
               <h1 className="text-3xl sm:text-5xl font-extrabold mb-4">منصة بداية التعليمية الذكية</h1>
-              <p className="text-sm sm:text-lg mb-8 max-w-2xl mx-auto opacity-90">نظام متكامل يتيح متابعة دقيقة وشاملة لبيانات الطلاب وأداءهم، مع نظام متقدم لمنع الغش وحفظ الجلسة والدخول الدائم.</p>
+              <p className="text-sm sm:text-lg mb-8 max-w-2xl mx-auto opacity-90">نظام متكامل يتيح متابعة دقيقة وشاملة لبيانات الطلاب وأداءهم، مع حفظ دائم لبيانات الدخول لكل مستخدم ومعلم.</p>
               <div className="flex justify-center gap-4">
                 <button onClick={() => setActiveTab('exams')} className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-6 py-3 rounded-xl font-bold shadow-lg transition">
                   الامتحانات الحالية 📝
@@ -516,7 +524,7 @@ export default function EduPlatform() {
           </div>
         )}
 
-        {/* غرفة الامتحان مع رصد الخروج والشاشات المزدوجة بدقة */}
+        {/* غرفة الامتحان */}
         {activeTab === 'exam-room' && activeExam && (
           <div 
             onCopy={(e) => e.preventDefault()} 
@@ -567,7 +575,7 @@ export default function EduPlatform() {
           </div>
         )}
 
-        {/* لوحة المعلم الكاملة وميزات إنشاء الكورسات والتقارير التفصيلية */}
+        {/* لوحة المعلم الكاملة */}
         {activeTab === 'instructor-dashboard' && isLoggedIn && userRole === 'instructor' && (
           <div className="space-y-12 max-w-6xl mx-auto">
             
@@ -686,7 +694,7 @@ export default function EduPlatform() {
               </form>
             </div>
 
-            {/* 4. تقارير الأداء التفصيلية وسجل الغش ومحاولات الخروج والشاشات المزدوجة */}
+            {/* 4. تقارير الأداء التفصيلية */}
             <div className={`p-8 rounded-3xl border shadow-2xl space-y-4 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
               <div className="flex justify-between items-center">
                 <h3 className="text-xl font-bold text-indigo-400">📊 تقارير الأداء التفصيلية، محاولات الخروج، وأرقام أولياء الأمور</h3>
@@ -764,19 +772,19 @@ export default function EduPlatform() {
                 <>
                   <div>
                     <label className="block text-xs font-medium mb-1">الاسم الكامل</label>
-                    <input type="text" required value={inputRegName} onChange={e => setInputRegName(e.target.value)} placeholder="اسم الطالب..." className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                    <input type="text" required value={inputRegName} onChange={e => setInputRegName(e.target.value)} placeholder="اسم الطالب أو المعلم..." className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
                   </div>
                   <div>
                     <label className="block text-xs font-medium mb-1">البريد الإلكتروني (إجباري)</label>
-                    <input type="email" required value={inputRegEmail} onChange={e => setInputRegEmail(e.target.value)} placeholder="student@mail.com" className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                    <input type="email" required value={inputRegEmail} onChange={e => setInputRegEmail(e.target.value)} placeholder="user@mail.com" className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
                   </div>
                   <div>
                     <label className="block text-xs font-medium mb-1">رقم التلفون الشخصي (إجباري)</label>
                     <input type="text" required value={inputRegPhone} onChange={e => setInputRegPhone(e.target.value)} placeholder="010xxxxxxxx" className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium mb-1">رقم تلفون ولي الأمر (إجباري 📞)</label>
-                    <input type="text" required value={inputRegParentPhone} onChange={e => setInputRegParentPhone(e.target.value)} placeholder="011xxxxxxxx" className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                    <label className="block text-xs font-medium mb-1">رقم تلفون ولي الأمر (للطلاب فقط 📞)</label>
+                    <input type="text" value={inputRegParentPhone} onChange={e => setInputRegParentPhone(e.target.value)} placeholder="011xxxxxxxx" className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
                   </div>
                   <div>
                     <label className="block text-xs font-medium mb-1">نوع الحساب</label>
@@ -794,7 +802,7 @@ export default function EduPlatform() {
                 <>
                   <div>
                     <label className="block text-xs font-medium mb-1">البريد الإلكتروني أو رقم التلفون</label>
-                    <input type="text" required value={loginIdentifier} onChange={e => setLoginIdentifier(e.target.value)} placeholder="أدخل إيميلك أو تلفونك..." className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                    <input type="text" required value={loginIdentifier} onChange={e => setLoginIdentifier(e.target.value)} placeholder="أدخل إيميلك أو تلفونك المسجل..." className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
                   </div>
                   <div>
                     <label className="block text-xs font-medium mb-1">كلمة المرور</label>
@@ -803,7 +811,7 @@ export default function EduPlatform() {
                 </>
               )}
               <button type="submit" className="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold text-sm">
-                {authMode === 'register' ? 'تسجيل الحساب وحفظ الجلسة الدائمة' : 'تسجيل الدخول الدائم'}
+                {authMode === 'register' ? 'تسجيل وحفظ البيانات في المنصة' : 'تسجيل الدخول بالبيانات المحفوظة'}
               </button>
             </form>
           </div>
