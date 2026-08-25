@@ -12,7 +12,7 @@ export default function EduPlatform() {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  // حالة تسجيل الدخول
+  // حالة تسجيل الدخول (مع الاسترجاع التلقائي الدائم من التخزين المحلي)
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState('');
   const [userRole, setUserRole] = useState<'student' | 'instructor'>('student');
@@ -103,27 +103,28 @@ export default function EduPlatform() {
   const [antiCheatWarnings, setAntiCheatWarnings] = useState(0);
   const [cheatLogDetails, setCheatLogDetails] = useState<string[]>([]);
 
-  // تحميل البيانات
+  // تحميل البيانات وحالة تسجيل الدخول عند فتح المتصفح أو عمل Refresh
   useEffect(() => {
     try {
-      const savedUsers = localStorage.getItem('edu_users_db_v6');
+      const savedUsers = localStorage.getItem('edu_users_db_v7');
       if (savedUsers) setUsersList(JSON.parse(savedUsers));
 
-      const savedCourses = localStorage.getItem('edu_courses_v6');
+      const savedCourses = localStorage.getItem('edu_courses_v7');
       if (savedCourses) setCourses(JSON.parse(savedCourses));
 
-      const savedExams = localStorage.getItem('edu_exams_v6');
+      const savedExams = localStorage.getItem('edu_exams_v7');
       if (savedExams) setExams(JSON.parse(savedExams));
 
-      const savedResults = localStorage.getItem('edu_results_v6');
+      const savedResults = localStorage.getItem('edu_results_v7');
       if (savedResults) setExamResults(JSON.parse(savedResults));
 
-      const logged = localStorage.getItem('edu_logged_v6');
+      // استرجاع حالة تسجيل الدخول بشكل دائم
+      const logged = localStorage.getItem('edu_logged_v7');
       if (logged === 'true') {
         setIsLoggedIn(true);
-        setUserName(localStorage.getItem('edu_uname_v6') || '');
-        setUserRole((localStorage.getItem('edu_urole_v6') as any) || 'student');
-        const uData = localStorage.getItem('edu_ucdata_v6');
+        setUserName(localStorage.getItem('edu_uname_v7') || '');
+        setUserRole((localStorage.getItem('edu_urole_v7') as any) || 'student');
+        const uData = localStorage.getItem('edu_ucdata_v7');
         if (uData) setCurrentUserData(JSON.parse(uData));
       }
     } catch (e) {
@@ -131,23 +132,25 @@ export default function EduPlatform() {
     }
   }, []);
 
-  // حفظ البيانات
+  // حفظ البيانات وتثبيت حالة تسجيل الدخول تلقائياً في التخزين المحلي
   useEffect(() => {
     try {
-      localStorage.setItem('edu_users_db_v6', JSON.stringify(usersList));
-      localStorage.setItem('edu_courses_v6', JSON.stringify(courses));
-      localStorage.setItem('edu_exams_v6', JSON.stringify(exams));
-      localStorage.setItem('edu_results_v6', JSON.stringify(examResults));
-      localStorage.setItem('edu_logged_v6', isLoggedIn ? 'true' : 'false');
-      localStorage.setItem('edu_uname_v6', userName);
-      localStorage.setItem('edu_urole_v6', userRole);
-      localStorage.setItem('edu_ucdata_v6', JSON.stringify(currentUserData));
+      localStorage.setItem('edu_users_db_v7', JSON.stringify(usersList));
+      localStorage.setItem('edu_courses_v7', JSON.stringify(courses));
+      localStorage.setItem('edu_exams_v7', JSON.stringify(exams));
+      localStorage.setItem('edu_results_v7', JSON.stringify(examResults));
+      
+      // حفظ بيانات الجلسة الدائمة
+      localStorage.setItem('edu_logged_v7', isLoggedIn ? 'true' : 'false');
+      localStorage.setItem('edu_uname_v7', userName);
+      localStorage.setItem('edu_urole_v7', userRole);
+      localStorage.setItem('edu_ucdata_v7', JSON.stringify(currentUserData));
     } catch (e) {
       console.error(e);
     }
   }, [usersList, courses, exams, examResults, isLoggedIn, userName, userRole, currentUserData]);
 
-  // رصد الغش المتقدم (Visibility Change + Window Blur + Dual Screen / Split Screen detection)
+  // رصد الغش المتقدم (Visibility Change + Window Blur)
   useEffect(() => {
     if (!activeExam) return;
 
@@ -227,7 +230,7 @@ export default function EduPlatform() {
       setUserRole(inputRegRole);
       setCurrentUserData(newUser);
       setIsLoggedIn(true);
-      showToast(`أهلاً بك يا ${inputRegName}! 🎉 تم تسجيل حسابك بنجاح`);
+      showToast(`أهلاً بك يا ${inputRegName}! 🎉 تم تسجيل حسابك بنجاح وحفظ جلستك الدائمة`);
       setActiveTab('home');
     } else {
       const foundUser = usersList.find(u => (u.email === loginIdentifier || u.phone === loginIdentifier) && u.password === loginPassword);
@@ -236,12 +239,25 @@ export default function EduPlatform() {
         setUserName(foundUser.name);
         setUserRole(foundUser.role);
         setCurrentUserData(foundUser);
-        showToast(`مرحباً بعودتك يا ${foundUser.name}! ✅`);
+        showToast(`مرحباً بعودتك يا ${foundUser.name}! ✅ تم حفظ دخولك الدائم`);
         setActiveTab('home');
       } else {
         showToast('خطأ في البيانات (تأكد من البريد/الهاتف وكلمة المرور) ❌');
       }
     }
+  };
+
+  // تسجيل الخروج اليدوي (يتم مسح الجلسة الدائمة فقط عند الضغط هنا)
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setUserName('');
+    setCurrentUserData(null);
+    localStorage.removeItem('edu_logged_v7');
+    localStorage.removeItem('edu_uname_v7');
+    localStorage.removeItem('edu_urole_v7');
+    localStorage.removeItem('edu_ucdata_v7');
+    showToast('تم تسجيل الخروج بنجاح');
+    setActiveTab('home');
   };
 
   // إنشاء كورس جديد
@@ -405,7 +421,7 @@ export default function EduPlatform() {
                 <span className="text-xs bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-full font-bold border border-indigo-500/30">
                   {userRole === 'instructor' ? '👨‍🏫 ' : '🎓 '} {userName}
                 </span>
-                <button onClick={() => { setIsLoggedIn(false); setCurrentUserData(null); showToast('تم تسجيل الخروج'); setActiveTab('home'); }} className="bg-rose-500/20 text-rose-400 text-xs px-3 py-1 rounded-lg">خروج</button>
+                <button onClick={handleLogout} className="bg-rose-500/20 text-rose-400 text-xs px-3 py-1 rounded-lg">خروج</button>
               </div>
             ) : (
               <button onClick={() => { setAuthMode('login'); setActiveTab('auth'); }} className="bg-indigo-600 text-white px-4 py-2 rounded-xl font-semibold text-xs shadow">
@@ -423,7 +439,7 @@ export default function EduPlatform() {
           <div className="space-y-12 text-center">
             <div className={`rounded-3xl p-12 border shadow-2xl ${darkMode ? 'bg-gradient-to-r from-indigo-900 to-slate-900 border-indigo-800' : 'bg-indigo-600 text-white'}`}>
               <h1 className="text-3xl sm:text-5xl font-extrabold mb-4">منصة بداية التعليمية الذكية</h1>
-              <p className="text-sm sm:text-lg mb-8 max-w-2xl mx-auto opacity-90">نظام متكامل يتيح متابعة دقيقة وشاملة لبيانات الطلاب وأداءهم، مع نظام متقدم لمنع الغش (تتبع محاولات الخروج والشاشات المزدوجة)، وحساب الوقت المستغرق.</p>
+              <p className="text-sm sm:text-lg mb-8 max-w-2xl mx-auto opacity-90">نظام متكامل يتيح متابعة دقيقة وشاملة لبيانات الطلاب وأداءهم، مع نظام متقدم لمنع الغش وحفظ الجلسة والدخول الدائم.</p>
               <div className="flex justify-center gap-4">
                 <button onClick={() => setActiveTab('exams')} className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-6 py-3 rounded-xl font-bold shadow-lg transition">
                   الامتحانات الحالية 📝
@@ -787,7 +803,7 @@ export default function EduPlatform() {
                 </>
               )}
               <button type="submit" className="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold text-sm">
-                {authMode === 'register' ? 'تسجيل الحساب وحفظ البيانات' : 'تسجيل الدخول'}
+                {authMode === 'register' ? 'تسجيل الحساب وحفظ الجلسة الدائمة' : 'تسجيل الدخول الدائم'}
               </button>
             </form>
           </div>
