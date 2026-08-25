@@ -44,7 +44,7 @@ export default function EduPlatform() {
     }
   ]);
 
-  // الكورسات والفيديوهات
+  // الكورسات (يستطيع المعلم الآن إنشاء كورسات جديدة بالكامل)
   const [courses, setCourses] = useState<any[]>([
     {
       id: 1,
@@ -75,12 +75,19 @@ export default function EduPlatform() {
 
   const [examResults, setExamResults] = useState<any[]>([]);
 
-  // حقول المعلم لإضافة الفيديوهات والامتحانات
+  // حقول إنشاء كورس جديد بواسطة المعلم
+  const [newCourseTitle, setNewCourseTitle] = useState('');
+  const [newCourseCategory, setNewCourseCategory] = useState('برمجة وتطوير');
+  const [newCoursePrice, setNewCoursePrice] = useState('مجاناً 🎁');
+  const [newCourseDesc, setNewCourseDesc] = useState('');
+
+  // حقول إضافة فيديو للكورس
   const [selectedCourseForVideo, setSelectedCourseForVideo] = useState<number>(1);
   const [newVideoTitle, setNewVideoTitle] = useState('');
   const [newVideoDuration, setNewVideoDuration] = useState('10 دقائق');
   const [newVideoUrl, setNewVideoUrl] = useState('');
 
+  // حقول تصميم امتحان جديد
   const [newExamTitle, setNewExamTitle] = useState('');
   const [newExamDuration, setNewExamDuration] = useState(10);
   const [builderQuestions, setBuilderQuestions] = useState<any[]>([
@@ -95,27 +102,27 @@ export default function EduPlatform() {
   const [examStartTime, setExamStartTime] = useState<number>(0);
   const [antiCheatWarnings, setAntiCheatWarnings] = useState(0);
 
-  // تحميل البيانات من التخزين المحلي عند فتح الصفحة أول مرة
+  // تحميل البيانات من التخزين المحلي
   useEffect(() => {
     try {
-      const savedUsers = localStorage.getItem('edu_users_db_v2');
+      const savedUsers = localStorage.getItem('edu_users_db_v3');
       if (savedUsers) setUsersList(JSON.parse(savedUsers));
 
-      const savedCourses = localStorage.getItem('edu_courses_v2');
+      const savedCourses = localStorage.getItem('edu_courses_v3');
       if (savedCourses) setCourses(JSON.parse(savedCourses));
 
-      const savedExams = localStorage.getItem('edu_exams_v2');
+      const savedExams = localStorage.getItem('edu_exams_v3');
       if (savedExams) setExams(JSON.parse(savedExams));
 
-      const savedResults = localStorage.getItem('edu_results_v2');
+      const savedResults = localStorage.getItem('edu_results_v3');
       if (savedResults) setExamResults(JSON.parse(savedResults));
 
-      const logged = localStorage.getItem('edu_logged_v2');
+      const logged = localStorage.getItem('edu_logged_v3');
       if (logged === 'true') {
         setIsLoggedIn(true);
-        setUserName(localStorage.getItem('edu_uname_v2') || '');
-        setUserRole((localStorage.getItem('edu_urole_v2') as any) || 'student');
-        const uData = localStorage.getItem('edu_ucdata_v2');
+        setUserName(localStorage.getItem('edu_uname_v3') || '');
+        setUserRole((localStorage.getItem('edu_urole_v3') as any) || 'student');
+        const uData = localStorage.getItem('edu_ucdata_v3');
         if (uData) setCurrentUserData(JSON.parse(uData));
       }
     } catch (e) {
@@ -123,17 +130,17 @@ export default function EduPlatform() {
     }
   }, []);
 
-  // حفظ البيانات تلقائياً عند أي تغيير
+  // حفظ البيانات تلقائياً
   useEffect(() => {
     try {
-      localStorage.setItem('edu_users_db_v2', JSON.stringify(usersList));
-      localStorage.setItem('edu_courses_v2', JSON.stringify(courses));
-      localStorage.setItem('edu_exams_v2', JSON.stringify(exams));
-      localStorage.setItem('edu_results_v2', JSON.stringify(examResults));
-      localStorage.setItem('edu_logged_v2', isLoggedIn ? 'true' : 'false');
-      localStorage.setItem('edu_uname_v2', userName);
-      localStorage.setItem('edu_urole_v2', userRole);
-      localStorage.setItem('edu_ucdata_v2', JSON.stringify(currentUserData));
+      localStorage.setItem('edu_users_db_v3', JSON.stringify(usersList));
+      localStorage.setItem('edu_courses_v3', JSON.stringify(courses));
+      localStorage.setItem('edu_exams_v3', JSON.stringify(exams));
+      localStorage.setItem('edu_results_v3', JSON.stringify(examResults));
+      localStorage.setItem('edu_logged_v3', isLoggedIn ? 'true' : 'false');
+      localStorage.setItem('edu_uname_v3', userName);
+      localStorage.setItem('edu_urole_v3', userRole);
+      localStorage.setItem('edu_ucdata_v3', JSON.stringify(currentUserData));
     } catch (e) {
       console.error(e);
     }
@@ -177,7 +184,7 @@ export default function EduPlatform() {
     return () => clearInterval(timer);
   }, [activeExam, examTimeLeft]);
 
-  // معالجة التسجيل والتسجيل الدخول بالشروط الجديدة
+  // معالجة التسجيل والدخول
   const handleAuthSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (authMode === 'register') {
@@ -217,7 +224,29 @@ export default function EduPlatform() {
     }
   };
 
-  // دوال المعلم
+  // دوال المعلم: إنشاء كورس جديد
+  const handleCreateNewCourse = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCourseTitle) {
+      showToast('يرجى كتابة اسم الكورس!');
+      return;
+    }
+    const newCourseObj = {
+      id: Date.now(),
+      title: newCourseTitle,
+      instructor: userName || 'المعلم',
+      category: newCourseCategory,
+      price: newCoursePrice,
+      description: newCourseDesc || 'كورس تعليمي جديد',
+      lessons: []
+    };
+    setCourses([newCourseObj, ...courses]);
+    showToast('✨ تم إنشاء الكورس بنجاح!');
+    setNewCourseTitle('');
+    setNewCourseDesc('');
+  };
+
+  // دوال المعلم: إضافة فيديو للكورس
   const handleAddVideoToCourse = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newVideoTitle) return;
@@ -231,11 +260,12 @@ export default function EduPlatform() {
       return c;
     });
     setCourses(updated);
-    showToast('🎥 تمت إضافة الفيديو بنجاح!');
+    showToast('🎥 تمت إضافة الفيديو بنجاح للكورس!');
     setNewVideoTitle('');
     setNewVideoUrl('');
   };
 
+  // دوال المعلم: حفظ الامتحان
   const handleSaveFullExam = (e: React.FormEvent) => {
     e.preventDefault();
     if (builderQuestions.some(q => !q.text || q.options.some((o: string) => !o))) {
@@ -284,7 +314,6 @@ export default function EduPlatform() {
       if (studentAnswers[idx] === q.correctOption) score += 1;
     });
 
-    // حساب الوقت المستغرق بدقة (دقائق وثواني)
     const elapsedSec = Math.floor((Date.now() - examStartTime) / 1000);
     const mins = Math.floor(elapsedSec / 60);
     const secs = elapsedSec % 60;
@@ -333,7 +362,7 @@ export default function EduPlatform() {
             <button onClick={() => setActiveTab('courses')} className={activeTab === 'courses' ? 'text-indigo-500 font-bold' : ''}>الكورسات والفيديوهات 🎥</button>
             <button onClick={() => setActiveTab('exams')} className={activeTab === 'exams' ? 'text-indigo-500 font-bold' : ''}>الامتحانات 📝</button>
             {isLoggedIn && userRole === 'instructor' && (
-              <button onClick={() => setActiveTab('instructor-dashboard')} className={activeTab === 'instructor-dashboard' ? 'text-amber-500 font-bold' : ''}>لوحة المعلم والنتائج 👨‍🏫</button>
+              <button onClick={() => setActiveTab('instructor-dashboard')} className={activeTab === 'instructor-dashboard' ? 'text-amber-500 font-bold' : ''}>لوحة المعلم وإدارة المنصة 👨‍🏫</button>
             )}
           </nav>
 
@@ -378,7 +407,7 @@ export default function EduPlatform() {
           </div>
         )}
 
-        {/* الكورسات */}
+        {/* عرض الكورسات */}
         {activeTab === 'courses' && (
           <div className="space-y-8">
             <h2 className="text-2xl sm:text-3xl font-bold">الكورسات ودروس الفيديو 📚</h2>
@@ -386,27 +415,34 @@ export default function EduPlatform() {
               {courses.map(course => (
                 <div key={course.id} className={`p-6 rounded-3xl border shadow-lg space-y-4 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
                   <div>
-                    <span className="text-xs bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-full">{course.category}</span>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-full">{course.category}</span>
+                      <span className="text-xs font-bold text-emerald-400">{course.price}</span>
+                    </div>
                     <h3 className="text-xl font-bold mt-3">{course.title}</h3>
-                    <p className="text-xs text-slate-400 mt-1">المدرب: {course.instructor}</p>
+                    <p className="text-xs text-slate-400 mt-1">المعلم: {course.instructor}</p>
                     <p className="text-sm mt-2 opacity-80">{course.description}</p>
                   </div>
 
                   <div className="space-y-3 pt-3 border-t border-slate-700">
-                    <h4 className="text-xs font-bold text-amber-400">الفيديوهات ({course.lessons.length}):</h4>
-                    {course.lessons.map((lesson: any) => (
-                      <div key={lesson.id} className="p-3 bg-slate-900/40 rounded-xl border border-slate-800 space-y-2">
-                        <div className="flex justify-between items-center text-xs font-bold">
-                          <span>📺 {lesson.title}</span>
-                          <span className="text-slate-400">{lesson.duration}</span>
+                    <h4 className="text-xs font-bold text-amber-400">الفيديوهات والدروس ({course.lessons.length}):</h4>
+                    {course.lessons.length === 0 ? (
+                      <p className="text-xs text-slate-400">لا توجد دروس مضافة في هذا الكورس بعد.</p>
+                    ) : (
+                      course.lessons.map((lesson: any) => (
+                        <div key={lesson.id} className="p-3 bg-slate-900/40 rounded-xl border border-slate-800 space-y-2">
+                          <div className="flex justify-between items-center text-xs font-bold">
+                            <span>📺 {lesson.title}</span>
+                            <span className="text-slate-400">{lesson.duration}</span>
+                          </div>
+                          {lesson.videoUrl && (
+                            <video controls className="w-full h-40 rounded-lg bg-black object-cover mt-1">
+                              <source src={lesson.videoUrl} type="video/mp4" />
+                            </video>
+                          )}
                         </div>
-                        {lesson.videoUrl && (
-                          <video controls className="w-full h-40 rounded-lg bg-black object-cover mt-1">
-                            <source src={lesson.videoUrl} type="video/mp4" />
-                          </video>
-                        )}
-                      </div>
-                    ))}
+                      ))
+                    )}
                   </div>
                 </div>
               ))}
@@ -481,16 +517,46 @@ export default function EduPlatform() {
           </div>
         )}
 
-        {/* لوحة المعلم وسجل النتائج التفصيلي */}
+        {/* لوحة المعلم الكاملة */}
         {activeTab === 'instructor-dashboard' && isLoggedIn && userRole === 'instructor' && (
           <div className="space-y-12 max-w-6xl mx-auto">
             
-            {/* إضافة فيديو */}
+            {/* 1. إنشاء كورس جديد وتسميته */}
             <div className={`p-8 rounded-3xl border shadow-2xl space-y-6 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
-              <h2 className="text-2xl font-bold text-indigo-400">🎥 إضافة فيديو للكورس</h2>
+              <h2 className="text-2xl font-bold text-amber-400">📚 إنشاء كورس جديد وتسميته</h2>
+              <form onSubmit={handleCreateNewCourse} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium mb-1">اسم الكورس</label>
+                    <input type="text" required value={newCourseTitle} onChange={e => setNewCourseTitle(e.target.value)} placeholder="مثال: كورس المحاسبة المتقدمة" className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium mb-1">التصنيف</label>
+                    <input type="text" value={newCourseCategory} onChange={e => setNewCourseCategory(e.target.value)} placeholder="مثال: برمجة، لغات، رياضيات..." className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium mb-1">السعر</label>
+                    <input type="text" value={newCoursePrice} onChange={e => setNewCoursePrice(e.target.value)} placeholder="مثال: مجاناً أو 200 ج.م" className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium mb-1">وصف مختصر للكورس</label>
+                    <input type="text" value={newCourseDesc} onChange={e => setNewCourseDesc(e.target.value)} placeholder="ماذا سيتعلم الطالب في هذا الكورس؟" className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                  </div>
+                </div>
+                <button type="submit" className="bg-amber-600 hover:bg-amber-500 text-white px-6 py-2.5 rounded-xl text-xs font-bold transition">
+                  + إنشاء وإضافة الكورس للمنصة
+                </button>
+              </form>
+            </div>
+
+            {/* 2. إضافة فيديو للكورس */}
+            <div className={`p-8 rounded-3xl border shadow-2xl space-y-6 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
+              <h2 className="text-2xl font-bold text-indigo-400">🎥 إضافة فيديو / درس لأي كورس</h2>
               <form onSubmit={handleAddVideoToCourse} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-medium mb-1">الكورس</label>
+                  <label className="block text-xs font-medium mb-1">اختر الكورس المستهدف</label>
                   <select value={selectedCourseForVideo} onChange={e => setSelectedCourseForVideo(Number(e.target.value))} className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white">
                     {courses.map(c => (
                       <option key={c.id} value={c.id}>{c.title}</option>
@@ -500,18 +566,22 @@ export default function EduPlatform() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-medium mb-1">عنوان الدرس</label>
-                    <input type="text" required value={newVideoTitle} onChange={e => setNewVideoTitle(e.target.value)} placeholder="عنوان الفيديو..." className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                    <input type="text" required value={newVideoTitle} onChange={e => setNewVideoTitle(e.target.value)} placeholder="عنوان الدرس..." className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
                   </div>
                   <div>
                     <label className="block text-xs font-medium mb-1">المدة</label>
                     <input type="text" value={newVideoDuration} onChange={e => setNewVideoDuration(e.target.value)} placeholder="15 دقيقة" className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
                   </div>
                 </div>
-                <button type="submit" className="bg-indigo-600 text-white px-6 py-2.5 rounded-xl text-xs font-bold">نشر الفيديو</button>
+                <div>
+                  <label className="block text-xs font-medium mb-1">رابط الفيديو (اختياري)</label>
+                  <input type="text" value={newVideoUrl} onChange={e => setNewVideoUrl(e.target.value)} placeholder="https://..." className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                </div>
+                <button type="submit" className="bg-indigo-600 text-white px-6 py-2.5 rounded-xl text-xs font-bold">نشر الفيديو في الكورس</button>
               </form>
             </div>
 
-            {/* تصميم امتحان */}
+            {/* 3. تصميم امتحان */}
             <div className={`p-8 rounded-3xl border shadow-2xl space-y-6 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
               <h2 className="text-2xl font-bold text-amber-500">📝 تصميم امتحان جديد</h2>
               <form onSubmit={handleSaveFullExam} className="space-y-6">
@@ -566,7 +636,7 @@ export default function EduPlatform() {
               </form>
             </div>
 
-            {/* سجل النتائج المتكامل (الإيميل، التلفون، ولي الأمر، الوقت، الغش) */}
+            {/* 4. سجل النتائج المتكامل */}
             <div className={`p-8 rounded-3xl border shadow-2xl space-y-4 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
               <div className="flex justify-between items-center">
                 <h3 className="text-xl font-bold text-indigo-400">📊 سجل تفاصيل الطلاب والنتائج، أرقام أولياء الأمور، الوقت، ونظام الغش</h3>
@@ -619,7 +689,7 @@ export default function EduPlatform() {
           </div>
         )}
 
-        {/* شاشة التسجيل والدخول الإلزامية */}
+        {/* شاشة التسجيل والدخول */}
         {activeTab === 'auth' && (
           <div className={`max-w-md mx-auto p-8 rounded-3xl border shadow-2xl ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
             <div className="flex justify-center gap-4 mb-6 border-b pb-4 border-slate-700">
