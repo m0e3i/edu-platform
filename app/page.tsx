@@ -126,10 +126,6 @@ const BIOLOGY_COURSES: BiologyCourse[] = [
   },
 ];
 
-// Precise lookup table built once from the data above — replaces the old
-// fragile `.includes("الأقصر")` / `.includes("كورس")` chain, which used to
-// give EVERY course the same price/image (a real bug: selecting any of the
-// 3 biology courses always produced "450 ج.م" and the sharm-night image).
 const OPTION_DETAILS: Record<string, OptionDetails> = (() => {
   const map: Record<string, OptionDetails> = {};
 
@@ -173,10 +169,8 @@ function buildWhatsAppUrl(message: string) {
 export default function Home() {
   const { isSignedIn, user } = useUser();
 
-  // الوجهات السياحية هي القسم الافتراضي الذي يظهر فور فتح الموقع
   const [activeTab, setActiveTab] = useState<TabKey>('destinations');
 
-  // حالات تخزين بيانات نموذج الحجز السريع
   const [clientName, setClientName] = useState('');
   const [clientPhone, setClientPhone] = useState('');
   const [selectedDestination, setSelectedDestination] = useState('شرم الشيخ (وجهة سياحية)');
@@ -326,7 +320,6 @@ export default function Home() {
 
       {/* Main Dynamic Content Area */}
       <main className="py-12 px-4 sm:px-6 max-w-7xl mx-auto min-h-[500px]">
-        {/* 1. قسم الوجهات السياحية (الافتراضي عند فتح الموقع) */}
         {activeTab === 'destinations' && (
           <div className="animate-fadeIn">
             <div className="text-center mb-10">
@@ -368,7 +361,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* 2. قسم عروض الرحلات المميزة */}
         {activeTab === 'trips' && (
           <div className="animate-fadeIn">
             <div className="text-center mb-10">
@@ -423,7 +415,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* قسم كورسات وفيديوهات أ/ مروان الجندي للعلوم والأحياء */}
         {activeTab === 'biology' && (
           <div className="animate-fadeIn">
             <div className="text-center mb-10 bg-white p-8 rounded-3xl shadow-sm border border-gray-200">
@@ -481,7 +472,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* 3. قسم حجوزاتي وكورساتي */}
         {activeTab === 'my-trips' && (
           <div className="bg-white rounded-3xl p-6 sm:p-10 shadow-md border border-gray-200 animate-fadeIn">
             <div className="text-center mb-8">
@@ -536,7 +526,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* 4. قسم المدفوعات وبوابة الدفع */}
         {activeTab === 'payments' && (
           <div className="bg-white rounded-3xl p-6 sm:p-10 shadow-md border border-gray-200 animate-fadeIn max-w-4xl mx-auto">
             <div className="text-center mb-8">
@@ -585,7 +574,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* 5. قسم الحجز السريع */}
         {activeTab === 'booking' && (
           <div className="max-w-3xl mx-auto animate-fadeIn">
             <div className="bg-[#073B4C] text-white p-6 sm:p-10 rounded-3xl shadow-xl">
@@ -650,7 +638,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* 6. قسم من نحن */}
         {activeTab === 'about' && (
           <div className="max-w-4xl mx-auto text-center bg-white p-6 sm:p-10 rounded-3xl shadow-md border border-gray-100 animate-fadeIn">
             <h2 className="text-2xl sm:text-3xl font-bold text-[#073B4C] mb-4">من نحن؟ ✈️🎥</h2>
