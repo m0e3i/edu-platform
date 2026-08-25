@@ -74,18 +74,7 @@ export default function EduPlatform() {
     return [];
   });
 
-  const [selectedCourse, setSelectedCourse] = useState<any>(null);
-  const [activeLesson, setActiveLesson] = useState<any>(null);
-  
-  const [completedLessons, setCompletedLessons] = useState<{ [courseId: number]: number[] }>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('edu_completed_lessons');
-      return saved ? JSON.parse(saved) : {};
-    }
-    return {};
-  });
-
-  // ================= نظام الامتحانات والدرجات =================
+  // نظام الامتحانات والدرجات
   const [exams, setExams] = useState<any[]>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('edu_exams_list');
@@ -120,10 +109,12 @@ export default function EduPlatform() {
   const [examTimeLeft, setExamTimeLeft] = useState(0);
   const [antiCheatWarnings, setAntiCheatWarnings] = useState(0);
 
-  // حالات لوحة المعلم لإنشاء امتحان جديد
+  // حقول لوحة المعلم لإنشاء امتحان جديد بالكامل مع الأسئلة
   const [newExamTitle, setNewExamTitle] = useState('');
   const [newExamDuration, setNewExamDuration] = useState(10);
-  const [examQuestions, setExamQuestions] = useState<any[]>([
+  
+  // قائمة الأسئلة المؤقتة أثناء الإنشاء
+  const [builderQuestions, setBuilderQuestions] = useState<any[]>([
     { text: '', options: ['', '', '', ''], correctOption: 0 }
   ]);
 
@@ -134,21 +125,19 @@ export default function EduPlatform() {
     localStorage.setItem('edu_user_name', userName);
     localStorage.setItem('edu_user_role', userRole);
     localStorage.setItem('edu_my_courses', JSON.stringify(myCourses));
-    localStorage.setItem('edu_completed_lessons', JSON.stringify(completedLessons));
     localStorage.setItem('edu_exams_list', JSON.stringify(exams));
     localStorage.setItem('edu_exam_results', JSON.stringify(examResults));
-  }, [usersList, isLoggedIn, userName, userRole, myCourses, completedLessons, exams, examResults]);
+  }, [usersList, isLoggedIn, userName, userRole, myCourses, exams, examResults]);
 
-  // مراقبة الغش (مغادرة التبويب) أثناء الامتحان
+  // مراقبة الغش (مغادرة التبويب)
   useEffect(() => {
     if (!activeExam) return;
-
     const handleVisibilityChange = () => {
       if (document.hidden) {
         setAntiCheatWarnings(prev => {
           const nextVal = prev + 1;
           if (nextVal >= 3) {
-            showToast('⚠️ تم إنهاء الامتحان تلقائياً بسبب محاولة مغادرة الشاشة المتكررة!');
+            showToast('⚠️ تم إنهاء الامتحان تلقائياً بسبب مغادرة الشاشة!');
             submitExam(true);
           } else {
             showToast(`⚠️ تنبيه (${nextVal}/3): ممنوع مغادرة نافذة الامتحان!`);
@@ -157,14 +146,11 @@ export default function EduPlatform() {
         });
       }
     };
-
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [activeExam, studentAnswers]);
 
-  // عداد الوقت التنازلي للامتحان
+  // عداد الوقت
   useEffect(() => {
     if (!activeExam || examTimeLeft <= 0) return;
     const timer = setInterval(() => {
@@ -186,7 +172,7 @@ export default function EduPlatform() {
     if (authMode === 'register') {
       const userExists = usersList.some(u => u.identifier === userEmailOrPhone);
       if (userExists) {
-        showToast('هذا الحساب مسجل من قبل، يرجى تسجيل الدخول ⚠️');
+        showToast('هذا الحساب مسجل من قبل ⚠️');
         setAuthMode('login');
         return;
       }
@@ -195,7 +181,7 @@ export default function EduPlatform() {
       setUserName(inputRegName);
       setUserRole(inputRegRole);
       setIsLoggedIn(true);
-      showToast(`أهلاً بك يا ${inputRegName}! تم إنشاء الحساب بنجاح 🎉`);
+      showToast(`أهلاً بك يا ${inputRegName}! 🎉`);
       setActiveTab('home');
     } else {
       const foundUser = usersList.find(u => u.identifier === userEmailOrPhone && u.password === userPassword);
@@ -206,14 +192,14 @@ export default function EduPlatform() {
         showToast(`مرحباً بعودتك يا ${foundUser.name}! ✅`);
         setActiveTab('home');
       } else {
-        showToast('خطأ في بيانات الدخول ❌');
+        showToast('خطأ في البيانات ❌');
       }
     }
   };
 
   const startExam = (exam: any) => {
     if (!isLoggedIn) {
-      showToast('يجب تسجيل الدخول أولاً لعمل الامتحان 🔒');
+      showToast('يجب تسجيل الدخول أولاً 🔒');
       setActiveTab('auth');
       return;
     }
@@ -223,18 +209,14 @@ export default function EduPlatform() {
     setExamTimeLeft(exam.durationMinutes * 60);
     setAntiCheatWarnings(0);
     setActiveTab('exam-room');
-    showToast('🚀 بدء الامتحان. حافظ على تركيزك ولا تغادر النافذة!');
+    showToast('🚀 بدء الامتحان. حافظ على تركيزك!');
   };
 
   const submitExam = (isForced = false) => {
     if (!activeExam) return;
-
-    // حساب الدرجة
     let score = 0;
     activeExam.questions.forEach((q: any, idx: number) => {
-      if (studentAnswers[idx] === q.correctOption) {
-        score += 1;
-      }
+      if (studentAnswers[idx] === q.correctOption) score += 1;
     });
 
     const total = activeExam.questions.length;
@@ -245,7 +227,7 @@ export default function EduPlatform() {
       studentId: userEmailOrPhone,
       score: score,
       total: total,
-      status: isForced ? 'موقوف (حالة غش)' : 'تم التسليم بنجاح',
+      status: isForced ? 'موقوف (غش)' : 'تم التسليم بنجاح',
       date: new Date().toLocaleDateString('ar-EG')
     };
 
@@ -255,19 +237,49 @@ export default function EduPlatform() {
     setActiveTab('exams');
   };
 
-  const handleSaveNewExam = (e: React.FormEvent) => {
+  // دوال لوحة المعلم لإضافة الأسئلة ديناميكياً
+  const handleAddQuestionToBuilder = () => {
+    setBuilderQuestions([...builderQuestions, { text: '', options: ['', '', '', ''], correctOption: 0 }]);
+  };
+
+  const handleQuestionTextChange = (index: number, text: string) => {
+    const updated = [...builderQuestions];
+    updated[index].text = text;
+    setBuilderQuestions(updated);
+  };
+
+  const handleOptionChange = (qIndex: number, optIndex: number, text: string) => {
+    const updated = [...builderQuestions];
+    updated[qIndex].options[optIndex] = text;
+    setBuilderQuestions(updated);
+  };
+
+  const handleCorrectOptionChange = (qIndex: number, optIndex: number) => {
+    const updated = [...builderQuestions];
+    updated[qIndex].correctOption = optIndex;
+    setBuilderQuestions(updated);
+  };
+
+  const handleSaveFullExam = (e: React.FormEvent) => {
     e.preventDefault();
+    if (builderQuestions.some(q => !q.text || q.options.some((o: string) => !o))) {
+      showToast('يرجى التأكد من ملء جميع الأسئلة وخياراتها!');
+      return;
+    }
+
     const newExamObj = {
       id: Date.now(),
       title: newExamTitle,
       instructor: userName,
       durationMinutes: Number(newExamDuration),
-      questions: examQuestions
+      questions: builderQuestions
     };
+
     setExams([newExamObj, ...exams]);
-    showToast('✨ تم نشر الامتحان بنجاح للطلاب!');
+    showToast('✨ تم نشر الامتحان والأسئلة بنجاح للطلاب!');
     setNewExamTitle('');
-    setExamQuestions([{ text: '', options: ['', '', '', ''], correctOption: 0 }]);
+    setNewExamDuration(10);
+    setBuilderQuestions([{ text: '', options: ['', '', '', ''], correctOption: 0 }]);
     setActiveTab('exams');
   };
 
@@ -293,7 +305,6 @@ export default function EduPlatform() {
             <button onClick={() => setActiveTab('home')} className={activeTab === 'home' ? 'text-indigo-500 font-bold' : ''}>الرئيسية</button>
             <button onClick={() => setActiveTab('courses')} className={activeTab === 'courses' ? 'text-indigo-500 font-bold' : ''}>الكورسات</button>
             <button onClick={() => setActiveTab('exams')} className={activeTab === 'exams' ? 'text-indigo-500 font-bold' : ''}>الامتحانات 📝</button>
-            <button onClick={() => setActiveTab('my-courses')} className={activeTab === 'my-courses' ? 'text-indigo-500 font-bold' : ''}>كورساتي 📚</button>
             {isLoggedIn && userRole === 'instructor' && (
               <button onClick={() => setActiveTab('instructor-dashboard')} className={activeTab === 'instructor-dashboard' ? 'text-amber-500 font-bold' : ''}>لوحة المعلم 👨‍🏫</button>
             )}
@@ -320,26 +331,24 @@ export default function EduPlatform() {
         </div>
       </header>
 
-      {/* المحتوى الرئيسي */}
+      {/* المحتوى */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-10 min-h-[600px]">
 
         {activeTab === 'home' && (
           <div className="space-y-12 text-center">
             <div className={`rounded-3xl p-12 border shadow-2xl ${darkMode ? 'bg-gradient-to-r from-indigo-900 to-slate-900 border-indigo-800' : 'bg-indigo-600 text-white'}`}>
-              <h1 className="text-3xl sm:text-5xl font-extrabold mb-4">منصة بداية التعليمية والامتحانات المتقدمة</h1>
-              <p className="text-sm sm:text-lg mb-8 max-w-2xl mx-auto opacity-90">تابع دروسك وامتحن بنظام حماية ذكي يضمن النزاهة وسجل درجات دقيق.</p>
-              <div className="flex justify-center gap-4 flex-wrap">
-                <button onClick={() => setActiveTab('exams')} className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-6 py-3 rounded-xl font-bold shadow-lg transition">
-                  ابدأ الامتحانات المتاحة 📝
-                </button>
-              </div>
+              <h1 className="text-3xl sm:text-5xl font-extrabold mb-4">منصة بداية التعليمية وإدارة الامتحانات</h1>
+              <p className="text-sm sm:text-lg mb-8 max-w-2xl mx-auto opacity-90">يمكن للمعلمين الآن إضافة امتحاناتهم بكامل أسئلتها وخياراتها بكل سهولة.</p>
+              <button onClick={() => setActiveTab('exams')} className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-6 py-3 rounded-xl font-bold shadow-lg transition">
+                استعرض الامتحانات المتاحة 📝
+              </button>
             </div>
           </div>
         )}
 
         {activeTab === 'exams' && (
           <div className="space-y-6">
-            <h2 className="text-2xl sm:text-3xl font-bold">الامتحانات الاختبارية المتاحة 📝</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold">الامتحانات المتاحة للطلاب 📝</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
               {exams.map(exam => (
                 <div key={exam.id} className={`p-6 rounded-2xl border flex flex-col justify-between ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
@@ -357,23 +366,21 @@ export default function EduPlatform() {
           </div>
         )}
 
-        {/* غرفة الامتحان وحماية الغش */}
+        {/* غرفة الامتحان */}
         {activeTab === 'exam-room' && activeExam && (
           <div className={`max-w-3xl mx-auto p-8 rounded-3xl border shadow-2xl space-y-6 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
             <div className="flex justify-between items-center border-b pb-4 border-slate-700">
               <div>
                 <h2 className="text-xl font-bold text-indigo-400">{activeExam.title}</h2>
-                <p className="text-xs text-rose-400 mt-1">⚠️ تحذيرات الغش (مغادرة الشاشة): {antiCheatWarnings} / 3</p>
+                <p className="text-xs text-rose-400 mt-1">⚠️ تنبيهات الغش: {antiCheatWarnings} / 3</p>
               </div>
               <div className="bg-rose-500/20 border border-rose-500/40 text-rose-300 px-4 py-2 rounded-xl text-sm font-bold">
-                ⏳ الوقت المتبقي: {Math.floor(examTimeLeft / 60)}:{(examTimeLeft % 60).toString().padStart(2, '0')}
+                ⏳ الوقت: {Math.floor(examTimeLeft / 60)}:{(examTimeLeft % 60).toString().padStart(2, '0')}
               </div>
             </div>
 
             <div className="space-y-4">
-              <h3 className="font-bold text-base">
-                السؤال {currentQuestionIndex + 1} من {activeExam.questions.length}:
-              </h3>
+              <h3 className="font-bold text-base">السؤال {currentQuestionIndex + 1} من {activeExam.questions.length}:</h3>
               <p className="text-lg bg-slate-900/40 p-4 rounded-xl border border-slate-800">
                 {activeExam.questions[currentQuestionIndex].text}
               </p>
@@ -395,58 +402,93 @@ export default function EduPlatform() {
             </div>
 
             <div className="flex justify-between pt-4 border-t border-slate-700">
-              <button 
-                disabled={currentQuestionIndex === 0}
-                onClick={() => setCurrentQuestionIndex(prev => prev - 1)}
-                className="px-4 py-2 bg-slate-800 text-xs rounded-xl disabled:opacity-50"
-              >
-                السابق
-              </button>
-
+              <button disabled={currentQuestionIndex === 0} onClick={() => setCurrentQuestionIndex(prev => prev - 1)} className="px-4 py-2 bg-slate-800 text-xs rounded-xl disabled:opacity-50">السابق</button>
               {currentQuestionIndex < activeExam.questions.length - 1 ? (
-                <button 
-                  onClick={() => setCurrentQuestionIndex(prev => prev + 1)}
-                  className="px-6 py-2 bg-indigo-600 text-xs font-bold rounded-xl"
-                >
-                  التالي
-                </button>
+                <button onClick={() => setCurrentQuestionIndex(prev => prev + 1)} className="px-6 py-2 bg-indigo-600 text-xs font-bold rounded-xl">التالي</button>
               ) : (
-                <button 
-                  onClick={() => submitExam(false)}
-                  className="px-6 py-2 bg-emerald-600 text-xs font-bold rounded-xl shadow-lg"
-                >
-                  تسليم الامتحان النهائي ✅
-                </button>
+                <button onClick={() => submitExam(false)} className="px-6 py-2 bg-emerald-600 text-xs font-bold rounded-xl shadow-lg">تسليم نهائي ✅</button>
               )}
             </div>
           </div>
         )}
 
-        {/* لوحة تحكم المعلم (إنشاء امتحانات ورصد الدرجات) */}
+        {/* لوحة المعلم المتقدمة لإضافة الامتحان والأسئلة */}
         {activeTab === 'instructor-dashboard' && isLoggedIn && userRole === 'instructor' && (
-          <div className="space-y-10 max-w-4xl mx-auto">
+          <div className="space-y-10 max-w-3xl mx-auto">
             <div className={`p-8 rounded-3xl border shadow-2xl space-y-6 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
-              <h2 className="text-2xl font-bold text-amber-500">👨‍🏫 لوحة المعلم: إنشاء امتحان جديد</h2>
+              <h2 className="text-2xl font-bold text-amber-500">👨‍🏫 لوحة المعلم: تصميم امتحان وإضافة الأسئلة</h2>
               
-              <form onSubmit={handleSaveNewExam} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-medium mb-1">عنوان الامتحان</label>
-                  <input type="text" required value={newExamTitle} onChange={e => setNewExamTitle(e.target.value)} placeholder="مثال: امتحان الجافاسكريبت الشامل" className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+              <form onSubmit={handleSaveFullExam} className="space-y-6">
+                <div className="space-y-4 border-b pb-6 border-slate-700">
+                  <div>
+                    <label className="block text-xs font-medium mb-1">عنوان الامتحان</label>
+                    <input type="text" required value={newExamTitle} onChange={e => setNewExamTitle(e.target.value)} placeholder="مثال: امتحان قواعد البيانات المتقدمة" className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium mb-1">مدة الامتحان بالدقائق</label>
+                    <input type="number" required value={newExamDuration} onChange={e => setNewExamDuration(Number(e.target.value))} className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-xs font-medium mb-1">مدة الامتحان (بالدقائق)</label>
-                  <input type="number" required value={newExamDuration} onChange={e => setNewExamDuration(Number(e.target.value))} className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+
+                {/* قسم إنشاء وإضافة الأسئلة ديناميكياً */}
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-bold text-indigo-400 text-sm">أسئلة الامتحان ({builderQuestions.length})</h3>
+                    <button type="button" onClick={handleAddQuestionToBuilder} className="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold">
+                      + إضافة سؤال جديد
+                    </button>
+                  </div>
+
+                  {builderQuestions.map((q, qIndex) => (
+                    <div key={qIndex} className="p-4 rounded-2xl border border-slate-700 bg-slate-900/40 space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs font-bold text-amber-400">السؤال رقم {qIndex + 1}</span>
+                      </div>
+                      <input 
+                        type="text" 
+                        required 
+                        value={q.text} 
+                        onChange={e => handleQuestionTextChange(qIndex, e.target.value)} 
+                        placeholder="اكتب نص السؤال هنا..." 
+                        className="w-full px-3 py-2 rounded-xl border text-xs bg-slate-900 border-slate-700 text-white" 
+                      />
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
+                        {q.options.map((opt: string, optIndex: number) => (
+                          <div key={optIndex} className="flex items-center gap-2">
+                            <input 
+                              type="radio" 
+                              name={`correct-opt-${qIndex}`} 
+                              checked={q.correctOption === optIndex}
+                              onChange={() => handleCorrectOptionChange(qIndex, optIndex)}
+                              title="حدد كإجابة صحيحة"
+                              className="accent-emerald-500"
+                            />
+                            <input 
+                              type="text" 
+                              required 
+                              value={opt} 
+                              onChange={e => handleOptionChange(qIndex, optIndex, e.target.value)} 
+                              placeholder={`الخيار ${optIndex + 1}`} 
+                              className="w-full px-3 py-1.5 rounded-xl border text-xs bg-slate-900 border-slate-700 text-white" 
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-[10px] text-emerald-400">* اضغط على الدائرة بجانب الخيار الصحيح لتحديده.</p>
+                    </div>
+                  ))}
                 </div>
 
                 <button type="submit" className="w-full bg-amber-600 hover:bg-amber-500 text-white py-3 rounded-xl font-bold text-sm shadow-lg transition">
-                  نشر الامتحان للطلاب 🚀
+                  نشر الامتحان بالأسئلة للطلاب 🚀
                 </button>
               </form>
             </div>
 
-            {/* جدول نتائج الطلاب المرتبطة بالمنصة */}
+            {/* سجل نتائج الطلاب */}
             <div className={`p-8 rounded-3xl border shadow-2xl space-y-4 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
-              <h3 className="text-xl font-bold text-indigo-400">📊 سجل نتائج الطلاب المرتبطة بالمنصة</h3>
+              <h3 className="text-xl font-bold text-indigo-400">📊 سجل نتائج الطلاب في الامتحانات</h3>
               {examResults.length === 0 ? (
                 <p className="text-xs text-slate-400">لا توجد نتائج مسجلة حتى الآن.</p>
               ) : (
@@ -488,7 +530,7 @@ export default function EduPlatform() {
               {courses.map(course => (
                 <div key={course.id} className={`p-5 rounded-2xl border ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
                   <h3 className="font-bold text-lg mb-2">{course.title}</h3>
-                  <p className="text-xs text-slate-400 mb-4">المدرب: {course.instructor}</p>
+                  <p className="text-xs text-slate-400">المدرب: {course.instructor}</p>
                 </div>
               ))}
             </div>
@@ -510,7 +552,7 @@ export default function EduPlatform() {
                   </div>
                   <div>
                     <label className="block text-xs font-medium mb-1">نوع الحساب</label>
-                    <select value={inputRegRole} onChange={e => setInputRegRole(e.target.value as any)} className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white">
+                    <select value={inputRegRole} onChange={e => setUserRole(e.target.value as any)} className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white">
                       <option value="student">طالب</option>
                       <option value="instructor">معلم</option>
                     </select>
