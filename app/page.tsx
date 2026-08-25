@@ -105,24 +105,24 @@ export default function EduPlatform() {
   // تحميل البيانات
   useEffect(() => {
     try {
-      const savedUsers = localStorage.getItem('edu_users_db_v4');
+      const savedUsers = localStorage.getItem('edu_users_db_v5');
       if (savedUsers) setUsersList(JSON.parse(savedUsers));
 
-      const savedCourses = localStorage.getItem('edu_courses_v4');
+      const savedCourses = localStorage.getItem('edu_courses_v5');
       if (savedCourses) setCourses(JSON.parse(savedCourses));
 
-      const savedExams = localStorage.getItem('edu_exams_v4');
+      const savedExams = localStorage.getItem('edu_exams_v5');
       if (savedExams) setExams(JSON.parse(savedExams));
 
-      const savedResults = localStorage.getItem('edu_results_v4');
+      const savedResults = localStorage.getItem('edu_results_v5');
       if (savedResults) setExamResults(JSON.parse(savedResults));
 
-      const logged = localStorage.getItem('edu_logged_v4');
+      const logged = localStorage.getItem('edu_logged_v5');
       if (logged === 'true') {
         setIsLoggedIn(true);
-        setUserName(localStorage.getItem('edu_uname_v4') || '');
-        setUserRole((localStorage.getItem('edu_urole_v4') as any) || 'student');
-        const uData = localStorage.getItem('edu_ucdata_v4');
+        setUserName(localStorage.getItem('edu_uname_v5') || '');
+        setUserRole((localStorage.getItem('edu_urole_v5') as any) || 'student');
+        const uData = localStorage.getItem('edu_ucdata_v5');
         if (uData) setCurrentUserData(JSON.parse(uData));
       }
     } catch (e) {
@@ -133,20 +133,20 @@ export default function EduPlatform() {
   // حفظ البيانات
   useEffect(() => {
     try {
-      localStorage.setItem('edu_users_db_v4', JSON.stringify(usersList));
-      localStorage.setItem('edu_courses_v4', JSON.stringify(courses));
-      localStorage.setItem('edu_exams_v4', JSON.stringify(exams));
-      localStorage.setItem('edu_results_v4', JSON.stringify(examResults));
-      localStorage.setItem('edu_logged_v4', isLoggedIn ? 'true' : 'false');
-      localStorage.setItem('edu_uname_v4', userName);
-      localStorage.setItem('edu_urole_v4', userRole);
-      localStorage.setItem('edu_ucdata_v4', JSON.stringify(currentUserData));
+      localStorage.setItem('edu_users_db_v5', JSON.stringify(usersList));
+      localStorage.setItem('edu_courses_v5', JSON.stringify(courses));
+      localStorage.setItem('edu_exams_v5', JSON.stringify(exams));
+      localStorage.setItem('edu_results_v5', JSON.stringify(examResults));
+      localStorage.setItem('edu_logged_v5', isLoggedIn ? 'true' : 'false');
+      localStorage.setItem('edu_uname_v5', userName);
+      localStorage.setItem('edu_urole_v5', userRole);
+      localStorage.setItem('edu_ucdata_v5', JSON.stringify(currentUserData));
     } catch (e) {
       console.error(e);
     }
   }, [usersList, courses, exams, examResults, isLoggedIn, userName, userRole, currentUserData]);
 
-  // رصد الغش المتقدم (Visibility Change + Window Blur لتقسيم الشاشة والنوافذ الجانبية)
+  // رصد الغش المتقدم (Visibility Change + Window Blur)
   useEffect(() => {
     if (!activeExam) return;
 
@@ -334,13 +334,20 @@ export default function EduPlatform() {
     const secs = elapsedSec % 60;
     const timeSpentStr = `${mins} دقيقة و ${secs} ثانية`;
 
+    const activeStudent = currentUserData || {
+      name: userName || 'طالب',
+      email: 'غير متوفر',
+      phone: 'غير متوفر',
+      parentPhone: 'غير متوفر'
+    };
+
     const resultEntry = {
       id: Date.now(),
       examTitle: activeExam.title,
-      studentName: currentUserData?.name || userName,
-      studentEmail: currentUserData?.email || 'غير متوفر',
-      studentPhone: currentUserData?.phone || 'غير متوفر',
-      parentPhone: currentUserData?.parentPhone || 'غير متوفر',
+      studentName: activeStudent.name,
+      studentEmail: activeStudent.email || 'غير متوفر',
+      studentPhone: activeStudent.phone || 'غير متوفر',
+      parentPhone: activeStudent.parentPhone || 'غير متوفر',
       score: score,
       total: activeExam.questions.length,
       timeSpent: timeSpentStr,
@@ -537,7 +544,7 @@ export default function EduPlatform() {
           </div>
         )}
 
-        {/* لوحة المعلم الكاملة وميزات إنشاء الكورسات */}
+        {/* لوحة المعلم الكاملة وميزات إنشاء الكورسات (لا تظهر إلا للمعلم المسجل دخوله) */}
         {activeTab === 'instructor-dashboard' && isLoggedIn && userRole === 'instructor' && (
           <div className="space-y-12 max-w-6xl mx-auto">
             
