@@ -1,17 +1,43 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function EduPlatform() {
   const [darkMode, setDarkMode] = useState(true);
   const [activeTab, setActiveTab] = useState('home');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [authMode, setAuthMode] = useState<'login' | 'register'>('register');
   
-  const [userName, setUserName] = useState('');
+  // نظام الإشعارات العصرية (Toast)
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  // 1. استرجاع البيانات من LocalStorage عند فتح الموقع لضمان عدم ضياعها
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('edu_logged_in') === 'true';
+    }
+    return false;
+  });
+
+  const [userName, setUserName] = useState(() => {
+    if (typeof window !== 'undefined') return localStorage.getItem('edu_user_name') || '';
+    return '';
+  });
+
+  const [userRole, setUserRole] = useState<'student' | 'instructor'>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('edu_user_role') as 'student' | 'instructor') || 'student';
+    }
+    return 'student';
+  });
+
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('register');
   const [userEmailOrPhone, setUserEmailOrPhone] = useState('');
   const [userPassword, setUserPassword] = useState('');
-  const [userRole, setUserRole] = useState<'student' | 'instructor'>('student');
-  
+  const [inputRegName, setInputRegName] = useState('');
+  const [inputRegRole, setInputRegRole] = useState<'student' | 'instructor'>('student');
+
   const [registeredUser, setRegisteredUser] = useState({ 
     name: 'أحمد المعلم', 
     identifier: '01000000000', 
@@ -19,14 +45,7 @@ export default function EduPlatform() {
     role: 'instructor' as 'student' | 'instructor' 
   });
 
-  const [editingCourseId, setEditingCourseId] = useState<number | null>(null);
-  const [newCourseTitle, setNewCourseTitle] = useState('');
-  const [newCourseCategory, setNewCourseCategory] = useState('برمجة وتطوير');
-  const [newCoursePrice, setNewCoursePrice] = useState('مجاناً 🎁');
-  const [newCourseDesc, setNewCourseDesc] = useState('');
-  const [newCourseImage, setNewCourseImage] = useState('');
-  const [newCourseVideo, setNewCourseVideo] = useState('');
-
+  // الكورسات الأساسية والمضافة
   const [courses, setCourses] = useState([
     {
       id: 1,
@@ -53,111 +72,137 @@ export default function EduPlatform() {
       description: "ابنِ تطبيقات أندرويد و iOS حقيقية باستخدام لغة JavaScript ومكتبة React Native بكفاءة عالية.",
       duration: "10 ساعات",
       lessons: [
-        { id: 201, title: "الدرس الأول: تهيئة بيئة العمل ومقدمة React Native", duration: "20 دقيقة", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" }
+        { id: 201, title: "الدرس الأول: تهيئة بيئة العمل ومقدمة React Native", duration: "20 دقيقة", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" },
+        { id: 202, title: "الدرس الثاني: بناء الواجهات الأولى", duration: "35 دقيقة", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" }
       ]
     }
   ]);
 
-  const [myCourses, setMyCourses] = useState<any[]>([]);
+  // كورسات الطالب المحفوظة محلياً
+  const [myCourses, setMyCourses] = useState<any[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('edu_my_courses');
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  });
+
   const [selectedCourse, setSelectedCourse] = useState<any>(null);
   const [activeLesson, setActiveLesson] = useState<any>(null);
-  const [completedLessons, setCompletedLessons] = useState<{ [courseId: number]: number[] }>({});
+  
+  const [completedLessons, setCompletedLessons] = useState<{ [courseId: number]: number[] }>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('edu_completed_lessons');
+      return saved ? JSON.parse(saved) : {};
+    }
+    return {};
+  });
+
+  // حقول لوحة المعلم لإنشاء الدروس المتعددة
+  const [newCourseTitle, setNewCourseTitle] = useState('');
+  const [newCourseCategory, setNewCourseCategory] = useState('برمجة وتطوير');
+  const [newCoursePrice, setNewCoursePrice] = useState('مجاناً 🎁');
+  const [newCourseDesc, setNewCourseDesc] = useState('');
+  const [newCourseImage, setNewCourseImage] = useState('');
+  
+  // قائمة مؤقتة للدروس أثناء إنشاء المعلم للكورس
+  const [tempLessons, setTempLessons] = useState<any[]>([
+    { id: 1, title: 'الدرس التمهيدي والمقدمة', duration: '10 دقائق', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4' }
+  ]);
+  const [currentLessonTitle, setCurrentLessonTitle] = useState('');
+  const [currentLessonVideo, setCurrentLessonVideo] = useState('');
+
+  // حفظ التغييرات في LocalStorage تلقائياً
+  useEffect(() => {
+    localStorage.setItem('edu_logged_in', isLoggedIn ? 'true' : 'false');
+    localStorage.setItem('edu_user_name', userName);
+    localStorage.setItem('edu_user_role', userRole);
+    localStorage.setItem('edu_my_courses', JSON.stringify(myCourses));
+    localStorage.setItem('edu_completed_lessons', JSON.stringify(completedLessons));
+  }, [isLoggedIn, userName, userRole, myCourses, completedLessons]);
 
   const handleAuthSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (authMode === 'register') {
-      setRegisteredUser({ name: userName, identifier: userEmailOrPhone, password: userPassword, role: userRole });
+      setRegisteredUser({ name: inputRegName, identifier: userEmailOrPhone, password: userPassword, role: inputRegRole });
+      setUserName(inputRegName);
+      setUserRole(inputRegRole);
       setIsLoggedIn(true);
-      alert(`تم إنشاء حساب (${userRole === 'instructor' ? 'معلم' : 'طالب'}) وتسجيل الدخول بنجاح!`);
+      showToast(`أهلاً بك يا ${inputRegName}! تم إنشاء الحساب بنجاح 🎉`);
       setActiveTab('home');
     } else {
       if (userEmailOrPhone === registeredUser.identifier && userPassword === registeredUser.password) {
         setIsLoggedIn(true);
         setUserName(registeredUser.name);
         setUserRole(registeredUser.role);
-        alert('تم تسجيل الدخول بنجاح!');
+        showToast('مرحباً بعودتك! تم تسجيل الدخول بنجاح ✅');
         setActiveTab('home');
       } else {
-        alert('بيانات الدخول غير صحيحة.');
+        showToast('خطأ: بيانات الدخول غير صحيحة ❌');
       }
     }
   };
 
   const handleEnrollCourse = (course: any) => {
     if (!isLoggedIn) {
-      alert('يجب تسجيل الدخول أولاً للانضمام للكورس.');
+      showToast('يجب تسجيل الدخول أولاً للانضمام للكورس 🔒');
       setActiveTab('auth');
       return;
     }
     if (!myCourses.some(c => c.id === course.id)) {
       setMyCourses(prev => [...prev, course]);
+      showToast('تم الانضمام للكورس بنجاح ومبروك البداية! 🚀');
     }
     setSelectedCourse(course);
     setActiveLesson(course.lessons[0]);
     setActiveTab('course-player');
   };
 
+  const handleAddLessonToNewCourse = () => {
+    if (!currentLessonTitle) {
+      showToast('يرجى كتابة عنوان الدرس أولاً');
+      return;
+    }
+    const newLessonItem = {
+      id: Date.now(),
+      title: currentLessonTitle,
+      duration: '15 دقيقة',
+      videoUrl: currentLessonVideo || 'https://www.w3schools.com/html/mov_bbb.mp4'
+    };
+    setTempLessons([...tempLessons, newLessonItem]);
+    setCurrentLessonTitle('');
+    setCurrentLessonVideo('');
+    showToast('تمت إضافة الدرس للقائمة بنجاح ➕');
+  };
+
   const handleSaveCourseSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!isLoggedIn || userRole !== 'instructor') {
-      alert('عذراً، هذه الصلاحية خاصة بالمعلمين فقط.');
+      showToast('عذراً، هذه الصلاحية خاصة بالمعلمين فقط.');
       return;
     }
 
-    if (editingCourseId !== null) {
-      setCourses(courses.map(c => c.id === editingCourseId ? {
-        ...c,
-        title: newCourseTitle,
-        category: newCourseCategory,
-        price: newCoursePrice,
-        description: newCourseDesc,
-        image: newCourseImage || c.image
-      } : c));
-      alert('تم تعديل الكورس بنجاح! ✏️');
-      setEditingCourseId(null);
-    } else {
-      const newCourseObj = {
-        id: Date.now(),
-        title: newCourseTitle,
-        instructor: userName,
-        category: newCourseCategory,
-        price: newCoursePrice,
-        image: newCourseImage || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&auto=format&fit=crop&q=80",
-        description: newCourseDesc,
-        duration: "3 ساعات",
-        lessons: [
-          { id: Date.now() + 1, title: "الدرس التمهيدي: نظرة عامة على الكورس", duration: "15 دقيقة", videoUrl: newCourseVideo || "https://www.w3schools.com/html/mov_bbb.mp4" }
-        ]
-      };
-      setCourses([newCourseObj, ...courses]);
-      alert('تم إضافة الكورس الجديد بنجاح وأصبح متاحاً للطلاب! 🎉');
-    }
+    const newCourseObj = {
+      id: Date.now(),
+      title: newCourseTitle,
+      instructor: userName,
+      category: newCourseCategory,
+      price: newCoursePrice,
+      image: newCourseImage || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&auto=format&fit=crop&q=80",
+      description: newCourseDesc,
+      duration: `${tempLessons.length * 20} دقيقة`,
+      lessons: tempLessons
+    };
 
+    setCourses([newCourseObj, ...courses]);
+    showToast('تم نشر الكورس بكل دروبه بنجاح وأصبح متاحاً للطلاب! 🌟');
+    
+    // إعادة التعيين
     setNewCourseTitle('');
     setNewCourseDesc('');
     setNewCourseImage('');
-    setNewCourseVideo('');
-    setNewCourseCategory('برمجة وتطوير');
-    setNewCoursePrice('مجاناً 🎁');
-  };
-
-  const handleEditClick = (course: any) => {
-    if (userRole !== 'instructor') return;
-    setEditingCourseId(course.id);
-    setNewCourseTitle(course.title);
-    setNewCourseCategory(course.category);
-    setNewCoursePrice(course.price);
-    setNewCourseDesc(course.description);
-    setNewCourseImage(course.image);
-    setActiveTab('instructor-dashboard');
-  };
-
-  const handleDeleteCourse = (courseId: number) => {
-    if (userRole !== 'instructor') return;
-    if (confirm('هل أنت متأكد من حذف هذا الكورس نهائياً؟')) {
-      setCourses(courses.filter(c => c.id !== courseId));
-      alert('تم حذف الكورس بنجاح.');
-    }
+    setTempLessons([{ id: Date.now(), title: 'الدرس التمهيدي', duration: '10 دقائق', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4' }]);
+    setActiveTab('courses');
   };
 
   const toggleLessonComplete = (lessonId: number) => {
@@ -168,6 +213,7 @@ export default function EduPlatform() {
       updatedList = currentList.filter(id => id !== lessonId);
     } else {
       updatedList = [...currentList, lessonId];
+      showToast('عاش! تم إكمال الدرس بنجاح ⭐');
     }
     setCompletedLessons({
       ...completedLessons,
@@ -184,8 +230,15 @@ export default function EduPlatform() {
   return (
     <div className={`min-h-screen font-sans relative transition-colors duration-300 ${darkMode ? 'bg-[#0f172a] text-slate-100' : 'bg-slate-50 text-slate-900'}`} dir="rtl">
       
+      {/* إشعار الـ Toast العائم */}
+      {toastMessage && (
+        <div className="fixed bottom-6 left-6 z-50 bg-indigo-600 text-white px-5 py-3 rounded-2xl shadow-2xl font-bold text-xs sm:text-sm animate-bounce border border-indigo-400">
+          {toastMessage}
+        </div>
+      )}
+
       {/* شريط التنقل العلوي */}
-      <header className={`border-b sticky top-0 z-50 shadow-md transition-colors duration-300 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
+      <header className={`border-b sticky top-0 z-40 shadow-md transition-colors duration-300 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
           <div className="text-xl sm:text-2xl font-bold tracking-wider flex items-center gap-2 cursor-pointer" onClick={() => setActiveTab('home')}>
             <span className="text-indigo-500">EDU</span>
@@ -205,7 +258,6 @@ export default function EduPlatform() {
             <button 
               onClick={() => setDarkMode(!darkMode)} 
               className={`p-2 rounded-xl text-xs font-bold border transition ${darkMode ? 'bg-slate-800 border-slate-700 text-amber-400' : 'bg-slate-200 border-slate-300 text-slate-700'}`}
-              title="تغيير المظهر"
             >
               {darkMode ? '☀️ نهار' : '🌙 ليل'}
             </button>
@@ -215,7 +267,7 @@ export default function EduPlatform() {
                 <span className="text-xs sm:text-sm bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-full font-bold border border-indigo-500/30">
                   {userRole === 'instructor' ? '👨‍🏫 معلم: ' : '🎓 طالب: '} {userName}
                 </span>
-                <button onClick={() => { setIsLoggedIn(false); setActiveTab('home'); }} className="bg-rose-500/20 text-rose-400 text-xs px-3 py-1.5 rounded-lg">خروج</button>
+                <button onClick={() => { setIsLoggedIn(false); showToast('تم تسجيل الخروج بنجاح'); setActiveTab('home'); }} className="bg-rose-500/20 text-rose-400 text-xs px-3 py-1.5 rounded-lg">خروج</button>
               </div>
             ) : (
               <button onClick={() => { setAuthMode('login'); setActiveTab('auth'); }} className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl font-semibold text-xs sm:text-sm shadow">
@@ -237,7 +289,7 @@ export default function EduPlatform() {
                 طور مهاراتك وانطلق في مستقبلك مع <span className="text-amber-400">بداية التعليمية</span>
               </h1>
               <p className={`text-sm sm:text-lg mb-8 max-w-2xl mx-auto ${darkMode ? 'text-slate-300' : 'text-indigo-100'}`}>
-                منصة تعليمية متكاملة تتيح تتبع نسبة إنجازك للكورسات وتتيح للمعلمين إدارة كورساتهم بالكامل.
+                منصة تعليمية متكاملة تتيح تتبع نسبة إنجازك للكورسات وتتيح للمعلمين إدارة وإضافة عدة دروس بكل سهولة.
               </p>
               <div className="flex justify-center gap-4 flex-wrap">
                 <button onClick={() => setActiveTab('courses')} className="bg-white text-indigo-900 hover:bg-indigo-50 px-6 py-3 rounded-xl font-bold shadow-lg transition">
@@ -292,11 +344,11 @@ export default function EduPlatform() {
                 <>
                   <div>
                     <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>الاسم الكامل</label>
-                    <input type="text" required value={userName} onChange={e => setUserName(e.target.value)} placeholder="اكتب اسمك..." className={`w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:border-indigo-500 ${darkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`} />
+                    <input type="text" required value={inputRegName} onChange={e => setInputRegName(e.target.value)} placeholder="اكتب اسمك..." className={`w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:border-indigo-500 ${darkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`} />
                   </div>
                   <div>
                     <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>نوع الحساب</label>
-                    <select value={userRole} onChange={e => setUserRole(e.target.value as 'student' | 'instructor')} className={`w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:border-indigo-500 ${darkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}>
+                    <select value={inputRegRole} onChange={e => setInputRegRole(e.target.value as 'student' | 'instructor')} className={`w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:border-indigo-500 ${darkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`}>
                       <option value="student">طالب (للدراسة ومتابعة الكورسات)</option>
                       <option value="instructor">معلم (لإنشاء وإدارة الكورسات)</option>
                     </select>
@@ -398,20 +450,17 @@ export default function EduPlatform() {
           </div>
         )}
 
-        {/* 5. لوحة تحكم المعلم */}
+        {/* 5. لوحة تحكم المعلم (مع إمكانية إضافة عدة دروس) */}
         {activeTab === 'instructor-dashboard' && isLoggedIn && userRole === 'instructor' && (
           <div className={`max-w-2xl mx-auto p-8 rounded-3xl border shadow-2xl space-y-8 transition-colors duration-300 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
             <div>
-              <h2 className="text-2xl font-bold text-amber-500 mb-2">👨‍🏫 لوحة تحكم المعلم الشاملة</h2>
-              <p className={`text-xs ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>أنشئ كورساً جديداً، أو قم بتعديل وحذف كورساتك الحالية بضغطة زر.</p>
+              <h2 className="text-2xl font-bold text-amber-500 mb-2">👨‍🏫 لوحة المعلم المتقدمة لإنشاء الكورسات</h2>
+              <p className={`text-xs ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>أضف كورساً جديداً مع إضافة عدة دروس ورابط كل درس بكل سهولة.</p>
             </div>
 
-            <form onSubmit={handleSaveCourseSubmit} className={`space-y-4 border-b pb-8 ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
-              <h3 className="font-bold text-sm text-indigo-400">
-                {editingCourseId !== null ? '✏️ تعديل بيانات الكورس الحالي:' : '➕ إضافة كورس جديد بالكامل:'}
-              </h3>
+            <form onSubmit={handleSaveCourseSubmit} className="space-y-5">
               <div>
-                <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>عنوان الكورس</label>
+                <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>عنوان الكورس الرئيسي</label>
                 <input type="text" required value={newCourseTitle} onChange={e => setNewCourseTitle(e.target.value)} placeholder="مثال: احتراف قواعد البيانات" className={`w-full px-4 py-2.5 rounded-xl border text-sm ${darkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`} />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -429,41 +478,38 @@ export default function EduPlatform() {
               </div>
               <div>
                 <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>وصف الكورس</label>
-                <textarea required rows={3} value={newCourseDesc} onChange={e => setNewCourseDesc(e.target.value)} placeholder="نبذة عن الكورس..." className={`w-full px-4 py-2.5 rounded-xl border text-sm ${darkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`} />
+                <textarea required rows={2} value={newCourseDesc} onChange={e => setNewCourseDesc(e.target.value)} placeholder="نبذة عن الكورس..." className={`w-full px-4 py-2.5 rounded-xl border text-sm ${darkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`} />
               </div>
               <div>
                 <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>رابط صورة الغلاف</label>
                 <input type="url" value={newCourseImage} onChange={e => setNewCourseImage(e.target.value)} placeholder="https://..." className={`w-full px-4 py-2.5 rounded-xl border text-sm ${darkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'}`} />
               </div>
-              
-              <div className="flex gap-2">
-                <button type="submit" className="flex-1 bg-amber-600 hover:bg-amber-500 text-white py-3 rounded-xl font-bold text-sm shadow-lg transition">
-                  {editingCourseId !== null ? 'حفظ التعديلات 💾' : 'نشر الكورس الجديد 🚀'}
-                </button>
-                {editingCourseId !== null && (
-                  <button type="button" onClick={() => { setEditingCourseId(null); setNewCourseTitle(''); setNewCourseDesc(''); }} className="bg-slate-600 hover:bg-slate-500 text-white px-4 py-3 rounded-xl font-bold text-xs">
-                    إلغاء
-                  </button>
-                )}
-              </div>
-            </form>
 
-            <div className="space-y-4">
-              <h3 className={`font-bold text-sm ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>إدارة الكورسات الحالية (تعديل / حذف):</h3>
-              {courses.map(c => (
-                <div key={c.id} className={`flex justify-between items-center p-3 rounded-xl border ${darkMode ? 'bg-slate-900/60 border-slate-800 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-800'}`}>
-                  <span className="text-xs font-medium">{c.title}</span>
-                  <div className="flex gap-2">
-                    <button onClick={() => handleEditClick(c)} className="bg-amber-500/20 text-amber-500 hover:bg-amber-500/30 px-3 py-1.5 rounded-lg text-xs font-bold transition">
-                      تعديل ✏️
-                    </button>
-                    <button onClick={() => handleDeleteCourse(c.id)} className="bg-rose-500/20 text-rose-500 hover:bg-rose-500/30 px-3 py-1.5 rounded-lg text-xs font-bold transition">
-                      حذف 🗑
-                    </button>
-                  </div>
+              {/* قسم إضافة الدروس المتعددة */}
+              <div className={`p-4 rounded-2xl border space-y-3 ${darkMode ? 'bg-slate-900/50 border-slate-700' : 'bg-slate-50 border-slate-300'}`}>
+                <h4 className="font-bold text-xs text-indigo-400">إضافة دروس لهذا الكورس ({tempLessons.length} دروس مُضافَة)</h4>
+                
+                <div className="space-y-2">
+                  <input type="text" value={currentLessonTitle} onChange={e => setCurrentLessonTitle(e.target.value)} placeholder="عنوان الدرس (مثال: الدرس الأول: التثبيت)" className={`w-full px-3 py-2 rounded-xl border text-xs ${darkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-900'}`} />
+                  <input type="url" value={currentLessonVideo} onChange={e => setCurrentLessonVideo(e.target.value)} placeholder="رابط فيديو الدرس (اختياري - افتراضي متاح)" className={`w-full px-3 py-2 rounded-xl border text-xs ${darkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-900'}`} />
+                  <button type="button" onClick={handleAddLessonToNewCourse} className="w-full bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-xl font-bold text-xs transition">
+                    + إضافة هذا الدرس لقائمة الكورس
+                  </button>
                 </div>
-              ))}
-            </div>
+
+                <div className="text-[11px] text-slate-400 space-y-1">
+                  {tempLessons.map((l, idx) => (
+                    <div key={l.id} className="flex justify-between items-center bg-slate-800/60 px-2 py-1 rounded">
+                      <span>{idx + 1}. {l.title}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <button type="submit" className="w-full bg-amber-600 hover:bg-amber-500 text-white py-3 rounded-xl font-bold text-sm shadow-lg transition">
+                نشر الكورس بالكامل الآن 🚀
+              </button>
+            </form>
           </div>
         )}
 
