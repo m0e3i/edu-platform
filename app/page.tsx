@@ -30,10 +30,10 @@ export default function Home() {
     const newTrip = {
       id: newTripId,
       title: selectedDestination,
-      date: isCourse.toString() ? "متاح فوري أونلاين" : "قريباً (سبتمبر 2026)",
+      date: isCourse ? "متاح فوري أونلاين" : "قريباً (سبتمبر 2026)",
       status: "بانتظار الدفع",
       price: selectedDestination.includes("الأقصر") ? "15,500 ج.م" : selectedDestination.includes("الغردقة") ? "14,000 ج.م" : selectedDestination.includes("كورس") ? "450 ج.م" : "3,500 ج.م",
-      image: selectedDestination.includes("الأقصر") ? "/images/destinations/luxor-aswan-nile.jpg" : selectedDestination.includes("الغردقة") ? "/images/destinations/hurghada-beach.jpg" : selectedDestination.includes("كورس") ? "/images/destinations/sharm-night.jpg" : "/images/destinations/sharm-night.jpg"
+      image: selectedDestination.includes("الأقصر") ? "/images/destinations/luxor-aswan-nile.jpg" : selectedDestination.includes("الغردقة") ? "/images/destinations/hurghada-beach.jpg" : "/images/destinations/sharm-night.jpg"
     };
 
     // إضافة العنصر للقائمة
@@ -101,28 +101,25 @@ export default function Home() {
     }
   ];
 
-  // كورسات وفيديوهات أ/ مروان الجندي للعلوم والأحياء
+  // كورسات وفيديوهات أ/ مروان الجندي للعلوم والأحياء فقط
   const biologyCourses = [
     {
       title: "كورس الأحياء العامة - الثانوية العامة (الفصل الأول)",
       price: "450 ج.م",
       duration: "12 فيديو شرح تفصيلي + مذكرة",
-      description: "شرح مبسط ومفصل لمنهج الأحياء مع حل أمئلة النظام الحديث ورسومات توضيحية.",
-      videoUrl: "https://www.youtube.com/embed/placeholder1" // يمكن وضع رابط يوتيوب حقيقي هنا
+      description: "شرح مبسط ومفصل لمنهج الأحياء مع حل أسئلة النظام الحديث ورسومات توضيحية.",
     },
     {
       title: "مراجعة ليلة الامتحان في الأحياء والعلوم",
       price: "250 ج.م",
       duration: "5 فيديوهات مكثفة",
       description: "تجميع أهم التكات والأسئلة المتوقعة في امتحانات الأحياء للأساتذة والطلاب.",
-      videoUrl: "https://www.youtube.com/embed/placeholder2"
     },
     {
       title: "كورس أساسيات علم الأحياء والوراثة بالتفصيل",
       price: "350 ج.م",
       duration: "8 فيديوهات تعليمية",
       description: "كورس تأسيسي قوي يفهمك كل أسرار الوراثة والمسائل بطريقة سهلة ومبسطة.",
-      videoUrl: "https://www.youtube.com/embed/placeholder3"
     }
   ];
 
@@ -297,7 +294,7 @@ export default function Home() {
           </div>
         )}
 
-        {/* قسم كورسات وفيديوهات أ/ مروان الجندي للعلوم والأحياء الجديد */}
+        {/* قسم كورسات وفيديوهات أ/ مروان الجندي للعلوم والأحياء */}
         {activeTab === 'biology' && (
           <div className="animate-fadeIn">
             <div className="text-center mb-10 bg-white p-8 rounded-3xl shadow-sm border border-gray-200">
@@ -316,7 +313,6 @@ export default function Home() {
               {biologyCourses.map((course, index) => (
                 <div key={index} className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition border border-gray-100 flex flex-col justify-between text-right">
                   <div>
-                    {/* مكان مشغل الفيديو أو البوستر التعريفي للكورس */}
                     <div className="h-48 bg-[#073B4C] relative flex items-center justify-center text-white p-4 text-center">
                       <div className="absolute inset-0 bg-black/40 z-10"></div>
                       <div className="z-20">
