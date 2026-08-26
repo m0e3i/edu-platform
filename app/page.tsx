@@ -73,7 +73,8 @@ export default function EduPlatform() {
         setIsLoggedIn(true);
         setUserName(localStorage.getItem('edu_uname_v9') || '');
         setUserEmail(localStorage.getItem('edu_uemail_v9') || '');
-        setUserRole((localStorage.getItem('edu_urole_v9'] as any) || 'student');
+        // تم تصحيح الأقواس هنا لتجنب خطأ الـ Build
+        setUserRole((localStorage.getItem('edu_urole_v9') as any) || 'student');
       }
     } catch (e) {
       console.error(e);
@@ -297,7 +298,6 @@ export default function EduPlatform() {
   return (
     <div className={`min-h-screen font-sans relative transition-colors duration-300 ${darkMode ? 'bg-[#0f172a] text-slate-100' : 'bg-slate-50 text-slate-900'}`} dir="rtl">
       
-      {/* إشعارات التوست */}
       {toastMessage && (
         <div className="fixed bottom-6 left-6 z-50 bg-indigo-600 text-white px-5 py-3 rounded-2xl shadow-2xl font-bold text-xs sm:text-sm animate-bounce border border-indigo-400">
           {toastMessage}
@@ -344,7 +344,6 @@ export default function EduPlatform() {
       {/* المحتوى الرئيسي */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-10 min-h-[600px]">
 
-        {/* صفحة الرئيسية */}
         {activeTab === 'home' && (
           <div className="space-y-12 text-center">
             <div className={`rounded-3xl p-12 border shadow-2xl ${darkMode ? 'bg-gradient-to-r from-indigo-900 to-slate-900 border-indigo-800' : 'bg-indigo-600 text-white'}`}>
@@ -364,12 +363,10 @@ export default function EduPlatform() {
           </div>
         )}
 
-        {/* صفحة تسجيل الدخول وإنشاء حساب (Auth) */}
         {activeTab === 'auth' && !isLoggedIn && (
           <div className="max-w-md mx-auto space-y-6">
             <div className={`p-8 rounded-3xl border shadow-2xl space-y-6 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
               
-              {/* تبديل بين تسجيل الدخول وإنشاء حساب */}
               <div className="flex bg-slate-900/60 p-1.5 rounded-2xl border border-slate-700">
                 <button 
                   onClick={() => setAuthMode('login')} 
@@ -386,13 +383,12 @@ export default function EduPlatform() {
               </div>
 
               {authMode === 'login' ? (
-                // نموذج تسجيل الدخول
                 <form onSubmit={handleLogin} className="space-y-4">
                   <h2 className="text-xl font-bold text-center mb-2">تسجيل الدخول إلى حسابك</h2>
                   <div>
                     <label className="block text-xs font-medium mb-1">البريد الإلكتروني</label>
                     <input 
-                      type="email5" 
+                      type="email" 
                       required 
                       value={inputEmail} 
                       onChange={e => setInputEmail(e.target.value)} 
@@ -419,7 +415,6 @@ export default function EduPlatform() {
                   </p>
                 </form>
               ) : (
-                // نموذج إنشاء حساب جديد
                 <form onSubmit={handleSignUp} className="space-y-4">
                   <h2 className="text-xl font-bold text-center mb-2">إنشاء حساب جديد</h2>
                   <div>
@@ -459,7 +454,7 @@ export default function EduPlatform() {
                     <label className="block text-xs font-medium mb-1">نوع الحساب</label>
                     <select 
                       value={inputRole} 
-                      onChange={e => setUserRole(e.target.value as any) || setInputRole(e.target.value as any)} 
+                      onChange={e => setInputRole(e.target.value as any)} 
                       className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white"
                     >
                       <option value="student">طالب (استعراض الكورسات)</option>
@@ -476,7 +471,6 @@ export default function EduPlatform() {
           </div>
         )}
 
-        {/* عرض الكورسات والفيديوهات */}
         {activeTab === 'courses' && (
           <div className="space-y-8">
             <h2 className="text-2xl sm:text-3xl font-bold">الكورسات ودروس الفيديو 📚</h2>
@@ -487,7 +481,6 @@ export default function EduPlatform() {
                     <div className="flex justify-between items-center">
                       <span className="text-xs bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-full">{course.category}</span>
                       
-                      {/* أزرار التعديل والحذف للمعلم فقط */}
                       {isLoggedIn && userRole === 'instructor' && (
                         <div className="flex gap-2">
                           <button onClick={() => handleStartEditCourse(course)} className="bg-amber-500/20 text-amber-400 px-3 py-1 rounded-lg text-xs font-bold hover:bg-amber-500/30">
@@ -505,7 +498,6 @@ export default function EduPlatform() {
                     <p className="text-sm mt-2 opacity-80">{course.description}</p>
                   </div>
 
-                  {/* قائمة الفيديوهات */}
                   <div className="space-y-3 pt-3 border-t border-slate-700">
                     <h4 className="text-xs font-bold text-amber-400">الفيديوهات والدروس ({course.lessons.length}):</h4>
                     {course.lessons.length === 0 ? (
@@ -537,7 +529,6 @@ export default function EduPlatform() {
           </div>
         )}
 
-        {/* لوحة التحكم (إضافة أو تعديل كورس للمعلم) */}
         {activeTab === 'instructor-dashboard' && isLoggedIn && userRole === 'instructor' && (
           <div className="space-y-12 max-w-4xl mx-auto">
             
@@ -582,7 +573,6 @@ export default function EduPlatform() {
               </form>
             </div>
 
-            {/* إضافة فيديو لكورس */}
             <div className={`p-8 rounded-3xl border shadow-2xl space-y-6 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
               <h2 className="text-2xl font-bold text-indigo-400">🎥 إضافة فيديو أو درس جديد لكورس</h2>
               <form onSubmit={handleAddVideoToCourse} className="space-y-4">
@@ -597,7 +587,7 @@ export default function EduPlatform() {
                   </div>
                   <div>
                     <label className="block text-xs font-medium mb-1">مدة الفيديو</label>
-                    <input type="text" value={newVideoDuration} onChange={e => setNewVideoDuration: e.target.value} onChange={e => setNewVideoDuration(e.target.value)} placeholder="10 دقائق" className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                    <input type="text" value={newVideoDuration} onChange={e => setNewVideoDuration(e.target.value)} placeholder="10 دقائق" className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
                   </div>
                 </div>
                 <div>
