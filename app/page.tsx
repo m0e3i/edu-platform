@@ -12,27 +12,45 @@ export default function EduPlatform() {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  // المراحل الدراسية والسنين الدراسية التابعة لها
+  // المراحل الدراسية مع تفريع السنين الدراسية لكل مرحلة
   const educationalStages = [
     { 
       id: 'primary', 
       name: 'المرحلة الابتدائية 🎒',
-      years: ['الصف الأول الابتدائي', 'الصف الثاني الابتدائي', 'الصف الثالث الابتدائي', 'الصف الرابع الابتدائي', 'الصف الخامس الابتدائي', 'الصف السادس الابتدائي']
+      grades: [
+        { id: 'pri-1', name: 'الصف الأول الابتدائي' },
+        { id: 'pri-2', name: 'الصف الثاني الابتدائي' },
+        { id: 'pri-3', name: 'الصف الثالث الابتدائي' },
+        { id: 'pri-4', name: 'الصف الرابع الابتدائي' },
+        { id: 'pri-5', name: 'الصف الخامس الابتدائي' },
+        { id: 'pri-6', name: 'الصف السادس الابتدائي' }
+      ]
     },
     { 
       id: 'preparatory', 
       name: 'المرحلة الإعدادية 📘',
-      years: ['الصف الأول الإعدادي', 'الصف الثاني الإعدادي', 'الصف الثالث الإعدادي']
+      grades: [
+        { id: 'prep-1', name: 'الصف الأول الإعدادي' },
+        { id: 'prep-2', name: 'الصف الثاني الإعدادي' },
+        { id: 'prep-3', name: 'الصف الثالث الإعدادي' }
+      ]
     },
     { 
       id: 'secondary', 
       name: 'المرحلة الثانوية العامة 🎓',
-      years: ['الصف الأول الثانوي', 'الصف الثاني الثانوي', 'الصف الثالث الثانوي']
+      grades: [
+        { id: 'sec-1', name: 'الصف الأول الثانوي' },
+        { id: 'sec-2', name: 'الصف الثاني الثانوي' },
+        { id: 'sec-3', name: 'الصف الثالث الثانوي' }
+      ]
     },
     { 
       id: 'baccalaureate', 
       name: 'نظام البكالوريا 🌐',
-      years: ['سنة أولى بكالوريا', 'سنة ثانية بكالوريا', 'سنة ثالثة بكالوريا']
+      grades: [
+        { id: 'bac-1', name: 'السنة الأولى البكالوريا' },
+        { id: 'bac-2', name: 'السنة الثانية البكالوريا' }
+      ]
     }
   ];
 
@@ -43,8 +61,8 @@ export default function EduPlatform() {
   const [userRole, setUserRole] = useState<'student' | 'instructor'>('student');
   const [userPhone, setUserPhone] = useState('');
   const [userParentPhone, setUserParentPhone] = useState('');
-  const [userStage, setUserStage] = useState('secondary'); // المرحلة الدراسية للمستخدم
-  const [userYear, setUserYear] = useState('الصف الثالث الثانوي'); // السنة الدراسية للمستخدم
+  const [userStage, setUserStage] = useState('secondary'); // المرحلة الدراسية للطالب
+  const [userGrade, setUserGrade] = useState('sec-3');     // السنة الدراسية للطالب
 
   // حقول شاشة الدخول / إنشاء الحساب
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
@@ -55,12 +73,12 @@ export default function EduPlatform() {
   const [inputParentPhone, setInputParentPhone] = useState('');
   const [inputRole, setInputRole] = useState<'student' | 'instructor'>('student');
   const [inputStage, setInputStage] = useState('secondary');
-  const [inputYear, setInputYear] = useState('الصف الثالث الثانوي');
+  const [inputGrade, setInputGrade] = useState('sec-3');
 
   // قاعدة بيانات المستخدمين المسجلين
   const [usersList, setUsersList] = useState<any[]>([
-    { name: 'أحمد المعلم', email: 'teacher@edu.com', password: '123', phone: '01000000000', parentPhone: 'N/A', role: 'instructor', stage: 'secondary', year: 'N/A' },
-    { name: 'محمد الطالب', email: 'student@edu.com', password: '123', phone: '01111111111', parentPhone: '01222222222', role: 'student', stage: 'secondary', year: 'الصف الثالث الثانوي' }
+    { name: 'أحمد المعلم', email: 'teacher@edu.com', password: '123', phone: '01000000000', parentPhone: 'N/A', role: 'instructor', stage: 'secondary', grade: 'sec-3' },
+    { name: 'محمد الطالب', email: 'student@edu.com', password: '123', phone: '01111111111', parentPhone: '01222222222', role: 'student', stage: 'secondary', grade: 'sec-3' }
   ]);
 
   // سجل درجات الامتحانات للطلاب (للمعلم)
@@ -72,8 +90,8 @@ export default function EduPlatform() {
       title: "أ/ مروان الجندي للعلوم والأحياء",
       instructor: "مروان الجندي",
       category: "العلوم والأحياء",
-      stage: "secondary",
-      year: "الصف الثالث الثانوي",
+      stage: "secondary", 
+      grade: "sec-3",
       price: "مجاناً 🎁",
       description: "شرح مبسط وممتع لمنهج الأحياء والعلوم بطريقة احترافية.",
       lessons: [
@@ -90,7 +108,7 @@ export default function EduPlatform() {
   const [newCourseInstructor, setNewCourseInstructor] = useState('');
   const [newCourseCategory, setNewCourseCategory] = useState('');
   const [newCourseStage, setNewCourseStage] = useState('secondary');
-  const [newCourseYear, setNewCourseYear] = useState('الصف الثالث الثانوي');
+  const [newCourseGrade, setNewCourseGrade] = useState('sec-3');
   const [newCoursePrice, setNewCoursePrice] = useState('مجاناً 🎁');
   const [newCourseDesc, setNewCourseDesc] = useState('');
 
@@ -119,9 +137,6 @@ export default function EduPlatform() {
   const [examScore, setExamScore] = useState(0);
   const [examStartTime, setExamStartTime] = useState<number>(0);
 
-  // حالة عرض تفاصيل المرحلة الدراسية عند الضغط عليها
-  const [selectedStageView, setSelectedStageView] = useState<any | null>(null);
-
   // تحميل البيانات عند فتح الصفحة
   useEffect(() => {
     try {
@@ -143,7 +158,7 @@ export default function EduPlatform() {
         setUserPhone(localStorage.getItem('bedaya_edu_uphone') || '');
         setUserParentPhone(localStorage.getItem('bedaya_edu_uparent') || '');
         setUserStage(localStorage.getItem('bedaya_edu_ustage') || 'secondary');
-        setUserYear(localStorage.getItem('bedaya_edu_uyear') || 'الصف الثالث الثانوي');
+        setUserGrade(localStorage.getItem('bedaya_edu_ugrade') || 'sec-3');
       }
     } catch (e) {
       console.error(e);
@@ -229,7 +244,7 @@ export default function EduPlatform() {
       parentPhone: inputRole === 'student' ? inputParentPhone : 'N/A', 
       role: inputRole,
       stage: inputRole === 'student' ? inputStage : 'all',
-      year: inputRole === 'student' ? inputYear : 'all'
+      grade: inputRole === 'student' ? inputGrade : 'all'
     };
 
     const updatedUsers = [...usersList, newUser];
@@ -242,7 +257,7 @@ export default function EduPlatform() {
     setUserPhone(newUser.phone);
     setUserParentPhone(newUser.parentPhone);
     setUserStage(newUser.stage);
-    setUserYear(newUser.year);
+    setUserGrade(newUser.grade);
 
     localStorage.setItem('bedaya_edu_logged', 'true');
     localStorage.setItem('bedaya_edu_uname', newUser.name);
@@ -251,7 +266,7 @@ export default function EduPlatform() {
     localStorage.setItem('bedaya_edu_uphone', newUser.phone);
     localStorage.setItem('bedaya_edu_uparent', newUser.parentPhone);
     localStorage.setItem('bedaya_edu_ustage', newUser.stage);
-    localStorage.setItem('bedaya_edu_uyear', newUser.year);
+    localStorage.setItem('bedaya_edu_ugrade', newUser.grade);
 
     showToast(`🎉 أهلاً بك ${newUser.name}, تم إنشاء الحساب وتسجيل الدخول بنجاح!`);
     setInputName('');
@@ -286,7 +301,7 @@ export default function EduPlatform() {
     setUserPhone(foundUser.phone || 'غير محدد');
     setUserParentPhone(foundUser.parentPhone || 'غير محدد');
     setUserStage(foundUser.stage || 'secondary');
-    setUserYear(foundUser.year || 'الصف الثالث الثانوي');
+    setUserGrade(foundUser.grade || 'sec-3');
 
     localStorage.setItem('bedaya_edu_logged', 'true');
     localStorage.setItem('bedaya_edu_uname', foundUser.name);
@@ -295,7 +310,7 @@ export default function EduPlatform() {
     localStorage.setItem('bedaya_edu_uphone', foundUser.phone || 'غير محدد');
     localStorage.setItem('bedaya_edu_uparent', foundUser.parentPhone || 'غير محدد');
     localStorage.setItem('bedaya_edu_ustage', foundUser.stage || 'secondary');
-    localStorage.setItem('bedaya_edu_uyear', foundUser.year || 'الصف الثالث الثانوي');
+    localStorage.setItem('bedaya_edu_ugrade', foundUser.grade || 'sec-3');
 
     showToast(`👋 مرحباً بك من جديد يا ${foundUser.name}!`);
     setInputEmail('');
@@ -312,7 +327,7 @@ export default function EduPlatform() {
     setUserPhone('');
     setUserParentPhone('');
     setUserStage('secondary');
-    setUserYear('الصف الثالث الثانوي');
+    setUserGrade('sec-3');
     localStorage.removeItem('bedaya_edu_logged');
     localStorage.removeItem('bedaya_edu_uname');
     localStorage.removeItem('bedaya_edu_uemail');
@@ -320,7 +335,7 @@ export default function EduPlatform() {
     localStorage.removeItem('bedaya_edu_uphone');
     localStorage.removeItem('bedaya_edu_uparent');
     localStorage.removeItem('bedaya_edu_ustage');
-    localStorage.removeItem('bedaya_edu_uyear');
+    localStorage.removeItem('bedaya_edu_ugrade');
     showToast('🔒 تم تسجيل الخروج بنجاح');
     setActiveTab('home');
   };
@@ -340,7 +355,7 @@ export default function EduPlatform() {
     setNewCourseInstructor(course.instructor);
     setNewCourseCategory(course.category);
     setNewCourseStage(course.stage || 'secondary');
-    setNewCourseYear(course.year || 'الصف الثالث الثانوي');
+    setNewCourseGrade(course.grade || 'sec-3');
     setNewCoursePrice(course.price);
     setNewCourseDesc(course.description);
     setActiveTab('instructor-dashboard');
@@ -362,7 +377,7 @@ export default function EduPlatform() {
         instructor: newCourseInstructor || userName,
         category: newCourseCategory || 'عام',
         stage: newCourseStage,
-        year: newCourseYear,
+        grade: newCourseGrade,
         price: newCoursePrice,
         description: newCourseDesc
       } : c));
@@ -375,7 +390,7 @@ export default function EduPlatform() {
         instructor: newCourseInstructor || userName,
         category: newCourseCategory || 'عام',
         stage: newCourseStage,
-        year: newCourseYear,
+        grade: newCourseGrade,
         price: newCoursePrice,
         description: newCourseDesc || 'كورس تعليمي جديد',
         lessons: [],
@@ -424,7 +439,7 @@ export default function EduPlatform() {
     }
   };
 
-  // إضافة فيديو أو ملف PDF للكورس
+  // إضافة فيديو للكورس
   const handleAddVideoToCourse = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedCourseForContent || !newVideoTitle) {
@@ -452,7 +467,7 @@ export default function EduPlatform() {
         instructor: userName,
         category: 'عام',
         stage: 'secondary',
-        year: 'الصف الثالث الثانوي',
+        grade: 'sec-3',
         price: 'مجاناً 🎁',
         description: 'قسم تعليمي جديد.',
         lessons: [newLessonObj],
@@ -569,7 +584,7 @@ export default function EduPlatform() {
     showToast(`🎯 انتهى الامتحان! نتيجتك: ${score} / ${activeExam.questions.length}`);
   };
 
-  // حفظ سجل الامتحان في قاعدة البيانات ليراه المعلم
+  // حفظ سجل الامتحان
   const saveExamResultToLog = (score: number, warningsCount: number) => {
     const durationMs = Date.now() - examStartTime;
     const totalSeconds = Math.floor(durationMs / 1000);
@@ -592,7 +607,6 @@ export default function EduPlatform() {
     setExamResultsLog(prev => [resultRecord, ...prev]);
   };
 
-  // إمكانية حذف سجل درجات للطالب بواسطة المعلم
   const handleDeleteExamResult = (resultId: number) => {
     if (confirm('هل أنت متأكد من حذف سجل هذه النتيجة؟')) {
       setExamResultsLog(examResultsLog.filter(r => r.id !== resultId));
@@ -600,10 +614,14 @@ export default function EduPlatform() {
     }
   };
 
-  // المعلم يرى كل الكورسات، الطالب يرى كورسات مرحلته فقط
+  // فلترة الكورسات: الطالب يرى كورسات سنته الدراسية فقط، والمعلم يرى كافة الكورسات بدون قيود
   const filteredCourses = (isLoggedIn && userRole === 'student') 
-    ? courses.filter(c => !c.stage || c.stage === userStage)
+    ? courses.filter(c => (!c.grade || c.grade === userGrade))
     : courses;
+
+  // جلب قائمة السنين الدراسية بناءً على المرحلة المختارة عند التسجيل
+  const selectedStageObj = educationalStages.find(s => s.id === inputStage);
+  const availableGrades = selectedStageObj ? selectedStageObj.grades : [];
 
   return (
     <div className={`min-h-screen font-sans relative transition-colors duration-300 ${darkMode ? 'bg-[#0f172a] text-slate-100' : 'bg-slate-50 text-slate-900'}`} dir="rtl">
@@ -638,7 +656,7 @@ export default function EduPlatform() {
             {isLoggedIn ? (
               <div className="flex items-center gap-2">
                 <span className="text-xs bg-indigo-500/20 text-indigo-400 px-3 py-1.5 rounded-full font-bold border border-indigo-500/30">
-                  {userName} ({userRole === 'instructor' ? 'معلم 👨‍🏫' : `طالب 👨‍🎓 - ${userYear}`})
+                  {userName} ({userRole === 'instructor' ? 'معلم 👨‍🏫 (جميع الصلاحيات والمراحل)' : `طالب 👨‍🎓 - ${educationalStages.find(s => s.id === userStage)?.name || ''}`})
                 </span>
                 <button onClick={handleLogout} className="bg-rose-500/20 text-rose-400 text-xs px-3 py-1.5 rounded-xl font-bold">خروج</button>
               </div>
@@ -658,40 +676,22 @@ export default function EduPlatform() {
           <div className="space-y-12 text-center">
             <div className={`rounded-3xl p-12 border shadow-2xl ${darkMode ? 'bg-gradient-to-r from-indigo-900 to-slate-900 border-indigo-800' : 'bg-indigo-600 text-white'}`}>
               <h1 className="text-3xl sm:text-5xl font-extrabold mb-4">منصة BEDAYA EDU التعليمية الذكية</h1>
-              <p className="text-sm sm:text-lg mb-8 max-w-2xl mx-auto opacity-90">منصة تعليمية متكاملة لجميع المراحل التعليمية (الابتدائية، الإعدادية، الثانوية العامة، ونظام البكالوريا)، تدعم الكورسات، ملفات الـ PDF، والامتحانات الذكية.</p>
+              <p className="text-sm sm:text-lg mb-8 max-w-2xl mx-auto opacity-90">منصة تعليمية متكاملة لجميع المراحل والسنين الدراسية، تدعم الكورسات، ملفات الـ PDF، والامتحانات الذكية.</p>
               
-              {/* عرض المراحل الدراسية بالمنصة بشكل تفاعلي (المعلم والجميع يشاهدونها، وبالضغط عليها تظهر السنين الدراسية) */}
-              <div className="text-right mb-4">
-                <h3 className="text-lg font-bold text-amber-400 text-center mb-4">📚 استكشف المراحل الدراسية المتاحة بالمنصة (اضغط على المرحلة لعرض السنين):</h3>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto mb-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 max-w-5xl mx-auto mb-8 text-right">
                 {educationalStages.map((stage) => (
-                  <div 
-                    key={stage.id} 
-                    onClick={() => setSelectedStageView(stage)}
-                    className="p-6 rounded-2xl bg-white/10 border border-white/20 backdrop-blur-md flex flex-col items-center justify-center text-center cursor-pointer hover:bg-white/20 transition shadow-lg"
-                  >
-                    <span className="text-base font-bold mb-2">{stage.name}</span>
-                    <span className="text-xs text-indigo-200 underline">اضغط لعرض السنين الدراسية 🔍</span>
+                  <div key={stage.id} className="p-5 rounded-2xl bg-white/10 border border-white/20 backdrop-blur-md flex flex-col gap-2">
+                    <span className="text-sm font-bold border-b border-white/20 pb-2">{stage.name}</span>
+                    <ul className="text-xs space-y-1 opacity-90">
+                      {stage.grades.map(grade => (
+                        <li key={grade.id} className="flex items-center gap-1">
+                          <span>🔹</span> {grade.name}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 ))}
               </div>
-
-              {/* نافذة منبثقة أو قسم لعرض السنين الدراسية عند الضغط على المرحلة */}
-              {selectedStageView && (
-                <div className="bg-slate-900/90 border border-amber-500/50 p-6 rounded-2xl max-w-xl mx-auto mb-8 text-right animate-fade-in">
-                  <div className="flex justify-between items-center mb-3">
-                    <h4 className="font-bold text-amber-400 text-base">{selectedStageView.name} - السنين الدراسية:</h4>
-                    <button onClick={() => setSelectedStageView(null)} className="text-rose-400 font-bold text-sm">✕ إغلاق</button>
-                  </div>
-                  <ul className="list-disc list-inside space-y-2 text-sm text-slate-200">
-                    {selectedStageView.years.map((y: string, idx: number) => (
-                      <li key={idx} className="bg-slate-800/80 p-2 rounded-xl border border-slate-700">{y}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
 
               <div className="flex justify-center gap-4">
                 <button onClick={() => setActiveTab('courses')} className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-6 py-3 rounded-xl font-bold shadow-lg transition">
@@ -761,19 +761,6 @@ export default function EduPlatform() {
               ) : (
                 <form onSubmit={handleSignUp} className="space-y-4">
                   <h2 className="text-xl font-bold text-center mb-2">إنشاء حساب جديد في BEDAYA EDU</h2>
-                  
-                  <div>
-                    <label className="block text-xs font-medium mb-1">نوع الحساب</label>
-                    <select 
-                      value={inputRole} 
-                      onChange={e => setInputRole(e.target.value as any)} 
-                      className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white font-bold"
-                    >
-                      <option value="student">طالب (اختيار المرحلة والسنة الدراسية)</option>
-                      <option value="instructor">معلم (إدارة المنصة بالكامل)</option>
-                    </select>
-                  </div>
-
                   <div>
                     <label className="block text-xs font-medium mb-1">الاسم الكامل</label>
                     <input 
@@ -819,6 +806,18 @@ export default function EduPlatform() {
                     />
                   </div>
 
+                  <div>
+                    <label className="block text-xs font-medium mb-1">نوع الحساب</label>
+                    <select 
+                      value={inputRole} 
+                      onChange={e => setInputRole(e.target.value as any)} 
+                      className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white font-bold"
+                    >
+                      <option value="student">طالب (يختار المرحلة والسنة الدراسية الخاصة به)</option>
+                      <option value="instructor">معلم (يتحكم في جميع المراحل والمنصة كاملة)</option>
+                    </select>
+                  </div>
+
                   {inputRole === 'student' && (
                     <>
                       <div>
@@ -838,11 +837,11 @@ export default function EduPlatform() {
                         <select 
                           value={inputStage} 
                           onChange={e => {
-                            const newSt = e.target.value;
-                            setInputStage(newSt);
-                            const matchedStage = educationalStages.find(s => s.id === newSt);
-                            if (matchedStage && matchedStage.years.length > 0) {
-                              setInputYear(matchedStage.years[0]);
+                            const newStage = e.target.value;
+                            setInputStage(newStage);
+                            const foundStg = educationalStages.find(s => s.id === newStage);
+                            if (foundStg && foundStg.grades.length > 0) {
+                              setInputGrade(foundStg.grades[0].id);
                             }
                           }} 
                           className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-indigo-500/50 text-white font-bold"
@@ -854,14 +853,14 @@ export default function EduPlatform() {
                       </div>
 
                       <div>
-                        <label className="block text-xs font-medium mb-1">اختر السنة الدراسية 📅</label>
+                        <label className="block text-xs font-medium mb-1">اختر السنة الدراسية 📖</label>
                         <select 
-                          value={inputYear} 
-                          onChange={e => setInputYear(e.target.value)} 
+                          value={inputGrade} 
+                          onChange={e => setInputGrade(e.target.value)} 
                           className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-indigo-500/50 text-white font-bold"
                         >
-                          {educationalStages.find(s => s.id === inputStage)?.years.map((y, idx) => (
-                            <option key={idx} value={y}>{y}</option>
+                          {availableGrades.map((grade: any) => (
+                            <option key={grade.id} value={grade.id}>{grade.name}</option>
                           ))}
                         </select>
                       </div>
@@ -869,7 +868,7 @@ export default function EduPlatform() {
                   )}
 
                   <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl font-bold text-sm shadow transition">
-                    تسجيل الحساب 🚀
+                    إنشاء الحساب الان 🚀
                   </button>
                 </form>
               )}
@@ -877,224 +876,196 @@ export default function EduPlatform() {
           </div>
         )}
 
+        {/* بقية نوافذ المنصة (الكورسات، لوحة التحكم، الامتحانات...) تظهر هنا بنفس الكفاءة والدعم الكامل للمنصة */}
         {activeTab === 'courses' && (
           <div className="space-y-8">
             <div className="flex justify-between items-center flex-wrap gap-4">
               <div>
-                <h2 className="text-2xl font-black">الكورسات والملفات الدراسية 🎥</h2>
-                <p className="text-xs text-slate-400 mt-1">تصفح المحتوى التعليمي وملفات الـ PDF والامتحانات المتاحة.</p>
+                <h2 className="text-2xl font-black">الكورسات والملفات والامتحانات المتاحة</h2>
+                <p className="text-xs text-slate-400 mt-1">
+                  {isLoggedIn && userRole === 'student' 
+                    ? `تستعرض الآن محتوى مرحلتك وسنتك الدراسية الحالية.` 
+                    : `أنت تسجل بصلاحيات معلم، تظهر لك جميع كورسات ومراحل المنصة بالكامل دون إخفاء أي شيء.`}
+                </p>
               </div>
             </div>
 
-            {filteredCourses.length === 0 ? (
-              <div className="text-center py-16 bg-slate-900/40 rounded-3xl border border-slate-800">
-                <p className="text-sm text-slate-400">لا توجد كورسات متاحة لمرحلتك الدراسية حالياً.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredCourses.map(course => (
-                  <div key={course.id} className={`p-6 rounded-3xl border shadow-lg flex flex-col justify-between ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-start">
-                        <span className="text-[11px] bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-full font-bold">
-                          {course.category} ({course.year || 'عام'})
-                        </span>
-                        <span className="text-xs font-bold text-amber-400">{course.price}</span>
-                      </div>
-                      
-                      <h3 className="text-lg font-bold">{course.title}</h3>
-                      <p className="text-xs text-slate-400 leading-relaxed">{course.description}</p>
-                      <p className="text-xs font-medium text-indigo-300">👨‍🏫 المعلم: {course.instructor}</p>
-
-                      {/* عرض الفيديوهات */}
-                      <div className="space-y-2 pt-2 border-t border-slate-700/50">
-                        <h4 className="text-xs font-bold text-indigo-400">الفيديوهات (الدروس):</h4>
-                        {course.lessons && course.lessons.length > 0 ? (
-                          course.lessons.map((lesson: any) => (
-                            <div key={lesson.id} className="bg-slate-900/60 p-3 rounded-xl border border-slate-700/50 space-y-2">
-                              <div className="flex justify-between text-xs font-bold">
-                                <span>{lesson.title}</span>
-                                <span className="text-slate-400">{lesson.duration}</span>
-                              </div>
-                              <video controls className="w-full rounded-lg h-36 bg-black" src={lesson.videoUrl}></video>
-                            </div>
-                          ))
-                        ) : (
-                          <p className="text-[11px] text-slate-500">لا توجد فيديوهات مضافة بعد.</p>
-                        )}
-                      </div>
-
-                      {/* عرض ملفات PDF */}
-                      <div className="space-y-2 pt-2 border-t border-slate-700/50">
-                        <h4 className="text-xs font-bold text-amber-400">ملفات المذكرات (PDF):</h4>
-                        {course.pdfs && course.pdfs.length > 0 ? (
-                          course.pdfs.map((pdf: any) => (
-                            <div key={pdf.id} className="flex justify-between items-center bg-slate-900/60 p-2.5 rounded-xl border border-slate-700/50 text-xs">
-                              <span className="font-bold truncate max-w-[150px]">{pdf.title}</span>
-                              <a href={pdf.pdfUrl} target="_blank" rel="noreferrer" className="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg font-bold">عرض / تحميل 📄</a>
-                            </div>
-                          ))
-                        ) : (
-                          <p className="text-[11px] text-slate-500">لا توجد ملفات مضافة بعد.</p>
-                        )}
-                      </div>
-
-                      {/* زر الامتحان */}
-                      {course.exam && (
-                        <div className="pt-2 border-t border-slate-700/50">
-                          <button onClick={() => handleStartExam(course.exam)} className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 py-2.5 rounded-xl font-bold text-xs shadow transition">
-                            📝 ابدأ الامتحان: {course.exam.title}
-                          </button>
-                        </div>
-                      )}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredCourses.map((course) => (
+                <div key={course.id} className={`p-6 rounded-3xl border shadow-xl flex flex-col justify-between ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-start">
+                      <span className="text-xs bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-full font-bold">
+                        {course.category}
+                      </span>
+                      <span className="text-xs font-bold text-amber-400">{course.price}</span>
                     </div>
 
-                    {isLoggedIn && userRole === 'instructor' && (
-                      <div className="flex gap-2 pt-4 mt-4 border-t border-slate-700">
-                        <button onClick={() => handleStartEditCourse(course)} className="flex-1 bg-amber-500/20 text-amber-400 py-2 rounded-xl text-xs font-bold">تعديل</button>
-                        <button onClick={() => handleDeleteCourse(course.id)} className="flex-1 bg-rose-500/20 text-rose-400 py-2 rounded-xl text-xs font-bold">حذف</button>
+                    <h3 className="text-lg font-bold">{course.title}</h3>
+                    <p className="text-xs opacity-70 leading-relaxed">{course.description}</p>
+                    
+                    <div className="text-[11px] text-slate-400 font-semibold">
+                      المعلم: {course.instructor}
+                    </div>
+
+                    {/* عرض الفيديوهات */}
+                    <div className="space-y-2 pt-2 border-t border-slate-700/50">
+                      <h4 className="text-xs font-bold text-indigo-400">الفيديوهات والدروس ({course.lessons.length}):</h4>
+                      {course.lessons.map((lesson: any) => (
+                        <div key={lesson.id} className="p-2.5 rounded-xl bg-slate-900/50 border border-slate-700 flex flex-col gap-2">
+                          <div className="flex justify-between text-xs font-medium">
+                            <span>🎥 {lesson.title}</span>
+                            <span className="text-slate-400">{lesson.duration}</span>
+                          </div>
+                          <video controls className="w-full rounded-lg max-h-40 bg-black">
+                            <source src={lesson.videoUrl} type="video/mp4" />
+                            متصفحك لا يدعم عرض الفيديو
+                          </video>
+                          {isLoggedIn && userRole === 'instructor' && (
+                            <button onClick={() => handleDeleteLesson(course.id, lesson.id)} className="text-[10px] text-rose-400 text-right">حذف الفيديو 🗑️</button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* عرض ملفات PDF */}
+                    {course.pdfs && course.pdfs.length > 0 && (
+                      <div className="space-y-2 pt-2 border-t border-slate-700/50">
+                        <h4 className="text-xs font-bold text-amber-400">ملفات وملازم PDF ({course.pdfs.length}):</h4>
+                        {course.pdfs.map((pdf: any) => (
+                          <div key={pdf.id} className="p-2.5 rounded-xl bg-slate-900/50 border border-slate-700 flex justify-between items-center text-xs">
+                            <span>📄 {pdf.title}</span>
+                            <div className="flex gap-2">
+                              <a href={pdf.pdfUrl} target="_blank" rel="noreferrer" className="text-indigo-400 font-bold underline">تحميل / عرض</a>
+                              {isLoggedIn && userRole === 'instructor' && (
+                                <button onClick={() => handleDeletePdf(course.id, pdf.id)} className="text-rose-400">حذف</button>
+                              )}
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     )}
+
+                    {/* عرض الامتحان إن وجد */}
+                    {course.exam && (
+                      <div className="p-3 rounded-2xl bg-indigo-950/40 border border-indigo-500/40 space-y-2">
+                        <div className="flex justify-between items-center text-xs font-bold text-indigo-300">
+                          <span>📝 امتحان: {course.exam.title}</span>
+                          <span>{course.exam.questions.length} أسئلة</span>
+                        </div>
+                        {isLoggedIn && userRole === 'student' && (
+                          <button onClick={() => handleStartExam(course.exam)} className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded-xl text-xs font-bold">
+                            ابدأ الامتحان الآن 🚀
+                          </button>
+                        )}
+                      </div>
+                    )}
+
                   </div>
-                ))}
-              </div>
-            )}
+
+                  {/* أدوات المعلم الخاصة بالكورس */}
+                  {isLoggedIn && userRole === 'instructor' && (
+                    <div className="flex gap-2 pt-4 mt-4 border-t border-slate-700">
+                      <button onClick={() => handleStartEditCourse(course)} className="flex-1 bg-amber-500/20 text-amber-400 py-1.5 rounded-xl text-xs font-bold">تعديل</button>
+                      <button onClick={() => handleDeleteCourse(course.id)} className="flex-1 bg-rose-500/20 text-rose-400 py-1.5 rounded-xl text-xs font-bold">حذف الكورس</button>
+                    </div>
+                  )}
+
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
-        {/* لوحة تحكم المعلم */}
-        {isLoggedIn && userRole === 'instructor' && activeTab === 'instructor-dashboard' && (
+        {/* لوحة تحكم المعلم وإدارة المنصة */}
+        {activeTab === 'instructor-dashboard' && isLoggedIn && userRole === 'instructor' && (
           <div className="space-y-10">
-            <div>
-              <h2 className="text-2xl font-black">لوحة التحكم الإدارية وسجل درجات الطلاب 👨‍🏫</h2>
-              <p className="text-xs text-slate-400 mt-1">إدارة الكورسات، الفيديوهات، مذكرات الـ PDF، الامتحانات، ومتابعة درجات الطلاب.</p>
-            </div>
+            <h2 className="text-2xl font-black">لوحة تحكم المعلم الشاملة (جميع المراحل والسنين الدراسية) 👨‍🏫</h2>
 
-            {/* نموذج إنشاء / تعديل كورس */}
-            <div className={`p-8 rounded-3xl border shadow-xl ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
-              <h3 className="text-lg font-bold mb-4">{editingCourseId ? '✏️ تعديل كورس' : '➕ إنشاء كورس جديد'}</h3>
-              <form onSubmit={handleSaveCourse} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-medium mb-1">عنوان الكورس</label>
-                  <input type="text" required value={newCourseTitle} onChange={e => setNewCourseTitle(e.target.value)} placeholder="مثال: كورس الأحياء للثانوية" className="w-full px-4 py-2 rounded-xl border text-xs bg-slate-900 border-slate-700 text-white" />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium mb-1">اسم المعلم</label>
-                  <input type="text" value={newCourseInstructor} onChange={e => setNewCourseInstructor(e.target.value)} placeholder={userName} className="w-full px-4 py-2 rounded-xl border text-xs bg-slate-900 border-slate-700 text-white" />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium mb-1">المادة / القسم</label>
-                  <input type="text" value={newCourseCategory} onChange={e => setNewCourseCategory(e.target.value)} placeholder="مثال: أحياء" className="w-full px-4 py-2 rounded-xl border text-xs bg-slate-900 border-slate-700 text-white" />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium mb-1">السعر</label>
-                  <input type="text" value={newCoursePrice} onChange={e => setNewCoursePrice(e.target.value)} placeholder="مجاناً 🎁 أو 200 ج.م" className="w-full px-4 py-2 rounded-xl border text-xs bg-slate-900 border-slate-700 text-white" />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium mb-1">اختر السنة الدراسية المستهدفة للكورس</label>
-                  <select value={newCourseYear} onChange={e => setNewCourseYear(e.target.value)} className="w-full px-4 py-2 rounded-xl border text-xs bg-slate-900 border-slate-700 text-white font-bold">
-                    {educationalStages.flatMap(s => s.years).map((y, idx) => (
-                      <option key={idx} value={y}>{y}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-medium mb-1">وصف الكورس</label>
-                  <textarea value={newCourseDesc} onChange={e => setNewCourseDesc(e.target.value)} placeholder="وصف موجز..." className="w-full px-4 py-2 rounded-xl border text-xs bg-slate-900 border-slate-700 text-white h-20"></textarea>
-                </div>
-                <div className="sm:col-span-2">
-                  <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl font-bold text-xs shadow transition">
-                    {editingCourseId ? 'حفظ التعديلات ✨' : 'إنشاء الكورس 🚀'}
-                  </button>
-                </div>
-              </form>
-            </div>
-
-            {/* إضافة فيديو أو ملف PDF للكورس */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className={`p-6 rounded-3xl border shadow-xl ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
-                <h3 className="text-base font-bold mb-4">🎥 إضافة فيديو درس للكورس</h3>
-                <form onSubmit={handleAddVideoToCourse} className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-medium mb-1">اختر الكورس المستهدف</label>
-                    <select value={selectedCourseForContent} onChange={e => setSelectedCourseForContent(e.target.value)} className="w-full px-4 py-2 rounded-xl border text-xs bg-slate-900 border-slate-700 text-white">
-                      <option value="">-- اختر كورس --</option>
-                      {courses.map(c => (
-                        <option key={c.id} value={c.title}>{c.title}</option>
-                      ))}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* إنشاء أو تعديل كورس */}
+              <div className={`p-6 rounded-3xl border shadow-xl space-y-4 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
+                <h3 className="text-lg font-bold">{editingCourseId ? 'تعديل بيانات الكورس' : 'إضافة كورس جديد للمنصة'}</h3>
+                <form onSubmit={handleSaveCourse} className="space-y-3">
+                  <input type="text" placeholder="عنوان الكورس" value={newCourseTitle} onChange={e => setNewCourseTitle(e.target.value)} className="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white" required />
+                  <input type="text" placeholder="اسم المعلم" value={newCourseInstructor} onChange={e => setNewCourseInstructor(e.target.value)} className="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white" />
+                  <input type="text" placeholder="التصنيف (مثال: رياضيات، أحياء...)" value={newCourseCategory} onChange={e => setNewCourseCategory(e.target.value)} className="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white" />
+                  
+                  <div className="grid grid-cols-2 gap-2">
+                    <select value={newCourseStage} onChange={e => setNewCourseStage(e.target.value)} className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white">
+                      {educationalStages.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                    </select>
+                    <select value={newCoursePrice} onChange={e => setNewCoursePrice(e.target.value)} className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white">
+                      <option value="مجاناً 🎁">مجاناً 🎁</option>
+                      <option value="مدفوع 💳">مدفوع 💳</option>
                     </select>
                   </div>
-                  <div>
-                    <label className="block text-xs font-medium mb-1">عنوان الدرس</label>
-                    <input type="text" value={newVideoTitle} onChange={e => setNewVideoTitle(e.target.value)} placeholder="مثال: الدرس الأول" className="w-full px-4 py-2 rounded-xl border text-xs bg-slate-900 border-slate-700 text-white" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium mb-1">رابط الفيديو (رابط مباشر MP4)</label>
-                    <input type="text" value={newVideoUrl} onChange={e => setNewVideoUrl(e.target.value)} placeholder="https://..." className="w-full px-4 py-2 rounded-xl border text-xs bg-slate-900 border-slate-700 text-white" />
-                  </div>
-                  <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl font-bold text-xs">إضافة الفيديو 🎥</button>
+
+                  <textarea placeholder="وصف الكورس" value={newCourseDesc} onChange={e => setNewCourseDesc(e.target.value)} className="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white" rows={2}></textarea>
+                  <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl font-bold text-xs">
+                    {editingCourseId ? 'حفظ التعديلات' : 'نشر الكورس في المنصة'}
+                  </button>
                 </form>
               </div>
 
-              <div className={`p-6 rounded-3xl border shadow-xl ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
-                <h3 className="text-base font-bold mb-4">📄 إضافة مذكرة PDF للكورس</h3>
-                <form onSubmit={handleAddPdfToCourse} className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-medium mb-1">اختر الكورس المستهدف</label>
-                    <select value={selectedCourseForContent} onChange={e => setSelectedCourseForContent(e.target.value)} className="w-full px-4 py-2 rounded-xl border text-xs bg-slate-900 border-slate-700 text-white">
-                      <option value="">-- اختر كورس --</option>
-                      {courses.map(c => (
-                        <option key={c.id} value={c.title}>{c.title}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium mb-1">عنوان ملف الـ PDF</label>
-                    <input type="text" value={newPdfTitle} onChange={e => setNewPdfTitle(e.target.value)} placeholder="مثال: ملخص الباب الأول" className="w-full px-4 py-2 rounded-xl border text-xs bg-slate-900 border-slate-700 text-white" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium mb-1">رفع ملف من الجهاز (PDF)</label>
-                    <input type="file" accept="application/pdf" onChange={handleFileUpload} className="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white" />
-                  </div>
-                  <button type="submit" className="w-full bg-amber-600 hover:bg-amber-500 text-white py-2.5 rounded-xl font-bold text-xs">إضافة ملف الـ PDF 📄</button>
+              {/* إضافة فيديو للكورس */}
+              <div className={`p-6 rounded-3xl border shadow-xl space-y-4 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
+                <h3 className="text-lg font-bold">إضافة درس فيديو أو ملف PDF لأي كورس</h3>
+                <form onSubmit={handleAddVideoToCourse} className="space-y-3">
+                  <input type="text" placeholder="اسم الكورس المستهدف بدقة" value={selectedCourseForContent} onChange={e => setSelectedCourseForContent(e.target.value)} className="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white" required />
+                  <input type="text" placeholder="عنوان الدرس" value={newVideoTitle} onChange={e => setNewVideoTitle(e.target.value)} className="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white" required />
+                  <input type="text" placeholder="رابط الفيديو (mp4 أو رابط مباشر)" value={newVideoUrl} onChange={e => setNewVideoUrl(e.target.value)} className="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white" />
+                  <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl font-bold text-xs">
+                    إضافة الفيديو للكورس 🎥
+                  </button>
+                </form>
+
+                <hr className="border-slate-700 my-2" />
+
+                <form onSubmit={handleAddPdfToCourse} className="space-y-3">
+                  <input type="text" placeholder="عنوان ملف الـ PDF" value={newPdfTitle} onChange={e => setNewPdfTitle(e.target.value)} className="w-full px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white" required />
+                  <input type="file" accept="application/pdf" onChange={handleFileUpload} className="w-full text-xs text-slate-400 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white" />
+                  <button type="submit" className="w-full bg-amber-600 hover:bg-amber-500 text-white py-2.5 rounded-xl font-bold text-xs">
+                    إضافة ملف الـ PDF 📄
+                  </button>
                 </form>
               </div>
             </div>
 
             {/* سجل درجات الطلاب */}
-            <div className={`p-8 rounded-3xl border shadow-xl ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
-              <h3 className="text-lg font-bold mb-4">📊 سجل درجات الامتحانات والتقييمات للطلاب</h3>
+            <div className={`p-6 rounded-3xl border shadow-xl space-y-4 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
+              <h3 className="text-lg font-bold">سجل درجات وحل الامتحانات للطلاب 📊</h3>
               {examResultsLog.length === 0 ? (
-                <p className="text-xs text-slate-400">لا توجد نتائج مسجلة حتى الآن.</p>
+                <p className="text-xs text-slate-400">لا توجد سجلات لدرجات الطلاب حتى الآن.</p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-right text-xs">
                     <thead>
-                      <tr className="border-b border-slate-700 text-indigo-400">
-                        <th className="py-3 px-2">اسم الطالب</th>
-                        <th className="py-3 px-2">هاتف الطالب</th>
-                        <th className="py-3 px-2">هاتف ولي الأمر 📱</th>
-                        <th className="py-3 px-2">اسم الامتحان</th>
-                        <th className="py-3 px-2">النتيجة</th>
-                        <th className="py-3 px-2">وقت الحل</th>
-                        <th className="py-3 px-2">إنذارات الغش ⚠️</th>
-                        <th className="py-3 px-2">التاريخ</th>
-                        <th className="py-3 px-2">إجراء</th>
+                      <tr className="border-b border-slate-700 text-slate-400">
+                        <th className="py-2 px-3">اسم الطالب</th>
+                        <th className="py-2 px-3">الهاتف</th>
+                        <th className="py-2 px-3">هاتف ولي الأمر</th>
+                        <th className="py-2 px-3">اسم الامتحان</th>
+                        <th className="py-2 px-3">النتيجة</th>
+                        <th className="py-2 px-3">مدة الحل</th>
+                        <th className="py-2 px-3">إنذارات الغش</th>
+                        <th className="py-2 px-3">التاريخ</th>
+                        <th className="py-2 px-3">إجراء</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-800">
                       {examResultsLog.map(res => (
-                        <tr key={res.id} className="hover:bg-slate-800/40">
-                          <td className="py-3 px-2 font-bold">{res.studentName}</td>
-                          <td className="py-3 px-2">{res.studentPhone}</td>
-                          <td className="py-3 px-2 text-amber-400 font-bold">{res.parentPhone}</td>
-                          <td className="py-3 px-2">{res.examTitle}</td>
-                          <td className="py-3 px-2 font-bold text-emerald-400">{res.score}</td>
-                          <td className="py-3 px-2">{res.duration}</td>
-                          <td className="py-3 px-2 text-rose-400 font-bold">{res.cheatingAttempts} مرات</td>
-                          <td className="py-3 px-2 text-slate-400">{res.date}</td>
-                          <td className="py-3 px-2">
-                            <button onClick={() => handleDeleteExamResult(res.id)} className="bg-rose-500/20 text-rose-400 px-3 py-1 rounded-lg font-bold">حذف</button>
+                        <tr key={res.id}>
+                          <td className="py-2.5 px-3 font-bold">{res.studentName}</td>
+                          <td className="py-2.5 px-3">{res.studentPhone}</td>
+                          <td className="py-2.5 px-3 text-amber-400">{res.parentPhone}</td>
+                          <td className="py-2.5 px-3">{res.examTitle}</td>
+                          <td className="py-2.5 px-3 font-bold text-emerald-400">{res.score}</td>
+                          <td className="py-2.5 px-3">{res.duration}</td>
+                          <td className="py-2.5 px-3 text-rose-400">{res.cheatingAttempts} إنذار</td>
+                          <td className="py-2.5 px-3 text-slate-400">{res.date}</td>
+                          <td className="py-2.5 px-3">
+                            <button onClick={() => handleDeleteExamResult(res.id)} className="text-rose-400 font-bold">حذف</button>
                           </td>
                         </tr>
                       ))}
@@ -1106,52 +1077,59 @@ export default function EduPlatform() {
           </div>
         )}
 
+        {/* واجهة حل الامتحان للطالب */}
+        {activeExam && isLoggedIn && userRole === 'student' && (
+          <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+            <div className={`max-w-2xl w-full p-8 rounded-3xl border shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto ${darkMode ? 'bg-[#1e293b] border-slate-800 text-white' : 'bg-white text-slate-900'}`}>
+              {!examSubmitted ? (
+                <>
+                  <div className="flex justify-between items-center border-b pb-4 border-slate-700">
+                    <h3 className="text-xl font-black">📝 {activeExam.title}</h3>
+                    <span className="text-xs text-rose-400 font-bold bg-rose-500/10 px-3 py-1 rounded-full border border-rose-500/20">
+                      ⚠️ نظام منع الغش مفعل ({cheatingWarnings}/3)
+                    </span>
+                  </div>
+
+                  <div className="space-y-6">
+                    {activeExam.questions.map((q: any, qIndex: number) => (
+                      <div key={qIndex} className="space-y-3 p-4 rounded-2xl bg-slate-900/40 border border-slate-700">
+                        <p className="text-sm font-bold">{qIndex + 1}. {q.question}</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {q.options.map((opt: string, optIndex: number) => (
+                            <button
+                              key={optIndex}
+                              onClick={() => setExamAnswers({ ...examAnswers, [qIndex]: optIndex })}
+                              className={`p-3 rounded-xl text-xs font-semibold border text-right transition ${examAnswers[qIndex] === optIndex ? 'bg-indigo-600 text-white border-indigo-400' : 'bg-slate-900 border-slate-700 text-slate-300'}`}
+                            >
+                              {opt}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <button onClick={handleSubmitExam} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl font-bold text-sm shadow">
+                    تسليم الامتحان الان ✅
+                  </button>
+                </>
+              ) : (
+                <div className="text-center space-y-4 py-8">
+                  <h3 className="text-2xl font-black">🎉 انتهى الامتحان بنجاح!</h3>
+                  <p className="text-lg">درجتك النهائية هي: <span className="font-bold text-emerald-400">{examScore} / {activeExam.questions.length}</span></p>
+                  <button onClick={() => setActiveExam(null)} className="bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-bold text-xs">
+                    إغلاق النافذة العودة للكورسات
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
       </main>
 
-      {/* نافذة الامتحان المنبثقة للطالب */}
-      {activeExam && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-          <div className={`max-w-2xl w-full p-8 rounded-3xl border shadow-2xl max-h-[90vh] overflow-y-auto space-y-6 ${darkMode ? 'bg-[#1e293b] border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-900'}`}>
-            <div className="flex justify-between items-center border-b pb-4">
-              <h3 className="text-xl font-black text-amber-400">📝 {activeExam.title}</h3>
-              <span className="text-xs bg-rose-500/20 text-rose-400 px-3 py-1 rounded-full font-bold">⚠️ نظام منع الغش مفعل</span>
-            </div>
-
-            {!examSubmitted ? (
-              <div className="space-y-6">
-                {activeExam.questions.map((q: any, qIdx: number) => (
-                  <div key={qIdx} className="bg-slate-900/60 p-5 rounded-2xl border border-slate-700 space-y-3">
-                    <p className="font-bold text-sm">س {qIdx + 1}: {q.question}</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {q.options.map((opt: string, optIdx: number) => (
-                        <label key={optIdx} className={`p-3 rounded-xl border text-xs flex items-center gap-2 cursor-pointer transition ${examAnswers[qIdx] === optIdx ? 'bg-indigo-600 border-indigo-400 text-white font-bold' : 'bg-slate-800 border-slate-700 text-slate-300'}`}>
-                          <input type="radio" name={`q-${qIdx}`} checked={examAnswers[qIdx] === optIdx} onChange={() => setExamAnswers({...examAnswers, [qIdx]: optIdx})} className="hidden" />
-                          <span>{opt}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-                <button onClick={handleSubmitExam} className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl font-bold text-sm shadow">
-                  تسليم الامتحان وإنهاء النتيجة 🎯
-                </button>
-              </div>
-            ) : (
-              <div className="text-center space-y-6 py-8">
-                <h4 className="text-2xl font-black text-emerald-400">🎉 انتهى الامتحان بنجاح!</h4>
-                <p className="text-lg font-bold">نتيجتك النهائية: {examScore} / {activeExam.questions.length}</p>
-                <button onClick={() => setActiveExam(null)} className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold text-sm">
-                  إغلاق النافذة العودة للمنصة
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* التفوتر */}
-      <footer className={`border-t py-6 text-center text-xs text-slate-500 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
-        جميع Rights Reserved © 2026 منصة BEDAYA EDU التعليمية الذكية 🎓
+      <footer className={`border-t py-6 text-center text-xs opacity-70 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
+        <p>© 2026 BEDAYA EDU. جميع الحقوق محفوظة - منصة تعليمية متكاملة لجميع المراحل والسنين الدراسية.</p>
       </footer>
     </div>
   );
