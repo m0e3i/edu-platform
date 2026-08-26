@@ -44,7 +44,7 @@ export default function EduPlatform() {
     }
   ]);
 
-  // الكورسات (مُحدثة لتشمل قسم أ/ مروان الجندي للعلوم والأحياء وخالية من الكورس القديم)
+  // الكورسات (تم حذف البرمجة وإضافة قسم أ/ مروان الجندي للعلوم والأحياء)
   const [courses, setCourses] = useState<any[]>([
     {
       id: 2,
@@ -52,9 +52,9 @@ export default function EduPlatform() {
       instructor: "مروان الجندي",
       category: "العلوم والأحياء",
       price: "مجاناً 🎁",
-      description: "شرح مبسط وممتع لمنهج الأحياء والعلوم للترمين بطريقة احترافية.",
+      description: "شرح مبسط وممتع لمنهج الأحياء والعلوم بطريقة احترافية.",
       lessons: [
-        { id: 201, title: "الدرس الأول: مدخل إلى علم الأحياء", duration: "15 دقيقة", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" }
+        { id: 201, title: "الدرس الأول: مدخل إلى علم الأحياء والخلية", duration: "10 دقائق", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" }
       ]
     }
   ]);
@@ -63,12 +63,12 @@ export default function EduPlatform() {
   const [exams, setExams] = useState<any[]>([
     {
       id: 1,
-      title: "اختبار مادة الأحياء والعلوم",
+      title: "اختبار مادة العلوم والأحياء",
       instructor: "مروان الجندي",
       durationMinutes: 5,
       questions: [
-        { id: 1, text: "ما هي الوحدة الأساسية بناءً لجسم الكائن الحي؟", options: ["الخلية", "العضو", "النسيج", "الجهاز"], correctOption: 0 },
-        { id: 2, text: "أي الأجزاء التالية مسؤول عن التكاثر في الخلية؟", options: ["النواة", "الغشاء البلازمي", "السيتوبلازم", "الميتوكوندريا"], correctOption: 0 }
+        { id: 1, text: "ما هي وحدة بناء الكائن الحي؟", options: ["الخلية", "الذرة", "العضو", "النسيج"], correctOption: 0 },
+        { id: 2, text: "أي الأجزاء التالية يوجد في الخلية النباتية ولا يوجد في الحيوانية؟", options: ["الجدار الخلوي", "النواة", "الميتوكوندريا", "الغشاء البلازمي"], correctOption: 0 }
       ]
     }
   ]);
@@ -81,7 +81,7 @@ export default function EduPlatform() {
   const [newCoursePrice, setNewCoursePrice] = useState('مجاناً 🎁');
   const [newCourseDesc, setNewCourseDesc] = useState('');
 
-  // حقول إضافة فيديو للكورس (تم جعل الكورس المستهدف كتابةً حرة)
+  // حقول إضافة فيديو للكورس (كتابة حرة للاسم)
   const [selectedCourseForVideo, setSelectedCourseForVideo] = useState('');
   const [newVideoTitle, setNewVideoTitle] = useState('');
   const [newVideoDuration, setNewVideoDuration] = useState('10 دقائق');
@@ -105,24 +105,24 @@ export default function EduPlatform() {
   // تحميل البيانات
   useEffect(() => {
     try {
-      const savedUsers = localStorage.getItem('edu_users_db_v6');
+      const savedUsers = localStorage.getItem('edu_users_db_v7');
       if (savedUsers) setUsersList(JSON.parse(savedUsers));
 
-      const savedCourses = localStorage.getItem('edu_courses_v6');
+      const savedCourses = localStorage.getItem('edu_courses_v7');
       if (savedCourses) setCourses(JSON.parse(savedCourses));
 
-      const savedExams = localStorage.getItem('edu_exams_v6');
+      const savedExams = localStorage.getItem('edu_exams_v7');
       if (savedExams) setExams(JSON.parse(savedExams));
 
-      const savedResults = localStorage.getItem('edu_results_v6');
+      const savedResults = localStorage.getItem('edu_results_v7');
       if (savedResults) setExamResults(JSON.parse(savedResults));
 
-      const logged = localStorage.getItem('edu_logged_v6');
+      const logged = localStorage.getItem('edu_logged_v7');
       if (logged === 'true') {
         setIsLoggedIn(true);
-        setUserName(localStorage.getItem('edu_uname_v6') || '');
-        setUserRole((localStorage.getItem('edu_urole_v6') as any) || 'student');
-        const uData = localStorage.getItem('edu_ucdata_v6');
+        setUserName(localStorage.getItem('edu_uname_v7') || '');
+        setUserRole((localStorage.getItem('edu_urole_v7') as any) || 'student');
+        const uData = localStorage.getItem('edu_ucdata_v7');
         if (uData) setCurrentUserData(JSON.parse(uData));
       }
     } catch (e) {
@@ -133,14 +133,14 @@ export default function EduPlatform() {
   // حفظ البيانات
   useEffect(() => {
     try {
-      localStorage.setItem('edu_users_db_v6', JSON.stringify(usersList));
-      localStorage.setItem('edu_courses_v6', JSON.stringify(courses));
-      localStorage.setItem('edu_exams_v6', JSON.stringify(exams));
-      localStorage.setItem('edu_results_v6', JSON.stringify(examResults));
-      localStorage.setItem('edu_logged_v6', isLoggedIn ? 'true' : 'false');
-      localStorage.setItem('edu_uname_v6', userName);
-      localStorage.setItem('edu_urole_v6', userRole);
-      localStorage.setItem('edu_ucdata_v6', JSON.stringify(currentUserData));
+      localStorage.setItem('edu_users_db_v7', JSON.stringify(usersList));
+      localStorage.setItem('edu_courses_v7', JSON.stringify(courses));
+      localStorage.setItem('edu_exams_v7', JSON.stringify(exams));
+      localStorage.setItem('edu_results_v7', JSON.stringify(examResults));
+      localStorage.setItem('edu_logged_v7', isLoggedIn ? 'true' : 'false');
+      localStorage.setItem('edu_uname_v7', userName);
+      localStorage.setItem('edu_urole_v7', userRole);
+      localStorage.setItem('edu_ucdata_v7', JSON.stringify(currentUserData));
     } catch (e) {
       console.error(e);
     }
@@ -262,7 +262,7 @@ export default function EduPlatform() {
     setNewCourseCategory('');
   };
 
-  // إضافة فيديو للكورس (باستخدام كتابة اسم الكورس المستهدف)
+  // إضافة فيديو للكورس (كتابة اسم الكورس يدوياً)
   const handleAddVideoToCourse = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedCourseForVideo || !newVideoTitle) {
@@ -273,7 +273,6 @@ export default function EduPlatform() {
     const courseIndex = courses.findIndex(c => c.title.trim().toLowerCase() === selectedCourseForVideo.trim().toLowerCase());
 
     if (courseIndex !== -1) {
-      // إذا وُجد الكورس، أضف الفيديو إليه
       const updated = [...courses];
       updated[courseIndex].lessons.push({
         id: Date.now(),
@@ -284,14 +283,13 @@ export default function EduPlatform() {
       setCourses(updated);
       showToast('🎥 تمت إضافة الفيديو بنجاح للكورس الموجود!');
     } else {
-      // إذا لم يكن موجوداً، قم بإنشاء كورس جديد بهذا الاسم وإضافة الفيديو له تلقائياً
       const newCourseObj = {
         id: Date.now(),
         title: selectedCourseForVideo,
         instructor: userName || 'المعلم',
-        category: 'قسم عام',
+        category: 'العلوم والأحياء',
         price: 'مجاناً 🎁',
-        description: 'كورس تم إنشاؤه عبر إضافة درس جديد.',
+        description: 'قسم تعليمي جديد.',
         lessons: [
           { id: Date.now() + 1, title: newVideoTitle, duration: newVideoDuration, videoUrl: newVideoUrl || "https://www.w3schools.com/html/mov_bbb.mp4" }
         ]
@@ -569,7 +567,7 @@ export default function EduPlatform() {
           </div>
         )}
 
-        {/* لوحة المعلم الكاملة وميزات إنشاء الكورسات (لا تظهر إلا للمعلم المسجل دخوله) */}
+        {/* لوحة المعلم الكاملة وميزات إنشاء الكورسات */}
         {activeTab === 'instructor-dashboard' && isLoggedIn && userRole === 'instructor' && (
           <div className="space-y-12 max-w-6xl mx-auto">
             
@@ -584,7 +582,7 @@ export default function EduPlatform() {
                   </div>
                   <div>
                     <label className="block text-xs font-medium mb-1">التصنيف</label>
-                    <input type="text" value={newCourseCategory} onChange={e => setNewCourseCategory(e.target.value)} placeholder="مثال: العلوم والأحياء، برمجة، لغات..." className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                    <input type="text" value={newCourseCategory} onChange={e => setNewCourseCategory(e.target.value)} placeholder="مثال: العلوم والأحياء..." className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
                   </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -603,7 +601,7 @@ export default function EduPlatform() {
               </form>
             </div>
 
-            {/* 2. إضافة فيديو للكورس (اختر الكورس المستهدف كتابةً) */}
+            {/* 2. إضافة فيديو للكورس (كتابة اسم الكورس يدوياً) */}
             <div className={`p-8 rounded-3xl border shadow-2xl space-y-6 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
               <h2 className="text-2xl font-bold text-indigo-400">🎥 إضافة فيديو / درس لأي كورس (كتابة اسم الكورس)</h2>
               <form onSubmit={handleAddVideoToCourse} className="space-y-4">
