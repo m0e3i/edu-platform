@@ -156,7 +156,6 @@ export default function EduPlatform() {
   const finishExamDueToCheating = () => {
     setExamSubmitted(true);
     setExamScore(0);
-    // تسجيل النتيجة حتى لو أنهي بسبب الغش
     saveExamResultToLog(0, 3);
     setActiveExam(null);
   };
@@ -422,7 +421,7 @@ export default function EduPlatform() {
     setCheatingWarnings(0);
     setExamSubmitted(false);
     setExamScore(0);
-    setExamStartTime(Date.now()); // تسجيل وقت بدء الامتحان
+    setExamStartTime(Date.now());
   };
 
   // تسليم الامتحان وحساب النتيجة وتسجيلها للمعلم
@@ -483,9 +482,10 @@ export default function EduPlatform() {
       {/* الهيدر */}
       <header className={`border-b sticky top-0 z-40 shadow-md ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
-          <div className="text-xl sm:text-2xl font-bold tracking-wider cursor-pointer" onClick={() => setActiveTab('home')}>
-            <span className="text-indigo-500">EDU</span>
-            <span className={darkMode ? 'text-white' : 'text-slate-800'}>BEDAYA</span>
+          {/* تعديل ظهور اسم المنصة بطريقة مرتبة وصحيحة */}
+          <div className="text-xl sm:text-2xl font-black tracking-wide cursor-pointer flex items-center gap-1.5" onClick={() => setActiveTab('home')}>
+            <span className="bg-indigo-600 text-white px-2 py-0.5 rounded-lg text-sm sm:text-base">EDU</span>
+            <span className={darkMode ? 'text-white' : 'text-slate-900'}>BEDAYA</span>
           </div>
 
           <nav className="hidden md:flex gap-6 font-medium text-sm items-center">
@@ -676,7 +676,17 @@ export default function EduPlatform() {
         {/* واجهة عرض الكورسات والامتحانات */}
         {activeTab === 'courses' && (
           <div className="space-y-8">
-            <h2 className="text-2xl sm:text-3xl font-bold">الكورسات والدروس والامتحانات 📚</h2>
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl sm:text-3xl font-bold">الكورسات والدروس والامتحانات 📚</h2>
+              {isLoggedIn && userRole === 'instructor' && (
+                <button 
+                  onClick={() => { setActiveTab('instructor-dashboard'); setEditingCourseId(null); }} 
+                  className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-bold shadow transition flex items-center gap-1.5"
+                >
+                  ➕ إضافة كورس جديد
+                </button>
+              )}
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {courses.map(course => (
                 <div key={course.id} className={`p-6 rounded-3xl border shadow-lg space-y-4 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
@@ -805,7 +815,7 @@ export default function EduPlatform() {
           </div>
         )}
 
-        {/* لوحة تحكم المعلم (إنشاء الكورسات، الفيديوهات، والامتحانات، وسجل درجات الطلاب مع زر الحذف) */}
+        {/* لوحة تحكم المعلم */}
         {activeTab === 'instructor-dashboard' && isLoggedIn && userRole === 'instructor' && (
           <div className="space-y-12 max-w-4xl mx-auto">
             
