@@ -41,45 +41,10 @@ export default function EduPlatform() {
       description: "شرح مبسط وممتع لمنهج الأحياء والعلوم بطريقة احترافية.",
       lessons: [
         { id: 201, title: "الدرس الأول: مدخل إلى علم الأحياء والخلية", duration: "10 دقائق", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" }
-      ]
+      ],
+      exam: null // { title, questions: [{q, options:[], answer}] }
     }
   ]);
-
-  // نظام الامتحانات الجديد
-  const [exams, setExams] = useState<any[]>([
-    {
-      id: 1,
-      title: "امتحان الأحياء التجريبي - الفصل الأول",
-      instructor: "مروان الجندي",
-      questions: [
-        {
-          id: 101,
-          questionText: "ما هي وحدة بناء الكائن الحي؟",
-          options: ["النسيج", "الخلية", "العضو", "الجهاز"],
-          correctAnswer: 1
-        },
-        {
-          id: 102,
-          questionText: "أي مما يلي يوجد داخل نواة الخلية؟",
-          options: ["البلاستيدات", "الميتوكوندريا", "المادة الوراثية DNA", "السيتوبلازم"],
-          correctAnswer: 2
-        }
-      ]
-    }
-  ]);
-
-  // حالات إنشاء امتحان جديد بواسطة المعلم
-  const [newExamTitle, setNewExamTitle] = useState('');
-  const [examQuestions, setExamQuestions] = useState<any[]>([
-    { questionText: '', options: ['', '', '', ''], correctAnswer: 0 }
-  ]);
-
-  // حالات أداء الامتحان من قبل الطالب ونظام منع الغش
-  const [activeExam, setActiveExam] = useState<any | null>(null);
-  const [studentAnswers, setStudentAnswers] = useState<{ [key: number]: number }>({});
-  const [cheatingWarnings, setCheatingWarnings] = useState(0);
-  const [examSubmitted, setExamSubmitted] = useState(false);
-  const [examScore, setExamScore] = useState(0);
 
   // حقول إنشاء/تعديل كورس
   const [editingCourseId, setEditingCourseId] = useState<number | null>(null);
@@ -95,6 +60,20 @@ export default function EduPlatform() {
   const [newVideoDuration, setNewVideoDuration] = useState('10 دقائق');
   const [newVideoUrl, setNewVideoUrl] = useState('');
 
+  // حقول إنشاء امتحان للمعلم
+  const [examCourseTarget, setExamCourseTarget] = useState('');
+  const [examTitle, setExamTitle] = useState('');
+  const [examQuestions, setExamQuestions] = useState<any[]>([
+    { question: '', options: ['', '', '', ''], correctAnswer: 0 }
+  ]);
+
+  // حالة الامتحان الجاري للطالب (نظام منع الغش)
+  const [activeExam, setActiveExam] = useState<any>(null);
+  const [examAnswers, setExamAnswers] = useState<{ [key: number]: number }>({});
+  const [cheatingWarnings, setCheatingWarnings] = useState(0);
+  const [examSubmitted, setExamSubmitted] = useState(false);
+  const [examScore, setExamScore] = useState(0);
+
   // تحميل البيانات عند فتح الصفحة
   useEffect(() => {
     try {
@@ -103,9 +82,6 @@ export default function EduPlatform() {
 
       const savedCourses = localStorage.getItem('edu_courses_v10');
       if (savedCourses) setCourses(JSON.parse(savedCourses));
-
-      const savedExams = localStorage.getItem('edu_exams_v10');
-      if (savedExams) setExams(JSON.parse(savedExams));
 
       const logged = localStorage.getItem('edu_logged_v10');
       if (logged === 'true') {
@@ -119,65 +95,57 @@ export default function EduPlatform() {
     }
   }, []);
 
-  // حفظ البيانات في localStorage
+  // حفظ الكورسات والمستخدمين في localStorage
   useEffect(() => {
     try {
       localStorage.setItem('edu_courses_v10', JSON.stringify(courses));
       localStorage.setItem('edu_users_db_v10', JSON.stringify(usersList));
-      localStorage.setItem('edu_exams_v10', JSON.stringify(exams));
     } catch (e) {
       console.error(e);
     }
-  }, [courses, usersList, exams]);
+  }, [courses, usersList]);
 
-  // 🛡️ نظام منع الغش (Anti-Cheat System) أثناء الامتحانات
+  // مراقبة الغش أثناء الامتحان (تبديل التبويبات أو مغادرة النافذة)
   useEffect(() => {
     if (!activeExam || examSubmitted) return;
 
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        triggerCheatingWarning("⚠️ تحذير: تم رصد مغادرة صفحة الامتحان! ممنوع فتح تبويبات أخرى.");
+        triggerCheatingWarning("⚠️ تحذير: قمت بمغادرة نافذة الامتحان! محاولات الغش مرصودة.");
       }
     };
 
     const handleBlur = () => {
-      triggerCheatingWarning("⚠️ تحذير: خرج مؤشر الموسم أو النافذة عن نطاق الامتحان!");
-    };
-
-    const handleCopy = (e: ClipboardEvent) => {
-      e.preventDefault();
-      showToast("❌ ممنوع نسخ محتوى الأسئلة!");
+      triggerCheatingWarning("⚠️ تحذير: محاولة فتح نافذة خارجية أو خروج مؤشر الماوس عن الإطار!");
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('blur', handleBlur);
-    document.addEventListener('copy', handleCopy);
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('blur', handleBlur);
-      document.removeEventListener('copy', handleCopy);
     };
   }, [activeExam, cheatingWarnings, examSubmitted]);
 
   const triggerCheatingWarning = (msg: string) => {
     const newWarnings = cheatingWarnings + 1;
     setCheatingWarnings(newWarnings);
-    showToast(`${msg} (تحذير ${newWarnings}/3)`);
-
     if (newWarnings >= 3) {
-      showToast("🚨 تم إنهاء الامتحان تلقائياً بسبب تكرار محاولات الغش!");
-      handleSubmitExamDueToCheat();
+      showToast("❌ تم إنهاء الامتحان تلقائياً بسبب تكرار محاولات الغش!");
+      finishExamDueToCheating();
+    } else {
+      showToast(`${msg} (الإنذار ${newWarnings}/3)`);
     }
   };
 
-  const handleSubmitExamDueToCheat = () => {
+  const finishExamDueToCheating = () => {
     setExamSubmitted(true);
     setExamScore(0);
     setActiveExam(null);
   };
 
-  // دالة تسجيل حساب جديد
+  // دالة إنشاء حساب جديد (Sign Up)
   const handleSignUp = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputName || !inputEmail || !inputPassword) {
@@ -187,7 +155,7 @@ export default function EduPlatform() {
 
     const userExists = usersList.find(u => u.email.toLowerCase() === inputEmail.toLowerCase());
     if (userExists) {
-      showToast('❌ البريد الإلكتروني مستخدم من قبل!');
+      showToast('❌ البريد الإلكتروني مستخدم من قبل، حاول تسجيل الدخول!');
       return;
     }
 
@@ -205,16 +173,21 @@ export default function EduPlatform() {
     localStorage.setItem('edu_uemail_v10', newUser.email);
     localStorage.setItem('edu_urole_v10', newUser.role);
 
-    showToast(`🎉 أهلاً بك ${newUser.name}, تم إنشاء الحساب بنجاح!`);
+    showToast(`🎉 أهلاً بك ${newUser.name}, تم إنشاء الحساب وتسجيل الدخول بنجاح!`);
     setInputName('');
     setInputEmail('');
     setInputPassword('');
     setActiveTab('home');
   };
 
-  // دالة تسجيل الدخول
+  // دالة تسجيل الدخول (Login)
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!inputEmail || !inputPassword) {
+      showToast('⚠️ يرجى إدخال البريد الإلكتروني وكلمة المرور!');
+      return;
+    }
+
     const foundUser = usersList.find(
       u => u.email.toLowerCase() === inputEmail.toLowerCase() && u.password === inputPassword
     );
@@ -254,45 +227,172 @@ export default function EduPlatform() {
     setActiveTab('home');
   };
 
-  // إضافة سؤال جديد في نموذج المعلم
-  const handleAddQuestionField = () => {
-    setExamQuestions([...examQuestions, { questionText: '', options: ['', '', '', ''], correctAnswer: 0 }]);
+  // حذف كورس
+  const handleDeleteCourse = (courseId: number) => {
+    if (confirm('هل أنت متأكد من حذف هذا الكورس نهائياً؟')) {
+      setCourses(courses.filter(c => c.id !== courseId));
+      showToast('🗑️ تم حذف الكورس بنجاح');
+    }
   };
 
-  // حفظ الامتحان الجديد بواسطة المعلم
-  const handleSaveExam = (e: React.FormEvent) => {
+  // بدء تعديل كورس
+  const handleStartEditCourse = (course: any) => {
+    setEditingCourseId(course.id);
+    setNewCourseTitle(course.title);
+    setNewCourseInstructor(course.instructor);
+    setNewCourseCategory(course.category);
+    setNewCoursePrice(course.price);
+    setNewCourseDesc(course.description);
+    setActiveTab('instructor-dashboard');
+    showToast('✏️ قم بتعديل بيانات الكورس في لوحة التحكم');
+  };
+
+  // حفظ الكورس (إنشاء أو تعديل)
+  const handleSaveCourse = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newExamTitle || examQuestions.length === 0) {
-      showToast('⚠️ يرجى كتابة عنوان الامتحان وإضافة سؤال واحد على الأقل!');
+    if (!newCourseTitle) {
+      showToast('يرجى كتابة اسم الكورس!');
       return;
     }
 
-    const newExamObj = {
+    if (editingCourseId) {
+      setCourses(courses.map(c => c.id === editingCourseId ? {
+        ...c,
+        title: newCourseTitle,
+        instructor: newCourseInstructor || userName,
+        category: newCourseCategory || 'عام',
+        price: newCoursePrice,
+        description: newCourseDesc
+      } : c));
+      showToast('✨ تم تحديث الكورس بنجاح!');
+      setEditingCourseId(null);
+    } else {
+      const newCourseObj = {
+        id: Date.now(),
+        title: newCourseTitle,
+        instructor: newCourseInstructor || userName,
+        category: newCourseCategory || 'عام',
+        price: newCoursePrice,
+        description: newCourseDesc || 'كورس تعليمي جديد',
+        lessons: [],
+        exam: null
+      };
+      setCourses([newCourseObj, ...courses]);
+      showToast('✨ تم إنشاء الكورس بنجاح!');
+    }
+
+    setNewCourseTitle('');
+    setNewCourseInstructor('');
+    setNewCourseDesc('');
+    setNewCourseCategory('');
+  };
+
+  // حذف درس من الكورس
+  const handleDeleteLesson = (courseId: number, lessonId: number) => {
+    if (confirm('هل أنت متأكد من حذف هذا الفيديو؟')) {
+      setCourses(courses.map(course => {
+        if (course.id === courseId) {
+          return {
+            ...course,
+            lessons: course.lessons.filter((l: any) => l.id !== lessonId)
+          };
+        }
+        return course;
+      }));
+      showToast('🗑️ تم حذف الفيديو بنجاح');
+    }
+  };
+
+  // إضافة فيديو للكورس
+  const handleAddVideoToCourse = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedCourseForVideo || !newVideoTitle) {
+      showToast('يرجى اختيار الكورس وعنوان الدرس!');
+      return;
+    }
+
+    const courseIndex = courses.findIndex(c => c.title.trim().toLowerCase() === selectedCourseForVideo.trim().toLowerCase());
+    const newLessonObj = {
       id: Date.now(),
-      title: newExamTitle,
-      instructor: userName,
+      title: newVideoTitle,
+      duration: newVideoDuration,
+      videoUrl: newVideoUrl || "https://www.w3schools.com/html/mov_bbb.mp4"
+    };
+
+    if (courseIndex !== -1) {
+      const updated = [...courses];
+      updated[courseIndex].lessons.push(newLessonObj);
+      setCourses(updated);
+      showToast('🎥 تمت إضافة الفيديو بنجاح للكورس!');
+    } else {
+      const newCourseObj = {
+        id: Date.now(),
+        title: selectedCourseForVideo,
+        instructor: userName,
+        category: 'العلوم والأحياء',
+        price: 'مجاناً 🎁',
+        description: 'قسم تعليمي جديد.',
+        lessons: [newLessonObj],
+        exam: null
+      };
+      setCourses([newCourseObj, ...courses]);
+      showToast('✨ تم إنشاء الكورس وإضافة الفيديو إليه!');
+    }
+
+    setNewVideoTitle('');
+    setNewVideoUrl('');
+    setSelectedCourseForVideo('');
+  };
+
+  // إضافة امتحان بواسطة المعلم
+  const handleSaveExam = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!examCourseTarget || !examTitle) {
+      showToast('يرجى تحديد الكورس وعنوان الامتحان!');
+      return;
+    }
+
+    const courseIndex = courses.findIndex(c => c.title.trim().toLowerCase() === examCourseTarget.trim().toLowerCase());
+    if (courseIndex === -1) {
+      showToast('❌ اسم الكورس المستهدف غير موجود! تأكد من كتابته بدقة.');
+      return;
+    }
+
+    const examObj = {
+      title: examTitle,
       questions: examQuestions
     };
 
-    setExams([newExamObj, ...exams]);
-    showToast('✨ تم إنشاء ونشر الامتحان بنجاح!');
-    setNewExamTitle('');
-    setExamQuestions([{ questionText: '', options: ['', '', '', ''], correctAnswer: 0 }]);
+    const updated = [...courses];
+    updated[courseIndex].exam = examObj;
+    setCourses(updated);
+    showToast('📝 تم نشر الامتحان بنجاح للكورس!');
+    setExamTitle('');
+    setExamCourseTarget('');
+    setExamQuestions([{ question: '', options: ['', '', '', ''], correctAnswer: 0 }]);
   };
 
-  // تصحيح الامتحان للطالب
-  const handleSubmitExam = (e: React.FormEvent) => {
-    e.preventDefault();
+  // بدء الامتحان للطالب
+  const handleStartExam = (exam: any) => {
+    setActiveExam(exam);
+    setExamAnswers({});
+    setCheatingWarnings(0);
+    setExamSubmitted(false);
+    setExamScore(0);
+  };
+
+  // تسليم الامتحان وحساب النتيجة
+  const handleSubmitExam = () => {
+    if (!activeExam) return;
     let score = 0;
     activeExam.questions.forEach((q: any, index: number) => {
-      if (studentAnswers[index] === q.correctAnswer) {
+      if (examAnswers[index] === q.correctAnswer) {
         score += 1;
       }
     });
-
     setExamScore(score);
     setExamSubmitted(true);
-    showToast(`🎯 انتهى الامتحان! حصيلتك: ${score} من ${activeExam.questions.length}`);
+    showToast(`🎯 انتهى الامتحان! نتيجتك: ${score} / ${activeExam.questions.length}`);
   };
 
   return (
@@ -314,10 +414,9 @@ export default function EduPlatform() {
 
           <nav className="hidden md:flex gap-6 font-medium text-sm items-center">
             <button onClick={() => setActiveTab('home')} className={activeTab === 'home' ? 'text-indigo-500 font-bold' : ''}>الرئيسية</button>
-            <button onClick={() => setActiveTab('courses')} className={activeTab === 'courses' ? 'text-indigo-500 font-bold' : ''}>الكورسات 🎥</button>
-            <button onClick={() => setActiveTab('exams')} className={activeTab === 'exams' ? 'text-indigo-500 font-bold' : ''}>الامتحانات 📝</button>
+            <button onClick={() => setActiveTab('courses')} className={activeTab === 'courses' ? 'text-indigo-500 font-bold' : ''}>الكورسات والامتحانات 🎥</button>
             {isLoggedIn && userRole === 'instructor' && (
-              <button onClick={() => setActiveTab('instructor-dashboard')} className={activeTab === 'instructor-dashboard' ? 'text-amber-500 font-bold' : ''}>لوحة التحكم والمعلم 👨‍🏫</button>
+              <button onClick={() => setActiveTab('instructor-dashboard')} className={activeTab === 'instructor-dashboard' ? 'text-amber-500 font-bold' : ''}>لوحة التحكم والامتحانات 👨‍🏫</button>
             )}
           </nav>
 
@@ -349,211 +448,382 @@ export default function EduPlatform() {
           <div className="space-y-12 text-center">
             <div className={`rounded-3xl p-12 border shadow-2xl ${darkMode ? 'bg-gradient-to-r from-indigo-900 to-slate-900 border-indigo-800' : 'bg-indigo-600 text-white'}`}>
               <h1 className="text-3xl sm:text-5xl font-extrabold mb-4">منصة بداية التعليمية الذكية</h1>
-              <p className="text-sm sm:text-lg mb-8 max-w-2xl mx-auto opacity-90">منصة متكاملة للكورسات مع نظام امتحانات آمن مزود بنظام حماية ضد الغش.</p>
+              <p className="text-sm sm:text-lg mb-8 max-w-2xl mx-auto opacity-90">منصة تعليمية متكاملة لإنشاء الكورسات، متابعة الدروس، وإجراء الامتحانات بنظام منع الغش الذكي.</p>
               <div className="flex justify-center gap-4">
                 <button onClick={() => setActiveTab('courses')} className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-6 py-3 rounded-xl font-bold shadow-lg transition">
-                  تصفح الكورسات 🎥
+                  تصفح الكورسات والامتحانات 🎥
                 </button>
-                <button onClick={() => setActiveTab('exams')} className="bg-indigo-500 hover:bg-indigo-400 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition">
-                  الامتحانات المتاحة 📝
-                </button>
+                {!isLoggedIn && (
+                  <button onClick={() => setActiveTab('auth')} className="bg-white/10 hover:bg-white/20 text-white border border-white/30 px-6 py-3 rounded-xl font-bold transition">
+                    انضم إلينا الآن 🚀
+                  </button>
+                )}
               </div>
             </div>
           </div>
         )}
 
-        {/* شاشة المصادقة */}
         {activeTab === 'auth' && !isLoggedIn && (
           <div className="max-w-md mx-auto space-y-6">
             <div className={`p-8 rounded-3xl border shadow-2xl space-y-6 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
+              
               <div className="flex bg-slate-900/60 p-1.5 rounded-2xl border border-slate-700">
-                <button onClick={() => setAuthMode('login')} className={`flex-1 py-2 text-xs font-bold rounded-xl transition ${authMode === 'login' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400'}`}>تسجيل الدخول</button>
-                <button onClick={() => setAuthMode('signup')} className={`flex-1 py-2 text-xs font-bold rounded-xl transition ${authMode === 'signup' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400'}`}>حساب جديد</button>
+                <button 
+                  onClick={() => setAuthMode('login')} 
+                  className={`flex-1 py-2 text-xs font-bold rounded-xl transition ${authMode === 'login' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400'}`}
+                >
+                  تسجيل الدخول
+                </button>
+                <button 
+                  onClick={() => setAuthMode('signup')} 
+                  className={`flex-1 py-2 text-xs font-bold rounded-xl transition ${authMode === 'signup' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400'}`}
+                >
+                  إنشاء حساب جديد
+                </button>
               </div>
 
               {authMode === 'login' ? (
                 <form onSubmit={handleLogin} className="space-y-4">
-                  <h2 className="text-xl font-bold text-center mb-2">تسجيل الدخول</h2>
+                  <h2 className="text-xl font-bold text-center mb-2">تسجيل الدخول إلى حسابك</h2>
                   <div>
                     <label className="block text-xs font-medium mb-1">البريد الإلكتروني</label>
-                    <input type="email" required value={inputEmail} onChange={e => setInputEmail(e.target.value)} placeholder="name@example.com" className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                    <input 
+                      type="email" 
+                      required 
+                      value={inputEmail} 
+                      onChange={e => setInputEmail(e.target.value)} 
+                      placeholder="name@example.com" 
+                      className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" 
+                    />
                   </div>
                   <div>
                     <label className="block text-xs font-medium mb-1">كلمة المرور</label>
-                    <input type="password" required value={inputPassword} onChange={e => setInputPassword(e.target.value)} placeholder="••••••••" className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                    <input 
+                      type="password" 
+                      required 
+                      value={inputPassword} 
+                      onChange={e => setInputPassword(e.target.value)} 
+                      placeholder="••••••••" 
+                      className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" 
+                    />
                   </div>
-                  <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl font-bold text-sm shadow transition">دخول 🚀</button>
-                  <p className="text-[11px] text-center text-slate-400 mt-2">حساب معلم للتجربة: teacher@edu.com | كلمة المرور: 123</p>
+                  <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl font-bold text-sm shadow transition">
+                    دخول 🚀
+                  </button>
+                  <p className="text-[11px] text-center text-slate-400 mt-2">
+                    حساب معلم للتجربة: teacher@edu.com | كلمة المرور: 123
+                  </p>
                 </form>
               ) : (
                 <form onSubmit={handleSignUp} className="space-y-4">
                   <h2 className="text-xl font-bold text-center mb-2">إنشاء حساب جديد</h2>
                   <div>
                     <label className="block text-xs font-medium mb-1">الاسم الكامل</label>
-                    <input type="text" required value={inputName} onChange={e => setInputName(e.target.value)} placeholder="محمد أحمد..." className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                    <input 
+                      type="text" 
+                      required 
+                      value={inputName} 
+                      onChange={e => setInputName(e.target.value)} 
+                      placeholder="محمد أحمد..." 
+                      className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" 
+                    />
                   </div>
                   <div>
                     <label className="block text-xs font-medium mb-1">البريد الإلكتروني</label>
-                    <input type="email" required value={inputEmail} onChange={e => setInputEmail(e.target.value)} placeholder="name@example.com" className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                    <input 
+                      type="email" 
+                      required 
+                      value={inputEmail} 
+                      onChange={e => setInputEmail(e.target.value)} 
+                      placeholder="name@example.com" 
+                      className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" 
+                    />
                   </div>
                   <div>
                     <label className="block text-xs font-medium mb-1">كلمة المرور</label>
-                    <input type="password" required value={inputPassword} onChange={e => setInputPassword(e.target.value)} placeholder="••••••••" className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                    <input 
+                      type="password" 
+                      required 
+                      value={inputPassword} 
+                      onChange={e => setInputPassword(e.target.value)} 
+                      placeholder="••••••••" 
+                      className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" 
+                    />
                   </div>
                   <div>
                     <label className="block text-xs font-medium mb-1">نوع الحساب</label>
-                    <select value={inputRole} onChange={e => setInputRole(e.target.value as any)} className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white">
-                      <option value="student">طالب</option>
-                      <option value="instructor">معلم</option>
+                    <select 
+                      value={inputRole} 
+                      onChange={e => setInputRole(e.target.value as any)} 
+                      className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white"
+                    >
+                      <option value="student">طالب (استعراض الكورسات والامتحانات)</option>
+                      <option value="instructor">معلم (إنشاء وإدارة الكورسات والامتحانات)</option>
                     </select>
                   </div>
-                  <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl font-bold text-sm shadow transition">تسجيل حساب جديد ✨</button>
+                  <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl font-bold text-sm shadow transition">
+                    تسجيل حساب جديد ✨
+                  </button>
                 </form>
               )}
+
             </div>
           </div>
         )}
 
-        {/* قسم الامتحانات ونظام منع الغش */}
-        {activeTab === 'exams' && (
-          <div className="space-y-8 max-w-3xl mx-auto">
-            {!activeExam ? (
-              <div className="space-y-6">
-                <h2 className="text-2xl sm:text-3xl font-bold">الامتحانات المتاحة 📝</h2>
-                <div className="grid grid-cols-1 gap-4">
-                  {exams.map(exam => (
-                    <div key={exam.id} className={`p-6 rounded-3xl border shadow-lg flex justify-between items-center ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
-                      <div>
-                        <h3 className="text-xl font-bold">{exam.title}</h3>
-                        <p className="text-xs text-amber-400 mt-1">👨‍🏫 المعلم: {exam.instructor} | عدد الأسئلة: {exam.questions.length}</p>
-                      </div>
-                      <button 
-                        onClick={() => {
-                          if (!isLoggedIn) {
-                            showToast('⚠️ يرجى تسجيل الدخول أولاً لأداء الامتحان!');
-                            setActiveTab('auth');
-                            return;
-                          }
-                          setActiveExam(exam);
-                          setStudentAnswers({});
-                          setCheatingWarnings(0);
-                          setExamSubmitted(false);
-                        }}
-                        className="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition shadow">
-                        بدء الامتحان 🚀
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div className={`p-8 rounded-3xl border shadow-2xl space-y-6 select-none ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
-                <div className="flex justify-between items-center border-b pb-4 border-slate-700">
+        {/* واجهة عرض الكورسات والامتحانات */}
+        {activeTab === 'courses' && (
+          <div className="space-y-8">
+            <h2 className="text-2xl sm:text-3xl font-bold">الكورسات والدروس والامتحانات 📚</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {courses.map(course => (
+                <div key={course.id} className={`p-6 rounded-3xl border shadow-lg space-y-4 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
                   <div>
-                    <h2 className="text-2xl font-bold text-indigo-400">{activeExam.title}</h2>
-                    <p className="text-xs text-rose-400 mt-1">🛡️ نظام حماية منع الغش مفعل (ممنوع مغادرة الصفحة أو نسخ الأسئلة)</p>
-                  </div>
-                  <div className="bg-rose-500/20 border border-rose-500/40 text-rose-300 px-3 py-1 rounded-xl text-xs font-bold">
-                    التحذيرات: {cheatingWarnings} / 3 ⚠️
-                  </div>
-                </div>
-
-                {!examSubmitted ? (
-                  <form onSubmit={handleSubmitExam} className="space-y-6">
-                    {activeExam.questions.map((q: any, qIndex: number) => (
-                      <div key={qIndex} className="p-4 bg-slate-900/50 rounded-2xl border border-slate-800 space-y-3">
-                        <p className="font-bold text-sm">س {qIndex + 1}: {q.questionText}</p>
-                        <div className="space-y-2">
-                          {q.options.map((opt: string, optIndex: number) => (
-                            <label key={optIndex} className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition ${studentAnswers[qIndex] === optIndex ? 'bg-indigo-600/30 border-indigo-500' : 'bg-slate-800/40 border-slate-700'}`}>
-                              <input 
-                                type="radio" 
-                                name={`question_${qIndex}`} 
-                                checked={studentAnswers[qIndex] === optIndex}
-                                onChange={() => setStudentAnswers({ ...studentAnswers, [qIndex]: optIndex })}
-                                className="text-indigo-600"
-                              />
-                              <span className="text-xs">{opt}</span>
-                            </label>
-                          ))}
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-full">{course.category}</span>
+                      
+                      {isLoggedIn && userRole === 'instructor' && (
+                        <div className="flex gap-2">
+                          <button onClick={() => handleStartEditCourse(course)} className="bg-amber-500/20 text-amber-400 px-3 py-1 rounded-lg text-xs font-bold hover:bg-amber-500/30">
+                            ✏️ تعديل
+                          </button>
+                          <button onClick={() => handleDeleteCourse(course.id)} className="bg-rose-500/20 text-rose-400 px-3 py-1 rounded-lg text-xs font-bold hover:bg-rose-500/30">
+                            🗑️ حذف
+                          </button>
                         </div>
-                      </div>
-                    ))}
-                    <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl font-bold text-sm transition shadow">
-                      تسليم الإجابات وإنهاء الامتحان ✅
-                    </button>
-                  </form>
-                ) : (
-                  <div className="text-center space-y-4 py-8">
-                    <h3 className="text-2xl font-bold">🎉 انتهى الامتحان</h3>
-                    <p className="text-lg">درجتك النهائية هي: <span className="text-emerald-400 font-extrabold">{examScore}</span> من <span className="font-extrabold">{activeExam.questions.length}</span></p>
-                    <button onClick={() => setActiveExam(null)} className="bg-indigo-600 text-white px-6 py-2.5 rounded-xl text-xs font-bold">العودة لقائمة الامتحانات</button>
+                      )}
+                    </div>
+
+                    <h3 className="text-xl font-bold mt-3">{course.title}</h3>
+                    <p className="text-xs text-amber-400 mt-1 font-semibold">👨‍🏫 المعلم: {course.instructor}</p>
+                    <p className="text-sm mt-2 opacity-80">{course.description}</p>
                   </div>
-                )}
-              </div>
-            )}
+
+                  {/* الدروس */}
+                  <div className="space-y-3 pt-3 border-t border-slate-700">
+                    <h4 className="text-xs font-bold text-amber-400">الفيديوهات والدروس ({course.lessons.length}):</h4>
+                    {course.lessons.length === 0 ? (
+                      <p className="text-xs text-slate-400">لا توجد دروس مضافة في هذا الكورس بعد.</p>
+                    ) : (
+                      course.lessons.map((lesson: any) => (
+                        <div key={lesson.id} className="p-3 bg-slate-900/40 rounded-xl border border-slate-800 space-y-2">
+                          <div className="flex justify-between items-center text-xs font-bold">
+                            <span>📺 {lesson.title} ({lesson.duration})</span>
+                            
+                            {isLoggedIn && userRole === 'instructor' && (
+                              <button onClick={() => handleDeleteLesson(course.id, lesson.id)} className="text-rose-400 hover:text-rose-300 text-[11px]">
+                                ❌ حذف الدرس
+                              </button>
+                            )}
+                          </div>
+                          {lesson.videoUrl && (
+                            <video controls className="w-full h-40 rounded-lg bg-black object-cover mt-1">
+                              <source src={lesson.videoUrl} type="video/mp4" />
+                            </video>
+                          )}
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {/* قسم الامتحان المتاح للكورس */}
+                  <div className="pt-3 border-t border-slate-700">
+                    <h4 className="text-xs font-bold text-indigo-400 mb-2">امتحان الكورس:</h4>
+                    {course.exam ? (
+                      <div className="p-3 bg-indigo-950/40 border border-indigo-800/50 rounded-xl flex justify-between items-center">
+                        <div>
+                          <p className="text-sm font-bold">📝 {course.exam.title}</p>
+                          <p className="text-[11px] text-slate-400">عدد الأسئلة: {course.exam.questions.length}</p>
+                        </div>
+                        {isLoggedIn && userRole === 'student' && (
+                          <button onClick={() => handleStartExam(course.exam)} className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-bold shadow">
+                            بدء الامتحان 🚀
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-slate-400">لا يوجد امتحان مضاف لهذا الكورس حالياً.</p>
+                    )}
+                  </div>
+
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
-        {/* لوحة تحكم المعلم (إنشاء امتحانات وكورسات) */}
-        {activeTab === 'instructor-dashboard' && isLoggedIn && userRole === 'instructor' && (
-          <div className="space-y-12 max-w-4xl mx-auto">
-            
-            {/* نموذج إنشاء امتحان جديد */}
-            <div className={`p-8 rounded-3xl border shadow-2xl space-y-6 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
-              <h2 className="text-2xl font-bold text-indigo-400">📝 إنشاء امتحان جديد للطلاب</h2>
-              <form onSubmit={handleSaveExam} className="space-y-4">
+        {/* نافذة الامتحان التفاعلية مع منع الغش */}
+        {activeExam && (
+          <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex justify-center items-center p-4 overflow-y-auto" onCopy={e => e.preventDefault()} onPaste={e => e.preventDefault()}>
+            <div className={`max-w-2xl w-full p-8 rounded-3xl border shadow-2xl space-y-6 ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'bg-white border-slate-200'}`}>
+              
+              <div className="flex justify-between items-center border-b border-slate-700 pb-4">
                 <div>
-                  <label className="block text-xs font-medium mb-1">عنوان الامتحان</label>
-                  <input type="text" required value={newExamTitle} onChange={e => setNewExamTitle(e.target.value)} placeholder="مثال: امتحان الفيزياء الشهرى" className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                  <h2 className="text-xl font-bold text-indigo-400">{activeExam.title}</h2>
+                  <p className="text-xs text-rose-400 mt-1 font-bold">⚠️ نظام منع الغش مفعل: مغادرة الصفحة أو التبديل ستعرضك للإنذار (الإنذار: {cheatingWarnings}/3)</p>
                 </div>
+                <button onClick={() => setActiveExam(null)} className="text-slate-400 hover:text-white font-bold text-sm">✕ إغلاق</button>
+              </div>
 
-                <div className="space-y-4 pt-4 border-t border-slate-700">
-                  <h3 className="text-sm font-bold text-amber-400">أسئلة الامتحان (اختيار من متعدد):</h3>
-                  {examQuestions.map((q, qIndex) => (
+              {!examSubmitted ? (
+                <div className="space-y-6 max-h-[60vh] overflow-y-auto px-2">
+                  {activeExam.questions.map((q: any, qIndex: number) => (
                     <div key={qIndex} className="p-4 bg-slate-900/50 rounded-2xl border border-slate-800 space-y-3">
-                      <div>
-                        <label className="block text-xs font-medium mb-1">نص السؤال {qIndex + 1}</label>
-                        <input type="text" required value={q.questionText} onChange={e => {
-                          const updated = [...examQuestions];
-                          updated[qIndex].questionText = e.target.value;
-                          setExamQuestions(updated);
-                        }} placeholder="اكتب السؤال هنا..." className="w-full px-4 py-2 rounded-xl border text-xs bg-slate-900 border-slate-700 text-white" />
-                      </div>
-
+                      <p className="text-sm font-bold">س {qIndex + 1}: {q.question}</p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {q.options.map((opt: string, optIndex: number) => (
-                          <div key={optIndex}>
-                            <label className="block text-[10px] text-slate-400 mb-0.5">الخيار {optIndex + 1}</label>
-                            <input type="text" required value={opt} onChange={e => {
-                              const updated = [...examQuestions];
-                              updated[qIndex].options[optIndex] = e.target.value;
-                              setExamQuestions(updated);
-                            }} placeholder={`خيار ${optIndex + 1}`} className="w-full px-3 py-2 rounded-xl border text-xs bg-slate-900 border-slate-700 text-white" />
-                          </div>
+                          <label key={optIndex} className={`flex items-center gap-2 p-2.5 rounded-xl border text-xs cursor-pointer transition ${examAnswers[qIndex] === optIndex ? 'bg-indigo-600/30 border-indigo-500 font-bold' : 'border-slate-700 bg-slate-800/40'}`}>
+                            <input 
+                              type="radio" 
+                              name={`question-${qIndex}`} 
+                              checked={examAnswers[qIndex] === optIndex}
+                              onChange={() => setExamAnswers({...examAnswers, [qIndex]: optIndex})}
+                            />
+                            {opt}
+                          </label>
                         ))}
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-medium mb-1 text-emerald-400">رقم الخيار الصحيح (من 1 إلى 4)</label>
-                        <select value={q.correctAnswer} onChange={e => {
-                          const updated = [...examQuestions];
-                          updated[qIndex].correctAnswer = parseInt(e.target.value);
-                          setExamQuestions(updated);
-                        }} className="w-full px-4 py-2 rounded-xl border text-xs bg-slate-900 border-slate-700 text-white">
-                          <option value={0}>الخيار الأول</option>
-                          <option value={1}>الخيار الثاني</option>
-                          <option value={2}>الخيار الثالث</option>
-                          <option value={3}>الخيار الرابع</option>
-                        </select>
                       </div>
                     </div>
                   ))}
+                  <button onClick={handleSubmitExam} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl font-bold text-sm shadow transition">
+                    تسليم الامتحان ✅
+                  </button>
+                </div>
+              ) : (
+                <div className="text-center space-y-4 py-8">
+                  <h3 className="text-2xl font-extrabold text-emerald-400">🎉 انتهى الامتحان بنجاح!</h3>
+                  <p className="text-lg font-bold">نتيجتك النهائية: {examScore} من {activeExam.questions.length}</p>
+                  <button onClick={() => setActiveExam(null)} className="bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-bold text-xs">
+                    العودة للكورسات
+                  </button>
+                </div>
+              )}
 
-                  <button type="button" onClick={handleAddQuestionField} className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-xl text-xs font-bold">+ إضافة سؤال آخر</button>
+            </div>
+          </div>
+        )}
+
+        {/* لوحة تحكم المعلم (إنشاء الكورسات، الفيديوهات، والامتحانات) */}
+        {activeTab === 'instructor-dashboard' && isLoggedIn && userRole === 'instructor' && (
+          <div className="space-y-12 max-w-4xl mx-auto">
+            
+            {/* إنشاء أو تعديل كورس */}
+            <div className={`p-8 rounded-3xl border shadow-2xl space-y-6 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold text-amber-400">
+                  {editingCourseId ? '✏️ تعديل بيانات الكورس' : '📚 إنشاء كورس جديد'}
+                </h2>
+                {editingCourseId && (
+                  <button onClick={() => { setEditingCourseId(null); setNewCourseTitle(''); setNewCourseInstructor(''); setNewCourseDesc(''); }} className="text-xs bg-slate-700 px-3 py-1.5 rounded-lg">إلغاء التعديل</button>
+                )}
+              </div>
+
+              <form onSubmit={handleSaveCourse} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium mb-1">اسم الكورس</label>
+                    <input type="text" required value={newCourseTitle} onChange={e => setNewCourseTitle(e.target.value)} placeholder="مثال: كورس الأحياء المتقدم" className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium mb-1">اسم المعلم المسؤول</label>
+                    <input type="text" value={newCourseInstructor} onChange={e => setNewCourseInstructor(e.target.value)} placeholder="اسم المعلم..." className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium mb-1">التصنيف</label>
+                    <input type="text" value={newCourseCategory} onChange={e => setNewCourseCategory(e.target.value)} placeholder="التصنيف..." className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium mb-1">السعر</label>
+                    <input type="text" value={newCoursePrice} onChange={e => setNewCoursePrice(e.target.value)} placeholder="مجاناً أو 200 ج.م" className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium mb-1">وصف مختصر</label>
+                    <input type="text" value={newCourseDesc} onChange={e => setNewCourseDesc(e.target.value)} placeholder="وصف..." className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                  </div>
+                </div>
+                <button type="submit" className="bg-amber-600 hover:bg-amber-500 text-white px-6 py-2.5 rounded-xl text-xs font-bold transition">
+                  {editingCourseId ? '💾 حفظ التعديلات' : '+ إنشاء الكورس'}
+                </button>
+              </form>
+            </div>
+
+            {/* إضافة فيديو للكورس */}
+            <div className={`p-8 rounded-3xl border shadow-2xl space-y-6 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
+              <h2 className="text-2xl font-bold text-indigo-400">🎥 إضافة فيديو أو درس جديد لكورس</h2>
+              <form onSubmit={handleAddVideoToCourse} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-medium mb-1">اسم الكورس المستهدف</label>
+                  <input type="text" required value={selectedCourseForVideo} onChange={e => setSelectedCourseForVideo(e.target.value)} placeholder="اكتب اسم الكورس بالضبط..." className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium mb-1">عنوان الدرس</label>
+                    <input type="text" required value={newVideoTitle} onChange={e => setNewVideoTitle(e.target.value)} placeholder="مثال: الدرس الأول" className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium mb-1">مدة الفيديو</label>
+                    <input type="text" value={newVideoDuration} onChange={e => setNewVideoDuration(e.target.value)} placeholder="10 دقائق" className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium mb-1">رابط الفيديو (MP4)</label>
+                  <input type="text" value={newVideoUrl} onChange={e => setNewVideoUrl(e.target.value)} placeholder="https://..." className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                </div>
+                <button type="submit" className="bg-indigo-600 text-white px-6 py-2.5 rounded-xl text-xs font-bold">نشر الفيديو</button>
+              </form>
+            </div>
+
+            {/* إنشاء امتحان للكورس */}
+            <div className={`p-8 rounded-3xl border shadow-2xl space-y-6 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
+              <h2 className="text-2xl font-bold text-emerald-400">📝 إنشاء امتحان كورس مع أسئلة اختيار من متعدد</h2>
+              <form onSubmit={handleSaveExam} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-medium mb-1">اسم الكورس المستهدف</label>
+                  <input type="text" required value={examCourseTarget} onChange={e => setExamCourseTarget(e.target.value)} placeholder="اكتب اسم الكورس تماماً..." className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium mb-1">عنوان الامتحان</label>
+                  <input type="text" required value={examTitle} onChange={e => setExamTitle(e.target.value)} placeholder="مثال: امتحان الشهر الأول في الأحياء" className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white" />
                 </div>
 
-                <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl font-bold text-sm shadow transition mt-4">نشر الامتحان للطلاب 🚀</button>
+                {examQuestions.map((q, qIdx) => (
+                  <div key={qIdx} className="p-4 bg-slate-900/60 rounded-2xl border border-slate-800 space-y-3">
+                    <div>
+                      <label className="block text-xs font-medium mb-1">السؤال {qIdx + 1}</label>
+                      <input type="text" required value={q.question} onChange={e => {
+                        const updated = [...examQuestions];
+                        updated[qIdx].question = e.target.value;
+                        setExamQuestions(updated);
+                      }} placeholder="نص السؤال..." className="w-full px-4 py-2 rounded-xl border text-xs bg-slate-900 border-slate-700 text-white" />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {q.options.map((opt: string, optIdx: number) => (
+                        <input key={optIdx} type="text" required value={opt} onChange={e => {
+                          const updated = [...examQuestions];
+                          updated[qIdx].options[optIdx] = e.target.value;
+                          setExamQuestions(updated);
+                        }} placeholder={`الخيار ${optIdx + 1}`} className="w-full px-3 py-2 rounded-xl border text-xs bg-slate-900 border-slate-700 text-white" />
+                      ))}
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium mb-1">رقم الإجابة الصحيحة (0 إلى 3)</label>
+                      <input type="number" min="0" max="3" value={q.correctAnswer} onChange={e => {
+                        const updated = [...examQuestions];
+                        updated[qIdx].correctAnswer = parseInt(e.target.value) || 0;
+                        setExamQuestions(updated);
+                      }} className="w-32 px-3 py-2 rounded-xl border text-xs bg-slate-900 border-slate-700 text-white" />
+                    </div>
+                  </div>
+                ))}
+
+                <button type="button" onClick={() => setExamQuestions([...examQuestions, { question: '', options: ['', '', '', ''], correctAnswer: 0 }])} className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-xl text-xs font-bold">
+                  + إضافة سؤال آخر
+                </button>
+                <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl font-bold text-sm shadow transition mt-4">
+                  نشر الامتحان 🚀
+                </button>
               </form>
             </div>
 
