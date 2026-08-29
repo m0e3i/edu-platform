@@ -5,14 +5,12 @@ export default function EduPlatform() {
   const [darkMode, setDarkMode] = useState(true);
   const [activeTab, setActiveTab] = useState('home');
   
-  // نظام الإشعارات
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  // المراحل الدراسية مع تفريع السنين الدراسية لكل مرحلة
   const educationalStages = [
     { 
       id: 'primary', 
@@ -54,7 +52,6 @@ export default function EduPlatform() {
     }
   ];
 
-  // حالة تسجيل الدخول والمستخدم الحالي
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState('');
   const [userEmail, setUserEmail] = useState('');
@@ -64,7 +61,6 @@ export default function EduPlatform() {
   const [userStage, setUserStage] = useState('secondary'); 
   const [userGrade, setUserGrade] = useState('sec-3');     
 
-  // حقول شاشة الدخول / إنشاء الحساب
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const [inputName, setInputName] = useState('');
   const [inputEmail, setInputEmail] = useState('');
@@ -75,16 +71,15 @@ export default function EduPlatform() {
   const [inputStage, setInputStage] = useState('secondary');
   const [inputGrade, setInputGrade] = useState('sec-3');
 
-  // قاعدة بيانات المستخدمين المسجلين
+  // تعريف الصفوف المتاحة بناءً على المرحلة المختارة في التسجيل لتجنب الخطأ
+  const currentAvailableGrades = educationalStages.find(s => s.id === inputStage)?.grades || [];
+
   const [usersList, setUsersList] = useState<any[]>([
     { name: 'أحمد المعلم', email: 'teacher@edu.com', password: '123', phone: '01000000000', parentPhone: 'N/A', role: 'instructor', stage: 'secondary', grade: 'sec-3' },
     { name: 'محمد الطالب', email: 'student@edu.com', password: '123', phone: '01111111111', parentPhone: '01222222222', role: 'student', stage: 'secondary', grade: 'sec-3' }
   ]);
 
-  // سجل درجات الامتحانات للطلاب
   const [examResultsLog, setExamResultsLog] = useState<any[]>([]);
-
-  // حالة استعراض المرحلة والصف عبر النوافذ التفاعلية المطلوبة
   const [selectedStageModal, setSelectedStageModal] = useState<any | null>(null);
   const [selectedGradeModal, setSelectedGradeModal] = useState<any | null>(null);
 
@@ -106,7 +101,6 @@ export default function EduPlatform() {
     }
   ]);
 
-  // حقول إنشاء/تعديل كورس
   const [editingCourseId, setEditingCourseId] = useState<number | null>(null);
   const [newCourseTitle, setNewCourseTitle] = useState('');
   const [newCourseInstructor, setNewCourseInstructor] = useState('');
@@ -116,24 +110,20 @@ export default function EduPlatform() {
   const [newCoursePrice, setNewCoursePrice] = useState('مجاناً 🎁');
   const [newCourseDesc, setNewCourseDesc] = useState('');
 
-  // حقول إضافة فيديو أو ملف PDF للكورس
   const [selectedCourseForContent, setSelectedCourseForContent] = useState('');
   const [newVideoTitle, setNewVideoTitle] = useState('');
   const [newVideoDuration, setNewVideoDuration] = useState('10 دقائق');
   const [newVideoUrl, setNewVideoUrl] = useState('');
 
-  // حقول رفع ملف PDF
   const [newPdfTitle, setNewPdfTitle] = useState('');
   const [newPdfUrl, setNewPdfUrl] = useState('');
 
-  // حقول إنشاء امتحان للمعلم
   const [examCourseTarget, setExamCourseTarget] = useState('');
   const [examTitle, setExamTitle] = useState('');
   const [examQuestions, setExamQuestions] = useState<any[]>([
     { question: '', options: ['', '', '', ''], correctAnswer: 0 }
   ]);
 
-  // حالة الامتحان الجاري للطالب
   const [activeExam, setActiveExam] = useState<any>(null);
   const [examAnswers, setExamAnswers] = useState<{ [key: number]: number }>({});
   const [cheatingWarnings, setCheatingWarnings] = useState(0);
@@ -141,7 +131,6 @@ export default function EduPlatform() {
   const [examScore, setExamScore] = useState(0);
   const [examStartTime, setExamStartTime] = useState<number>(0);
 
-  // تحميل البيانات عند فتح الصفحة
   useEffect(() => {
     try {
       const savedUsers = localStorage.getItem('bedaya_edu_users_db');
@@ -169,7 +158,6 @@ export default function EduPlatform() {
     }
   }, []);
 
-  // حفظ البيانات في localStorage
   useEffect(() => {
     try {
       localStorage.setItem('bedaya_edu_courses', JSON.stringify(courses));
@@ -180,7 +168,6 @@ export default function EduPlatform() {
     }
   }, [courses, usersList, examResultsLog]);
 
-  // مراقبة الغش أثناء الامتحان
   useEffect(() => {
     if (!activeExam || examSubmitted) return;
 
@@ -221,7 +208,6 @@ export default function EduPlatform() {
     setActiveExam(null);
   };
 
-  // دالة إنشاء حساب جديد (Sign Up)
   const handleSignUp = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputName || !inputEmail || !inputPassword || !inputPhone) {
@@ -281,7 +267,6 @@ export default function EduPlatform() {
     setActiveTab('home');
   };
 
-  // دالة تسجيل الدخول (Login)
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputEmail || !inputPassword) {
@@ -322,7 +307,6 @@ export default function EduPlatform() {
     setActiveTab('home');
   };
 
-  // تسجيل الخروج
   const handleLogout = () => {
     setIsLoggedIn(false);
     setUserName('');
@@ -344,7 +328,6 @@ export default function EduPlatform() {
     setActiveTab('home');
   };
 
-  // حذف كورس
   const handleDeleteCourse = (courseId: number) => {
     if (confirm('هل أنت متأكد من حذف هذا الكورس نهائياً؟')) {
       setCourses(courses.filter(c => c.id !== courseId));
@@ -352,7 +335,6 @@ export default function EduPlatform() {
     }
   };
 
-  // بدء تعديل كورس
   const handleStartEditCourse = (course: any) => {
     setEditingCourseId(course.id);
     setNewCourseTitle(course.title);
@@ -366,7 +348,6 @@ export default function EduPlatform() {
     showToast('✏️ قم بتعديل بيانات الكورس في لوحة التحكم');
   };
 
-  // حفظ الكورس (إنشاء أو تعديل) مع ربطه مباشرة بالمرحلة والصف المحددين
   const handleSaveCourse = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCourseTitle) {
@@ -411,7 +392,6 @@ export default function EduPlatform() {
     setNewCourseCategory('');
   };
 
-  // حذف درس من الكورس
   const handleDeleteLesson = (courseId: number, lessonId: number) => {
     if (confirm('هل أنت متأكد من حذف هذا الفيديو؟')) {
       setCourses(courses.map(course => {
@@ -427,7 +407,6 @@ export default function EduPlatform() {
     }
   };
 
-  // حذف ملف PDF من الكورس
   const handleDeletePdf = (courseId: number, pdfId: number) => {
     if (confirm('هل أنت متأكد من حذف هذا الملف؟')) {
       setCourses(courses.map(course => {
@@ -443,7 +422,6 @@ export default function EduPlatform() {
     }
   };
 
-  // إضافة فيديو للكورس
   const handleAddVideoToCourse = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedCourseForContent || !newVideoTitle || !newVideoUrl) {
@@ -474,7 +452,6 @@ export default function EduPlatform() {
     setSelectedCourseForContent('');
   };
 
-  // إضافة ملف PDF للكورس
   const handleAddPdfToCourse = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedCourseForContent || !newPdfTitle || !newPdfUrl) {
@@ -505,7 +482,6 @@ export default function EduPlatform() {
     setSelectedCourseForContent('');
   };
 
-  // رفع ملف PDF محلي وتحويله لـ Base64
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -522,7 +498,6 @@ export default function EduPlatform() {
     }
   };
 
-  // رفع فيديو محلي (MP4) وتحويله لـ Base64
   const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -541,7 +516,6 @@ export default function EduPlatform() {
     }
   };
 
-  // إضافة امتحان بواسطة المعلم
   const handleSaveExam = (e: React.FormEvent) => {
     e.preventDefault();
     if (!examCourseTarget || !examTitle) {
@@ -569,7 +543,6 @@ export default function EduPlatform() {
     setExamQuestions([{ question: '', options: ['', '', '', ''], correctAnswer: 0 }]);
   };
 
-  // بدء الامتحان للطالب
   const handleStartExam = (exam: any) => {
     setActiveExam(exam);
     setExamAnswers({});
@@ -579,7 +552,6 @@ export default function EduPlatform() {
     setExamStartTime(Date.now());
   };
 
-  // تسليم الامتحان
   const handleSubmitExam = () => {
     if (!activeExam) return;
     let score = 0;
@@ -594,7 +566,6 @@ export default function EduPlatform() {
     showToast(`🎯 انتهى الامتحان! نتيجتك: ${score} / ${activeExam.questions.length}`);
   };
 
-  // حفظ سجل الامتحان
   const saveExamResultToLog = (score: number, warningsCount: number) => {
     const durationMs = Date.now() - examStartTime;
     const totalSeconds = Math.floor(durationMs / 1000);
@@ -633,7 +604,6 @@ export default function EduPlatform() {
         </div>
       )}
 
-      {/* الهيدر */}
       <header className={`border-b sticky top-0 z-45 shadow-md ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
           <div className="text-xl sm:text-2xl font-black tracking-wide cursor-pointer flex items-center gap-1.5" onClick={() => setActiveTab('home')}>
@@ -670,7 +640,6 @@ export default function EduPlatform() {
         </div>
       </header>
 
-      {/* المحتوى الرئيسي */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-10 min-h-[600px]">
 
         {activeTab === 'home' && (
@@ -679,7 +648,6 @@ export default function EduPlatform() {
               <h1 className="text-3xl sm:text-5xl font-extrabold mb-4">منصة BEDAYA EDU التعليمية الذكية</h1>
               <p className="text-sm sm:text-lg mb-8 max-w-2xl mx-auto opacity-90">اختر المرحلة الدراسية لتفتح لك الصفوف، ومنها تستطيع تصفح أو إضافة الكورسات، الفيديوهات (MP4)، ملفات الـ PDF، والامتحانات الذكية.</p>
               
-              {/* واجهة المراحل الدراسية التفاعلية */}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 max-w-6xl mx-auto mb-10 text-right">
                 {educationalStages.map((stage) => (
                   <div 
@@ -713,7 +681,6 @@ export default function EduPlatform() {
           </div>
         )}
 
-        {/* نافذة اختيار الصفوف (تظهر عند النضغط على المرحلة) */}
         {selectedStageModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
             <div className={`w-full max-w-xl rounded-3xl p-6 sm:p-8 border shadow-2xl relative ${darkMode ? 'bg-[#1e293b] border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'}`}>
@@ -753,7 +720,6 @@ export default function EduPlatform() {
           </div>
         )}
 
-        {/* النافذة الخاصة بالصف الدراسي وتتيح عرض كورساته وإضافة كورسات جديدة بداخلها */}
         {selectedGradeModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto">
             <div className={`w-full max-w-3xl rounded-3xl p-6 sm:p-8 border shadow-2xl relative my-8 ${darkMode ? 'bg-[#1e293b] border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'}`}>
@@ -784,7 +750,6 @@ export default function EduPlatform() {
                 )}
               </div>
 
-              {/* كورسات هذا الصف */}
               <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
                 {courses.filter(c => c.grade === selectedGradeModal.id).length === 0 ? (
                   <div className="text-center py-10 bg-slate-900/40 rounded-2xl border border-dashed border-slate-700">
@@ -806,7 +771,6 @@ export default function EduPlatform() {
                       </div>
                       <p className="text-xs text-slate-300">{course.description}</p>
 
-                      {/* فيديوهات الكورس */}
                       <div className="space-y-2 pt-2 border-t border-slate-700/50">
                         <span className="text-xs font-bold text-amber-400 block">🎥 فيديوهات الشرح ({course.lessons?.length || 0}):</span>
                         {course.lessons?.map((lesson: any) => (
@@ -823,7 +787,6 @@ export default function EduPlatform() {
                         ))}
                       </div>
 
-                      {/* ملفات PDF */}
                       {course.pdfs && course.pdfs.length > 0 && (
                         <div className="space-y-2 pt-2 border-t border-slate-700/50">
                           <span className="text-xs font-bold text-indigo-400 block">📄 ملفات الـ PDF المرفقة:</span>
@@ -843,7 +806,6 @@ export default function EduPlatform() {
                         </div>
                       )}
 
-                      {/* امتحان الكورس */}
                       {course.exam && (
                         <div className="pt-3 border-t border-slate-700/50">
                           <button 
@@ -1018,7 +980,7 @@ export default function EduPlatform() {
                           onChange={e => setInputGrade(e.target.value)}
                           className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white"
                         >
-                          {availableGrades.map(g => (
+                          {currentAvailableGrades.map((g: any) => (
                             <option key={g.id} value={g.id}>{g.name}</option>
                           ))}
                         </select>
@@ -1062,7 +1024,6 @@ export default function EduPlatform() {
                   </div>
                   <p className="text-xs text-slate-300">{course.description}</p>
 
-                  {/* قائمة فيديوهات الدروس */}
                   <div className="space-y-3 pt-3 border-t border-slate-700/50">
                     <span className="text-xs font-bold text-amber-400 block">🎥 الفيديوهات والشروحات التعليمية ({course.lessons?.length || 0}):</span>
                     {course.lessons && course.lessons.length > 0 ? (
@@ -1088,7 +1049,6 @@ export default function EduPlatform() {
                     )}
                   </div>
 
-                  {/* ملفات الـ PDF */}
                   <div className="space-y-2 pt-3 border-t border-slate-700/50">
                     <span className="text-xs font-bold text-indigo-400 block">📄 ملفات الـ PDF المرفقة ({course.pdfs?.length || 0}):</span>
                     {course.pdfs && course.pdfs.length > 0 ? (
@@ -1109,7 +1069,6 @@ export default function EduPlatform() {
                     )}
                   </div>
 
-                  {/* زر الامتحان */}
                   {course.exam && (
                     <div className="pt-3 border-t border-slate-700/50">
                       <button 
@@ -1133,7 +1092,6 @@ export default function EduPlatform() {
           </div>
         )}
 
-        {/* لوحة تحكم المعلم (تتضمن إضافة الفيديوهات، ملفات PDF، الكورسات، وإنشاء الامتحانات وسجل الدرجات) */}
         {isLoggedIn && userRole === 'instructor' && activeTab === 'instructor-dashboard' && (
           <div className="space-y-10">
             <div className="bg-gradient-to-r from-amber-600 to-indigo-700 p-8 rounded-3xl text-white shadow-xl">
@@ -1143,7 +1101,6 @@ export default function EduPlatform() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               
-              {/* قسم إنشاء أو تعديل كورس */}
               <div className={`p-6 rounded-3xl border shadow-xl ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'} space-y-6`}>
                 <h3 className="text-lg font-bold text-amber-400">{editingCourseId ? '✏️ تعديل كورس' : '✨ إنشاء كورس جديد وربطه بالصف الدراسي'}</h3>
                 
@@ -1184,7 +1141,7 @@ export default function EduPlatform() {
                         onChange={e => setNewCourseGrade(e.target.value)}
                         className="w-full px-4 py-2.5 rounded-xl border text-sm bg-slate-900 border-slate-700 text-white"
                       >
-                        {educationalStages.find(s => s.id === newCourseStage)?.grades.map(g => (
+                        {educationalStages.find(s => s.id === newCourseStage)?.grades.map((g: any) => (
                           <option key={g.id} value={g.id}>{g.name}</option>
                         ))}
                       </select>
@@ -1247,7 +1204,6 @@ export default function EduPlatform() {
                 </form>
               </div>
 
-              {/* قسم إضافة الفيديوهات وملفات PDF للكورس */}
               <div className={`p-6 rounded-3xl border shadow-xl ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'} space-y-6`}>
                 <h3 className="text-lg font-bold text-indigo-400">🎥 📄 إضافة فيديو أو ملف PDF لأي كورس</h3>
                 
@@ -1265,7 +1221,6 @@ export default function EduPlatform() {
                   </select>
                 </div>
 
-                {/* نموذج إضافة فيديو */}
                 <form onSubmit={handleAddVideoToCourse} className="space-y-3 pt-3 border-t border-slate-700">
                   <span className="text-xs font-bold text-amber-400 block">إضافة فيديو شرح (MP4 أو رابط):</span>
                   <input 
@@ -1293,7 +1248,6 @@ export default function EduPlatform() {
                   </button>
                 </form>
 
-                {/* نموذج إضافة ملف PDF */}
                 <form onSubmit={handleAddPdfToCourse} className="space-y-3 pt-3 border-t border-slate-700">
                   <span className="text-xs font-bold text-indigo-400 block">إضافة ملف PDF (مذكرة / كتاب):</span>
                   <input 
@@ -1324,7 +1278,6 @@ export default function EduPlatform() {
               </div>
             </div>
 
-            {/* قسم إنشاء الامتحانات الذكية */}
             <div className={`p-6 rounded-3xl border shadow-xl ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'} space-y-6`}>
               <h3 className="text-lg font-bold text-amber-400">📝 إنشاء امتحان ذكي لأي كورس مع نظام منع الغش</h3>
               
@@ -1438,7 +1391,6 @@ export default function EduPlatform() {
               </form>
             </div>
 
-            {/* سجل درجات الامتحانات للطلاب */}
             <div className={`p-6 rounded-3xl border shadow-xl ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'} space-y-4`}>
               <h3 className="text-lg font-bold text-indigo-400">📊 سجل درجات الامتحانات والتقارير المرسلة لولي الأمر</h3>
               
@@ -1489,7 +1441,6 @@ export default function EduPlatform() {
 
       </main>
 
-      {/* نافذة أداء الامتحان للطالب مع نظام مراقبة الغش */}
       {activeExam && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 overflow-y-auto">
           <div className={`w-full max-w-2xl rounded-3xl p-6 sm:p-8 border shadow-2xl relative my-8 ${darkMode ? 'bg-[#1e293b] border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'}`}>
@@ -1554,7 +1505,6 @@ export default function EduPlatform() {
         </div>
       )}
 
-      {/* الفوتر */}
       <footer className={`border-t py-6 text-center text-xs text-slate-500 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
         <p>جميع الحقوق محفوظة © 2026 منصة BEDAYA EDU التعليمية الذكية 🎓</p>
       </footer>
