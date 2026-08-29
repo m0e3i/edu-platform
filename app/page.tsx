@@ -73,7 +73,7 @@ export default function EduPlatform() {
 
   // تعريف الصفوف المتاحة بناءً على المرحلة المختارة في التسجيل لتجنب الخطأ
   const currentAvailableGrades = educationalStages.find(s => s.id === inputStage)?.grades || [];
-
+setUserRole((localStorage.getItem('edu_urole_v9') as any) || 'student');
   const [usersList, setUsersList] = useState<any[]>([
     { name: 'أحمد المعلم', email: 'teacher@edu.com', password: '123', phone: '01000000000', parentPhone: 'N/A', role: 'instructor', stage: 'secondary', grade: 'sec-3' },
     { name: 'محمد الطالب', email: 'student@edu.com', password: '123', phone: '01111111111', parentPhone: '01222222222', role: 'student', stage: 'secondary', grade: 'sec-3' }
