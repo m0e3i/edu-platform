@@ -1241,7 +1241,7 @@ export default function EduPlatform() {
                           {examQuestions.length > 1 && (
                             <button 
                               type="button" 
-                              onClick={() => setExamQuestions(examQuestions.filter((_, idx) => idx !== qIndex))}
+                              onClick={() => setExamQuestions(examQuestions.filter((_, idx: number) => idx !== qIndex))}
                               className="text-rose-400 text-xs font-bold"
                             >
                               حذف السؤال 🗑️
