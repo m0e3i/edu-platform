@@ -653,7 +653,7 @@ export default function EduPlatform() {
         </div>
       )}
 
-      {/* HEADER - تصميم هادئ وأنيق وفاتح بالكامل أو داكن احترافي */}
+      {/* HEADER */}
       <header className={`border-b sticky top-0 z-45 shadow-sm transition-colors duration-300 ${darkMode ? 'bg-[#131c2e] border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-800'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex justify-between items-center">
           <div className="text-xl sm:text-2xl font-black tracking-wide cursor-pointer flex items-center gap-2" onClick={() => setActiveTab('home')}>
@@ -853,7 +853,7 @@ export default function EduPlatform() {
           </div>
         )}
 
-        {/* AUTH TAB (تسجيل الدخول / إنشاء حساب) */}
+        {/* AUTH TAB */}
         {activeTab === 'auth' && (
           <div className="max-w-md mx-auto p-8 rounded-3xl border shadow-sm transition-colors bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
             <div className="flex gap-2 mb-6 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl">
@@ -877,7 +877,7 @@ export default function EduPlatform() {
                 <div>
                   <label className="block text-xs font-bold mb-1">البريد الإلكتروني</label>
                   <input 
-                    type="email5" 
+                    type="email" 
                     value={inputEmail} 
                     onChange={e => setInputEmail(e.target.value)} 
                     placeholder="example@edu.com"
@@ -994,14 +994,14 @@ export default function EduPlatform() {
         {/* INSTRUCTOR / ADMIN CONTENT MANAGEMENT DASHBOARD */}
         {activeTab === 'instructor-dashboard' && isLoggedIn && (userRole === 'instructor' || userRole === 'admin') && (
           <div className="space-y-10">
-            <div className="p-6 rounded-3xl border bg-amber-500/10 border-amber-500/30">
-              <h2 className="text-xl font-black mb-2 text-amber-600 dark:text-amber-400">لوحة تحكم المحتوى، الفيديوهات والامتحانات الذكية</h2>
-              <p className="text-xs text-slate-600 dark:text-slate-300">من هنا يمكنك إضافة كورسات جديدة، رفع أو ربط الفيديوهات والملفات، وإنشاء الامتحانات وحذف أو مراجعة سجلات درجات الطلاب.</p>
+            <div className={`p-6 rounded-3xl border shadow-sm ${darkMode ? 'bg-amber-950/20 border-amber-800/40 text-amber-200' : 'bg-amber-50 border-amber-200 text-amber-900'}`}>
+              <h2 className="text-xl font-black mb-2">لوحة تحكم المحتوى، الفيديوهات والامتحانات الذكية</h2>
+              <p className="text-xs opacity-90">من هنا يمكنك إضافة كورسات جديدة، رفع أو ربط الفيديوهات والملفات، وإنشاء الامتحانات وحذف أو مراجعة سجلات درجات الطلاب.</p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* إضافة كورس جديد */}
-              <div className="p-6 rounded-3xl border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+              <div className={`p-6 rounded-3xl border shadow-sm space-y-4 ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-800'}`}>
                 <h3 className="text-base font-bold text-teal-600 dark:text-teal-400">1. إنشاء كورس دراسي جديد</h3>
                 <form onSubmit={handleCreateCourse} className="space-y-3">
                   <input 
@@ -1066,7 +1066,7 @@ export default function EduPlatform() {
               </div>
 
               {/* إضافة فيديوهات أو ملفات PDF للكورس */}
-              <div className="p-6 rounded-3xl border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
+              <div className={`p-6 rounded-3xl border shadow-sm space-y-6 ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-800'}`}>
                 <h3 className="text-base font-bold text-teal-600 dark:text-teal-400">2. إضافة محتوى (فيديوهات / مذكرات PDF)</h3>
                 
                 <div className="space-y-3">
@@ -1162,7 +1162,7 @@ export default function EduPlatform() {
             </div>
 
             {/* إنشاء امتحان ذكي ونظام منع الغش */}
-            <div className="p-6 rounded-3xl border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <div className={`p-6 rounded-3xl border shadow-sm space-y-4 ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-800'}`}>
               <h3 className="text-base font-bold text-indigo-600 dark:text-indigo-400">3. إنشاء امتحان ذكي مزود بنظام مراقبة ومنع الغش</h3>
               <form onSubmit={handleCreateExam} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1243,7 +1243,7 @@ export default function EduPlatform() {
             </div>
 
             {/* سجل درجات الطلاب */}
-            <div className="p-6 rounded-3xl border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <div className={`p-6 rounded-3xl border shadow-sm space-y-4 ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-800'}`}>
               <div className="flex justify-between items-center flex-wrap gap-2">
                 <h3 className="text-base font-bold text-emerald-600 dark:text-emerald-400">سجل درجات ومتابعة الطلاب</h3>
                 {examResultsLog.length > 0 && (
@@ -1295,17 +1295,17 @@ export default function EduPlatform() {
           </div>
         )}
 
-        {/* ADMIN DASHBOARD (إدارة المستخدمين والأدمن) */}
+        {/* ADMIN DASHBOARD */}
         {activeTab === 'admin-dashboard' && isLoggedIn && userRole === 'admin' && (
           <div className="space-y-10">
-            <div className="p-6 rounded-3xl border bg-emerald-500/10 border-emerald-500/30">
-              <h2 className="text-xl font-black mb-2 text-emerald-600 dark:text-emerald-400">لوحة تحكم الأدمن والتحكم بالمستخدمين</h2>
-              <p className="text-xs text-slate-600 dark:text-slate-300">إدارة حسابات المعلمين والطلاب، تفعيل أو تعطيل الحسابات، وإنشاء حسابات جديدة.</p>
+            <div className={`p-6 rounded-3xl border shadow-sm ${darkMode ? 'bg-emerald-950/20 border-emerald-800/40 text-emerald-200' : 'bg-emerald-50 border-emerald-200 text-emerald-900'}`}>
+              <h2 className="text-xl font-black mb-2">لوحة تحكم الأدمن والتحكم بالمستخدمين</h2>
+              <p className="text-xs opacity-90">إدارة حسابات المعلمين والطلاب، تفعيل أو تعطيل الحسابات، وإنشاء حسابات جديدة.</p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* إنشاء حساب معلم جديد */}
-              <div className="p-6 rounded-3xl border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+              <div className={`p-6 rounded-3xl border shadow-sm space-y-4 ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-800'}`}>
                 <h3 className="text-base font-bold text-emerald-600 dark:text-emerald-400">إنشاء حساب معلم جديد</h3>
                 <form onSubmit={handleAdminCreateTeacher} className="space-y-3">
                   <input 
@@ -1343,7 +1343,7 @@ export default function EduPlatform() {
               </div>
 
               {/* جدول إدارة المستخدمين */}
-              <div className="lg:col-span-2 p-6 rounded-3xl border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+              <div className={`lg:col-span-2 p-6 rounded-3xl border shadow-sm space-y-4 ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-800'}`}>
                 <h3 className="text-base font-bold text-emerald-600 dark:text-emerald-400">قائمة مستخدمي المنصة (أدمن، معلمين، طلاب)</h3>
                 <div className="overflow-x-auto">
                   <table className="w-full text-right text-xs">
@@ -1360,24 +1360,24 @@ export default function EduPlatform() {
                       {usersList.map(u => (
                         <tr key={u.email} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
                           <td className="p-3 font-bold">{u.name}</td>
-                          <td className="p-3 text-slate-500">{u.email}</td>
+                          <td className="p-3 text-slate-500 dark:text-slate-400">{u.email}</td>
                           <td className="p-3">
                             <span className="px-2 py-0.5 rounded-md font-bold text-[10px] bg-slate-100 dark:bg-slate-800">
                               {u.role === 'admin' ? 'مدير' : u.role === 'instructor' ? 'معلم' : 'طالب'}
                             </span>
                           </td>
                           <td className="p-3">
-                            <span className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${u.status === 'suspended' ? 'bg-rose-100 text-rose-600' : 'bg-emerald-100 text-emerald-600'}`}>
+                            <span className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${u.status === 'suspended' ? 'bg-rose-100 text-rose-600 dark:bg-rose-950/50 dark:text-rose-300' : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-300'}`}>
                               {u.status === 'suspended' ? 'معطل' : 'مفعل'}
                             </span>
                           </td>
                           <td className="p-3 flex gap-2">
                             {u.email !== '250iie3@gmail.com' && (
                               <>
-                                <button onClick={() => handleToggleUserStatus(u.email)} className="bg-amber-50 text-amber-600 px-2.5 py-1 rounded-lg text-[10px] font-bold">
+                                <button onClick={() => handleToggleUserStatus(u.email)} className="bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-300 px-2.5 py-1 rounded-lg text-[10px] font-bold">
                                   {u.status === 'active' ? 'تعطيل' : 'تفعيل'}
                                 </button>
-                                <button onClick={() => handleDeleteUser(u.email)} className="bg-rose-50 text-rose-600 px-2.5 py-1 rounded-lg text-[10px] font-bold">
+                                <button onClick={() => handleDeleteUser(u.email)} className="bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-300 px-2.5 py-1 rounded-lg text-[10px] font-bold">
                                   حذف
                                 </button>
                               </>
