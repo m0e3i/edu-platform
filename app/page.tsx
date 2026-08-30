@@ -138,6 +138,21 @@ export default function EduPlatform() {
   const [examScore, setExamScore] = useState(0);
   const [examStartTime, setExamStartTime] = useState<number>(0);
 
+  // دالة حفظ نتيجة الامتحان المضافة لحل المشكلة
+  const saveExamResultToLog = (score: number, warningsCount: number) => {
+    if (!activeExam) return;
+    const newRecord = {
+      studentName: userName || 'طالب',
+      studentEmail: userEmail || 'unknown@edu.com',
+      examTitle: activeExam.title || 'امتحان',
+      score: score,
+      total: activeExam.questions.length,
+      warnings: warningsCount,
+      date: new Date().toLocaleString()
+    };
+    setExamResultsLog(prev => [newRecord, ...prev]);
+  };
+
   useEffect(() => {
     try {
       const savedUsers = localStorage.getItem('bedaya_edu_users_db');
@@ -154,7 +169,7 @@ export default function EduPlatform() {
         setIsLoggedIn(true);
         setUserName(localStorage.getItem('bedaya_edu_uname') || '');
         setUserEmail(localStorage.getItem('bedaya_edu_uemail') || '');
-        setUserRole((localStorage.getItem('bedaya_edu_urole') as any) || 'student'); // تم التصحيح هنا
+        setUserRole((localStorage.getItem('bedaya_edu_urole') as any) || 'student');
         setUserPhone(localStorage.getItem('bedaya_edu_uphone') || '');
         setUserParentPhone(localStorage.getItem('bedaya_edu_uparent') || '');
         setUserStage(localStorage.getItem('bedaya_edu_ustage') || 'secondary');
