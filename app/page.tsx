@@ -645,7 +645,7 @@ export default function EduPlatform() {
   };
 
   return (
-    <div className={`min-h-screen font-sans relative transition-colors duration-300 ${darkMode ? 'bg-[#0b0f19] text-slate-100' : 'bg-[#f4f7fb] text-slate-800'}`} dir="rtl">
+    <div className={`min-h-screen font-sans relative transition-colors duration-300 ${darkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-800'}`} dir="rtl">
       
       {toastMessage && (
         <div className="fixed bottom-6 left-6 z-50 bg-teal-600 text-white px-5 py-3 rounded-2xl shadow-xl font-bold text-xs sm:text-sm border border-teal-500">
@@ -654,7 +654,7 @@ export default function EduPlatform() {
       )}
 
       {/* HEADER */}
-      <header className={`border-b sticky top-0 z-45 shadow-sm transition-colors duration-300 ${darkMode ? 'bg-[#131c2e] border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-800'}`}>
+      <header className={`border-b sticky top-0 z-45 shadow-sm transition-colors duration-300 ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-800'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex justify-between items-center">
           <div className="text-xl sm:text-2xl font-black tracking-wide cursor-pointer flex items-center gap-2" onClick={() => setActiveTab('home')}>
             <span className="bg-teal-600 text-white px-2.5 py-1 rounded-xl text-sm sm:text-base shadow-sm">EDU</span>
@@ -666,7 +666,7 @@ export default function EduPlatform() {
             <button onClick={() => setActiveTab('stages')} className={activeTab === 'stages' ? 'text-teal-600 dark:text-teal-400 font-bold' : 'hover:text-teal-500 transition'}>المراحل والصفوف</button>
             <button onClick={() => setActiveTab('courses')} className={activeTab === 'courses' ? 'text-teal-600 dark:text-teal-400 font-bold' : 'hover:text-teal-500 transition'}>الكورسات والملفات والامتحانات</button>
             {isLoggedIn && (userRole === 'instructor' || userRole === 'admin') && (
-              <button onClick={() => setActiveTab('instructor-dashboard')} className={activeTab === 'instructor-dashboard' ? 'text-amber-600 dark:text-amber-400 font-bold' : 'hover:text-amber-500 transition'}>لوحة المحتوى وسجل الدرجات</button>
+              <button onClick={() => setActiveTab('instructor-dashboard')} className={activeTab === 'instructor-dashboard' ? 'text-teal-600 dark:text-teal-400 font-bold' : 'hover:text-teal-500 transition'}>لوحة المحتوى وسجل الدرجات</button>
             )}
             {isLoggedIn && userRole === 'admin' && (
               <button onClick={() => setActiveTab('admin-dashboard')} className={activeTab === 'admin-dashboard' ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'hover:text-emerald-500 transition'}>لوحة إدارة الأدمن والمستخدمين</button>
@@ -674,13 +674,13 @@ export default function EduPlatform() {
           </nav>
 
           <div className="flex items-center gap-3">
-            <button onClick={() => setDarkMode(!darkMode)} className="p-2 rounded-xl text-xs font-bold border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-amber-400 transition">
+            <button onClick={() => setDarkMode(!darkMode)} className="p-2 rounded-xl text-xs font-bold border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-amber-400 transition shadow-sm">
               {darkMode ? '☀️ وضع نهار' : '🌙 وضع ليل'}
             </button>
 
             {isLoggedIn ? (
               <div className="flex items-center gap-2">
-                <span className="text-xs bg-teal-50 text-teal-700 dark:bg-teal-500/25 dark:text-teal-300 px-3 py-1.5 rounded-full font-bold border border-teal-200 dark:border-teal-500/30">
+                <span className="text-xs bg-teal-50 text-teal-700 dark:bg-teal-500/20 dark:text-teal-300 px-3 py-1.5 rounded-full font-bold border border-teal-200 dark:border-teal-500/30">
                   {userName} ({userRole === 'admin' ? 'مدير' : userRole === 'instructor' ? 'معلم' : 'طالب'})
                 </span>
                 <button onClick={handleLogout} className="bg-rose-50 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400 text-xs px-3 py-1.5 rounded-xl font-bold border border-rose-200 dark:border-rose-500/30 transition hover:bg-rose-100">خروج</button>
@@ -699,7 +699,7 @@ export default function EduPlatform() {
         {/* HOME TAB */}
         {activeTab === 'home' && (
           <div className="space-y-12 text-center">
-            <div className={`rounded-3xl p-10 sm:p-14 border shadow-sm transition-colors ${darkMode ? 'bg-gradient-to-r from-slate-900 to-[#131c2e] border-slate-800 text-slate-100' : 'bg-gradient-to-br from-teal-700 to-teal-900 text-white border-teal-600'}`}>
+            <div className={`rounded-3xl p-10 sm:p-14 border shadow-sm transition-colors ${darkMode ? 'bg-gradient-to-r from-slate-900 to-slate-800 border-slate-700 text-slate-100' : 'bg-gradient-to-br from-teal-700 to-teal-900 text-white border-teal-600'}`}>
               <h1 className="text-3xl sm:text-5xl font-extrabold mb-4 tracking-tight">منصة BEDAYA EDU التعليمية الذكية</h1>
               <p className="text-sm sm:text-lg mb-8 max-w-2xl mx-auto opacity-90 leading-relaxed">اختر مرحلتك وصّفك الدراسي لتظهر لك حصرياً المواد، الكورسات، الفيديوهات، ملفات الـ PDF، والامتحانات الذكية الخاصة بك فقط.</p>
               
@@ -711,7 +711,7 @@ export default function EduPlatform() {
                   تصفح كافة الكورسات والملفات
                 </button>
                 {isLoggedIn && (userRole === 'instructor' || userRole === 'admin') && (
-                  <button onClick={() => setActiveTab('instructor-dashboard')} className="bg-teal-900 hover:bg-teal-950 text-white px-6 py-3 rounded-xl font-bold shadow-sm transition border border-teal-700">
+                  <button onClick={() => setActiveTab('instructor-dashboard')} className="bg-teal-800 hover:bg-teal-900 text-white px-6 py-3 rounded-xl font-bold shadow-sm transition border border-teal-600">
                     لوحة التحكم (إضافة كورسات وامتحانات)
                   </button>
                 )}
@@ -783,68 +783,45 @@ export default function EduPlatform() {
                   <div key={course.id} className={`p-6 rounded-3xl border shadow-sm flex flex-col justify-between transition-colors ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
                     <div>
                       <div className="flex justify-between items-start mb-3">
-                        <span className="bg-teal-50 text-teal-700 dark:bg-teal-500/20 dark:text-teal-300 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-teal-200 dark:border-teal-500/30">
+                        <span className="text-[10px] bg-teal-50 text-teal-700 dark:bg-teal-500/20 dark:text-teal-300 px-2.5 py-1 rounded-lg font-bold border border-teal-200 dark:border-teal-500/30">
                           {course.category}
                         </span>
-                        <span className="text-xs font-extrabold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-200 dark:border-amber-500/20">
-                          {course.price}
-                        </span>
+                        <span className="text-xs font-bold text-amber-600 dark:text-amber-400">{course.price}</span>
                       </div>
-                      <h3 className="text-lg font-bold mb-1">{course.title}</h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">المعلم: {course.instructor}</p>
-                      <p className="text-xs text-slate-600 dark:text-slate-300 mb-4 line-clamp-2">{course.description}</p>
-                      
-                      {/* عرض الدروس والفيديوهات */}
-                      <div className="space-y-2 mb-4">
-                        <h4 className="text-xs font-bold text-teal-600 dark:text-teal-400">الفيديوهات والدروس المشروحة:</h4>
-                        {course.lessons && course.lessons.length > 0 ? (
-                          course.lessons.map((lesson: any) => (
-                            <div key={lesson.id} className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-xs space-y-2">
-                              <div className="flex justify-between items-center">
-                                <span className="font-bold">{lesson.title}</span>
-                                <span className="text-[10px] text-slate-400">{lesson.duration}</span>
-                              </div>
-                              {lesson.videoUrl && (
-                                <video controls className="w-full rounded-lg max-h-40 bg-black">
-                                  <source src={lesson.videoUrl} type="video/mp4" />
-                                  متصفحك لا يدعم عرض الفيديو
-                                </video>
-                              )}
-                            </div>
-                          ))
-                        ) : (
-                          <p className="text-[11px] text-slate-400 italic">لا توجد فيديوهات مضافة لهذا الكورس بعد.</p>
-                        )}
-                      </div>
+                      <h3 className="text-lg font-bold mb-2">{course.title}</h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">المعلم: {course.instructor}</p>
+                      <p className="text-xs text-slate-600 dark:text-slate-300 mb-6 leading-relaxed">{course.description}</p>
+                    </div>
 
-                      {/* عرض ملفات PDF */}
-                      <div className="space-y-2 mb-4">
-                        <h4 className="text-xs font-bold text-teal-600 dark:text-teal-400">ملفات المذكرات والـ PDF:</h4>
-                        {course.pdfs && course.pdfs.length > 0 ? (
-                          course.pdfs.map((pdf: any) => (
-                            <div key={pdf.id} className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-xs flex justify-between items-center">
-                              <span className="font-bold truncate max-w-[180px]">{pdf.title}</span>
-                              <a href={pdf.url} target="_blank" rel="noopener noreferrer" className="bg-teal-600 hover:bg-teal-500 text-white px-3 py-1 rounded-lg text-[10px] font-bold transition">
-                                تحميل / فتح
-                              </a>
+                    <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+                      {course.lessons && course.lessons.length > 0 && (
+                        <div className="space-y-2">
+                          <p className="text-xs font-bold text-teal-600 dark:text-teal-400">الفيديوهات:</p>
+                          {course.lessons.map((lesson: any) => (
+                            <div key={lesson.id} className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-xs flex justify-between items-center">
+                              <span>{lesson.title}</span>
+                              <a href={lesson.videoUrl} target="_blank" rel="noreferrer" className="bg-teal-600 text-white px-2 py-1 rounded-lg text-[10px] font-bold">مشاهدة</a>
                             </div>
-                          ))
-                        ) : (
-                          <p className="text-[11px] text-slate-400 italic">لا توجد ملفات PDF مضافة.</p>
-                        )}
-                      </div>
-
-                      {/* زر دخول الامتحان الذكي */}
-                      {course.exam && (
-                        <div className="mt-4 p-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/60 flex justify-between items-center">
-                          <div>
-                            <span className="block text-[10px] font-bold text-indigo-500">امتحان ذكي متاح</span>
-                            <span className="text-xs font-extrabold">{course.exam.title}</span>
-                          </div>
-                          <button onClick={() => startExam(course.exam)} className="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-sm">
-                            بدء الامتحان
-                          </button>
+                          ))}
                         </div>
+                      )}
+
+                      {course.pdfs && course.pdfs.length > 0 && (
+                        <div className="space-y-2">
+                          <p className="text-xs font-bold text-amber-600 dark:text-amber-400">ملفات PDF:</p>
+                          {course.pdfs.map((pdf: any) => (
+                            <div key={pdf.id} className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-xs flex justify-between items-center">
+                              <span>{pdf.title}</span>
+                              <a href={pdf.url} target="_blank" rel="noreferrer" className="bg-amber-500 text-white px-2 py-1 rounded-lg text-[10px] font-bold">تحميل</a>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {course.exam && (
+                        <button onClick={() => startExam(course.exam)} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl text-xs font-bold shadow-sm transition">
+                          ابدأ الامتحان الذكي: {course.exam.title}
+                        </button>
                       )}
                     </div>
                   </div>
@@ -856,600 +833,299 @@ export default function EduPlatform() {
         {/* AUTH TAB */}
         {activeTab === 'auth' && (
           <div className="max-w-md mx-auto p-8 rounded-3xl border shadow-sm transition-colors bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-            <div className="flex gap-2 mb-6 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl">
-              <button 
-                onClick={() => setAuthMode('login')} 
-                className={`flex-1 py-2 text-xs font-bold rounded-xl transition ${authMode === 'login' ? 'bg-teal-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400'}`}
-              >
-                تسجيل الدخول
-              </button>
-              <button 
-                onClick={() => setAuthMode('signup')} 
-                className={`flex-1 py-2 text-xs font-bold rounded-xl transition ${authMode === 'signup' ? 'bg-teal-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400'}`}
-              >
-                إنشاء حساب طالب جديد
-              </button>
-            </div>
-
+            <h2 className="text-2xl font-black text-center mb-6">{authMode === 'login' ? 'تسجيل الدخول' : 'إنشاء حساب جديد'}</h2>
+            
             {authMode === 'login' ? (
               <form onSubmit={handleLogin} className="space-y-4">
-                <h3 className="text-lg font-bold mb-4">تسجيل الدخول لمنصة BEDAYA EDU</h3>
                 <div>
-                  <label className="block text-xs font-bold mb-1">البريد الإلكتروني</label>
-                  <input 
-                    type="email" 
-                    value={inputEmail} 
-                    onChange={e => setInputEmail(e.target.value)} 
-                    placeholder="example@edu.com"
-                    className="w-full p-3 rounded-xl border text-xs bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700 focus:outline-none focus:border-teal-500" 
-                  />
+                  <label className="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">البريد الإلكتروني</label>
+                  <input type="email" value={inputEmail} onChange={e => setInputEmail(e.target.value)} className="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-teal-500" placeholder="name@example.com" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold mb-1">كلمة المرور</label>
-                  <input 
-                    type="password" 
-                    value={inputPassword} 
-                    onChange={e => setInputPassword(e.target.value)} 
-                    placeholder="••••••••"
-                    className="w-full p-3 rounded-xl border text-xs bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700 focus:outline-none focus:border-teal-500" 
-                  />
+                  <label className="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">كلمة المرور</label>
+                  <input type="password" value={inputPassword} onChange={e => setInputPassword(e.target.value)} className="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-teal-500" placeholder="••••••••" />
                 </div>
-                <button type="submit" className="w-full bg-teal-600 hover:bg-teal-500 text-white py-3 rounded-xl font-bold text-xs shadow-sm transition">
-                  دخول
-                </button>
+                <button type="submit" className="w-full bg-teal-600 hover:bg-teal-500 text-white py-3 rounded-xl font-bold text-xs shadow-sm transition">تسجيل الدخول</button>
+                <p className="text-xs text-center text-slate-500 pt-2">
+                  ليس لديك حساب؟ <button type="button" onClick={() => setAuthMode('signup')} className="text-teal-600 dark:text-teal-400 font-bold underline">إنشاء حساب جديد</button>
+                </p>
               </form>
             ) : (
               <form onSubmit={handleSignUp} className="space-y-4">
-                <h3 className="text-lg font-bold mb-2">إنشاء حساب طالب جديد</h3>
-                <p className="text-[11px] text-slate-500 mb-4">يُرجى إدخال البيانات بدقة واختيار صفك الدراسي لكي تظهر لك كورساتك وحصصك مباشرة.</p>
                 <div>
-                  <label className="block text-xs font-bold mb-1">اسم الطالب الكامل</label>
-                  <input 
-                    type="text" 
-                    value={inputName} 
-                    onChange={e => setInputName(e.target.value)} 
-                    placeholder="محمد أحمد"
-                    className="w-full p-3 rounded-xl border text-xs bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700 focus:outline-none focus:border-teal-500" 
-                  />
+                  <label className="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">اسم الطالب الكامل</label>
+                  <input type="text" value={inputName} onChange={e => setInputName(e.target.value)} className="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-teal-500" placeholder="محمد أحمد" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold mb-1">البريد الإلكتروني</label>
-                  <input 
-                    type="email" 
-                    value={inputEmail} 
-                    onChange={e => setInputEmail(e.target.value)} 
-                    placeholder="student@edu.com"
-                    className="w-full p-3 rounded-xl border text-xs bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700 focus:outline-none focus:border-teal-500" 
-                  />
+                  <label className="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">البريد الإلكتروني</label>
+                  <input type="email" value={inputEmail} onChange={e => setInputEmail(e.target.value)} className="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-teal-500" placeholder="name@example.com" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold mb-1">كلمة المرور</label>
-                  <input 
-                    type="password" 
-                    value={inputPassword} 
-                    onChange={e => setInputPassword(e.target.value)} 
-                    placeholder="••••••••"
-                    className="w-full p-3 rounded-xl border text-xs bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700 focus:outline-none focus:border-teal-500" 
-                  />
+                  <label className="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">كلمة المرور</label>
+                  <input type="password" value={inputPassword} onChange={e => setInputPassword(e.target.value)} className="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-teal-500" placeholder="••••••••" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold mb-1">رقم هاتف الطالب</label>
-                  <input 
-                    type="text" 
-                    value={inputPhone} 
-                    onChange={e => setInputPhone(e.target.value)} 
-                    placeholder="01111111111"
-                    className="w-full p-3 rounded-xl border text-xs bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700 focus:outline-none focus:border-teal-500" 
-                  />
+                  <label className="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">رقم الهاتف الشخصي</label>
+                  <input type="text" value={inputPhone} onChange={e => setInputPhone(e.target.value)} className="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-teal-500" placeholder="010xxxxxxxx" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold mb-1">رقم هاتف ولي الأمر (مهم لمتابعة الدرجات)</label>
-                  <input 
-                    type="text" 
-                    value={inputParentPhone} 
-                    onChange={e => setInputParentPhone(e.target.value)} 
-                    placeholder="01222222222"
-                    className="w-full p-3 rounded-xl border text-xs bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700 focus:outline-none focus:border-teal-500" 
-                  />
+                  <label className="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">رقم هاتف ولي الأمر (إلزامي لمتابعة الدرجات)</label>
+                  <input type="text" value={inputParentPhone} onChange={e => setUserParentPhone(e.target.value)} className="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-teal-500" placeholder="012xxxxxxxx" />
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-bold mb-1">المرحلة الدراسية</label>
-                    <select 
-                      value={inputStage} 
-                      onChange={e => {
-                        const newSt = e.target.value;
-                        setInputStage(newSt);
-                        const availableGrades = educationalStages.find(s => s.id === newSt)?.grades || [];
-                        if (availableGrades.length > 0) setInputGrade(availableGrades[0].id);
-                      }}
-                      className="w-full p-3 rounded-xl border text-xs bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700 focus:outline-none focus:border-teal-500"
-                    >
-                      {educationalStages.map(s => (
-                        <option key={s.id} value={s.id}>{s.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold mb-1">الصف الدراسي</label>
-                    <select 
-                      value={inputGrade} 
-                      onChange={e => setInputGrade(e.target.value)}
-                      className="w-full p-3 rounded-xl border text-xs bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700 focus:outline-none focus:border-teal-500"
-                    >
-                      {currentAvailableGrades.map(g => (
-                        <option key={g.id} value={g.id}>{g.name}</option>
-                      ))}
-                    </select>
-                  </div>
+                <div>
+                  <label className="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">المرحلة الدراسية</label>
+                  <select value={inputStage} onChange={e => setInputStage(e.target.value)} className="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-teal-500">
+                    {educationalStages.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                  </select>
                 </div>
-                <button type="submit" className="w-full bg-teal-600 hover:bg-teal-500 text-white py-3 rounded-xl font-bold text-xs shadow-sm transition">
-                  إتمام التسجيل والدخول
-                </button>
+                <div>
+                  <label className="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">الصف الدراسي المحدد</label>
+                  <select value={inputGrade} onChange={e => setInputGrade(e.target.value)} className="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-teal-500">
+                    {currentAvailableGrades.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
+                  </select>
+                </div>
+                <button type="submit" className="w-full bg-teal-600 hover:bg-teal-500 text-white py-3 rounded-xl font-bold text-xs shadow-sm transition">إنشاء الحساب والتسجيل</button>
+                <p className="text-xs text-center text-slate-500 pt-2">
+                  لديك حساب بالفعل؟ <button type="button" onClick={() => setAuthMode('login')} className="text-teal-600 dark:text-teal-400 font-bold underline">تسجيل الدخول</button>
+                </p>
               </form>
             )}
           </div>
         )}
 
-        {/* INSTRUCTOR / ADMIN CONTENT MANAGEMENT DASHBOARD */}
-        {activeTab === 'instructor-dashboard' && isLoggedIn && (userRole === 'instructor' || userRole === 'admin') && (
-          <div className="space-y-10">
-            <div className={`p-6 rounded-3xl border shadow-sm ${darkMode ? 'bg-amber-950/20 border-amber-800/40 text-amber-200' : 'bg-amber-50 border-amber-200 text-amber-900'}`}>
-              <h2 className="text-xl font-black mb-2">لوحة تحكم المحتوى، الفيديوهات والامتحانات الذكية</h2>
-              <p className="text-xs opacity-90">من هنا يمكنك إضافة كورسات جديدة، رفع أو ربط الفيديوهات والملفات، وإنشاء الامتحانات وحذف أو مراجعة سجلات درجات الطلاب.</p>
-            </div>
-
+        {/* INSTRUCTOR DASHBOARD */}
+        {activeTab === 'instructor-dashboard' && (isLoggedIn && (userRole === 'instructor' || userRole === 'admin')) && (
+          <div className="space-y-12">
+            <h2 className="text-2xl font-black">لوحة التحكم، الفيديوهات والامتحانات الذكية</h2>
+            
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* إضافة كورس جديد */}
-              <div className={`p-6 rounded-3xl border shadow-sm space-y-4 ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-800'}`}>
-                <h3 className="text-base font-bold text-teal-600 dark:text-teal-400">1. إنشاء كورس دراسي جديد</h3>
-                <form onSubmit={handleCreateCourse} className="space-y-3">
-                  <input 
-                    type="text" 
-                    value={newCourseTitle} 
-                    onChange={e => setNewCourseTitle(e.target.value)} 
-                    placeholder="عنوان الكورس (مثلاً: منهج الفيزياء الشامل)"
-                    className="w-full p-3 rounded-xl border text-xs bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700" 
-                  />
-                  <input 
-                    type="text" 
-                    value={newCourseInstructor} 
-                    onChange={e => setNewCourseInstructor(e.target.value)} 
-                    placeholder="اسم المعلم"
-                    className="w-full p-3 rounded-xl border text-xs bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700" 
-                  />
-                  <input 
-                    type="text" 
-                    value={newCourseCategory} 
-                    onChange={e => setNewCourseCategory(e.target.value)} 
-                    placeholder="التصنيف أو المادة (فيزياء، رياضيات...)"
-                    className="w-full p-3 rounded-xl border text-xs bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700" 
-                  />
-                  <div className="grid grid-cols-2 gap-2">
-                    <select 
-                      value={newCourseStage} 
-                      onChange={e => {
-                        const st = e.target.value;
-                        setNewCourseStage(st);
-                        const grades = educationalStages.find(s => s.id === st)?.grades || [];
-                        if (grades.length > 0) setNewCourseGrade(grades[0].id);
-                      }}
-                      className="p-3 rounded-xl border text-xs bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700"
-                    >
-                      {educationalStages.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                    </select>
-                    <select 
-                      value={newCourseGrade} 
-                      onChange={e => setNewCourseGrade(e.target.value)}
-                      className="p-3 rounded-xl border text-xs bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700"
-                    >
-                      {targetGradesForNewCourse.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
-                    </select>
+              {/* إنشاء كورس جديد */}
+              <div className={`p-6 rounded-3xl border shadow-sm transition-colors ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
+                <h3 className="text-lg font-bold mb-6 text-teal-600 dark:text-teal-400">1. إنشاء كورس دراسي جديد</h3>
+                <form onSubmit={handleCreateCourse} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">عنوان الكورس</label>
+                    <input type="text" value={newCourseTitle} onChange={e => setNewCourseTitle(e.target.value)} className="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-teal-500" placeholder="مثال: كورس الفيزياء المتقدم" />
                   </div>
-                  <input 
-                    type="text" 
-                    value={newCoursePrice} 
-                    onChange={e => setNewCoursePrice(e.target.value)} 
-                    placeholder="السعر (مجاناً أو قيمة معينة)"
-                    className="w-full p-3 rounded-xl border text-xs bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700" 
-                  />
-                  <textarea 
-                    value={newCourseDesc} 
-                    onChange={e => setNewCourseDesc(e.target.value)} 
-                    placeholder="وصف مبسط لمحتوى الكورس"
-                    className="w-full p-3 rounded-xl border text-xs bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700"
-                  />
-                  <button type="submit" className="w-full bg-teal-600 hover:bg-teal-500 text-white py-2.5 rounded-xl font-bold text-xs transition">
-                    حفظ ونشر الكورس
-                  </button>
-                </form>
-              </div>
-
-              {/* إضافة فيديوهات أو ملفات PDF للكورس */}
-              <div className={`p-6 rounded-3xl border shadow-sm space-y-6 ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-800'}`}>
-                <h3 className="text-base font-bold text-teal-600 dark:text-teal-400">2. إضافة محتوى (فيديوهات / مذكرات PDF)</h3>
-                
-                <div className="space-y-3">
-                  <label className="block text-xs font-bold">اختر الكورس المستهدف</label>
-                  <select 
-                    value={selectedCourseForContent} 
-                    onChange={e => setSelectedCourseForContent(e.target.value)}
-                    className="w-full p-3 rounded-xl border text-xs bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700"
-                  >
-                    <option value="">-- اختر كورس من القائمة --</option>
-                    {courses.map(c => <option key={c.id} value={c.id}>{c.title} ({c.grade})</option>)}
-                  </select>
-                </div>
-
-                {/* نموذج إضافة فيديو */}
-                <form onSubmit={handleAddVideoToCourse} className="space-y-3 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700">
-                  <h4 className="text-xs font-bold text-amber-600 dark:text-amber-400">إضافة درس فيديو</h4>
-                  <input 
-                    type="text" 
-                    value={newVideoTitle} 
-                    onChange={e => setNewVideoTitle(e.target.value)} 
-                    placeholder="عنوان الدرس (مثلاً: الدرس الثاني: قوانين نيوتن)"
-                    className="w-full p-2.5 rounded-xl border text-xs bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700" 
-                  />
-                  <div className="flex gap-2 text-xs">
-                    <label className="flex items-center gap-1 font-bold">
-                      <input type="radio" name="vMethod" checked={videoAddMethod === 'file'} onChange={() => setVideoAddMethod('file')} /> رفع ملف من الجهاز
-                    </label>
-                    <label className="flex items-center gap-1 font-bold">
-                      <input type="radio" name="vMethod" checked={videoAddMethod === 'url'} onChange={() => setVideoAddMethod('url')} /> رابط مباشر (YouTube/MP4)
-                    </label>
+                  <div>
+                    <label className="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">اسم المعلم</label>
+                    <input type="text" value={newCourseInstructor} onChange={e => setNewCourseInstructor(e.target.value)} className="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-teal-500" placeholder="اسم المعلم" />
                   </div>
-                  {videoAddMethod === 'file' ? (
-                    <input 
-                      type="file" 
-                      accept="video/*" 
-                      onChange={e => e.target.files && setNewVideoFile(e.target.files[0])}
-                      className="w-full text-xs file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-teal-50 file:text-teal-700" 
-                    />
-                  ) : (
-                    <input 
-                      type="text" 
-                      value={newVideoUrlInput} 
-                      onChange={e => setNewVideoUrlInput(e.target.value)} 
-                      placeholder="https://..."
-                      className="w-full p-2.5 rounded-xl border text-xs bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700" 
-                    />
-                  )}
-                  <button type="submit" className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 py-2 rounded-xl font-bold text-xs transition">
-                    إضافة الفيديو للكورس
-                  </button>
-                </form>
-
-                {/* نموذج إضافة PDF */}
-                <form onSubmit={handleAddPdfToCourse} className="space-y-3 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700">
-                  <h4 className="text-xs font-bold text-teal-600 dark:text-teal-400">إضافة مذكرة أو ملف PDF</h4>
-                  <input 
-                    type="text" 
-                    value={newPdfTitle} 
-                    onChange={e => setNewPdfTitle(e.target.value)} 
-                    placeholder="عنوان الملف (مثلاً: ملخص الباب الأول PDF)"
-                    className="w-full p-2.5 rounded-xl border text-xs bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700" 
-                  />
-                  <div className="flex gap-2 text-xs">
-                    <label className="flex items-center gap-1 font-bold">
-                      <input type="radio" name="pMethod" checked={pdfAddMethod === 'file'} onChange={() => setPdfAddMethod('file')} /> رفع ملف PDF
-                    </label>
-                    <label className="flex items-center gap-1 font-bold">
-                      <input type="radio" name="pMethod" checked={pdfAddMethod === 'url'} onChange={() => setPdfAddMethod('url')} /> رابط مباشر
-                    </label>
-                  </div>
-                  {pdfAddMethod === 'file' ? (
-                    <input 
-                      type="file" 
-                      accept="application/pdf" 
-                      onChange={e => e.target.files && setNewPdfFile(e.target.files[0])}
-                      className="w-full text-xs file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-teal-50 file:text-teal-700" 
-                    />
-                  ) : (
-                    <input 
-                      type="text" 
-                      value={newPdfUrlInput} 
-                      onChange={e => setNewPdfUrlInput(e.target.value)} 
-                      placeholder="https://..."
-                      className="w-full p-2.5 rounded-xl border text-xs bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700" 
-                    />
-                  )}
-                  <button type="submit" className="w-full bg-teal-600 hover:bg-teal-500 text-white py-2 rounded-xl font-bold text-xs transition">
-                    إضافة ملف الـ PDF للكورس
-                  </button>
-                </form>
-              </div>
-            </div>
-
-            {/* إنشاء امتحان ذكي ونظام منع الغش */}
-            <div className={`p-6 rounded-3xl border shadow-sm space-y-4 ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-800'}`}>
-              <h3 className="text-base font-bold text-indigo-600 dark:text-indigo-400">3. إنشاء امتحان ذكي مزود بنظام مراقبة ومنع الغش</h3>
-              <form onSubmit={handleCreateExam} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <select 
-                    value={examCourseTarget} 
-                    onChange={e => setExamCourseTarget(e.target.value)}
-                    className="p-3 rounded-xl border text-xs bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700"
-                  >
-                    <option value="">-- اختر الكورس لإضافة الامتحان إليه --</option>
-                    {courses.map(c => <option key={c.id} value={c.id}>{c.title} ({c.grade})</option>)}
-                  </select>
-                  <input 
-                    type="text" 
-                    value={examTitle} 
-                    onChange={e => setExamTitle(e.target.value)} 
-                    placeholder="عنوان الامتحان (مثلاً: امتحان تقييم الباب الأول)"
-                    className="p-3 rounded-xl border text-xs bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700" 
-                  />
-                </div>
-
-                <div className="space-y-4">
-                  {examQuestions.map((q, qIdx) => (
-                    <div key={qIdx} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 space-y-3">
-                      <input 
-                        type="text" 
-                        value={q.question} 
-                        onChange={e => {
-                          const updated = [...examQuestions];
-                          updated[qIdx].question = e.target.value;
-                          setExamQuestions(updated);
-                        }}
-                        placeholder={`السؤال رقم ${qIdx + 1}`}
-                        className="w-full p-2.5 rounded-xl border text-xs bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700" 
-                      />
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {q.options.map((opt: string, optIdx: number) => (
-                          <input 
-                            key={optIdx}
-                            type="text"
-                            value={opt}
-                            onChange={e => {
-                              const updated = [...examQuestions];
-                              updated[qIdx].options[optIdx] = e.target.value;
-                              setExamQuestions(updated);
-                            }}
-                            placeholder={`الاختيار ${optIdx + 1}`}
-                            className="p-2 rounded-xl border text-xs bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700"
-                          />
-                        ))}
-                      </div>
-                      <div className="flex items-center gap-2 text-xs font-bold">
-                        <span>رقم الإجابة الصحيحة (من 1 إلى 4):</span>
-                        <select 
-                          value={q.correctAnswer}
-                          onChange={e => {
-                            const updated = [...examQuestions];
-                            updated[qIdx].correctAnswer = Number(e.target.value);
-                            setExamQuestions(updated);
-                          }}
-                          className="p-1.5 rounded-lg border bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700"
-                        >
-                          <option value={0}>الاختيار الأول (1)</option>
-                          <option value={1}>الاختيار الثاني (2)</option>
-                          <option value={2}>الاختيار الثالث (3)</option>
-                          <option value={3}>الاختيار الرابع (4)</option>
-                        </select>
-                      </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">المرحلة</label>
+                      <select value={newCourseStage} onChange={e => setNewCourseStage(e.target.value)} className="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-teal-500">
+                        {educationalStages.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                      </select>
                     </div>
-                  ))}
-                  <button type="button" onClick={handleAddExamQuestion} className="bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 text-slate-800 dark:text-white px-4 py-2 rounded-xl text-xs font-bold transition">
-                    + إضافة سؤال جديد
-                  </button>
+                    <div>
+                      <label className="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">الصف المستهدف</label>
+                      <select value={newCourseGrade} onChange={e => setNewCourseGrade(e.target.value)} className="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-teal-500">
+                        {targetGradesForNewCourse.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">وصف الكورس</label>
+                    <textarea value={newCourseDesc} onChange={e => setNewCourseDesc(e.target.value)} className="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-teal-500" placeholder="نبذة مختصرة عن محتوى الكورس"></textarea>
+                  </div>
+                  <button type="submit" className="w-full bg-teal-600 hover:bg-teal-500 text-white py-3 rounded-xl font-bold text-xs shadow-sm transition">حفظ ونشر الكورس</button>
+                </form>
+              </div>
+
+              {/* إضافة محتوى (فيديو أو PDF) */}
+              <div className={`p-6 rounded-3xl border shadow-sm transition-colors ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
+                <h3 className="text-lg font-bold mb-6 text-teal-600 dark:text-teal-400">2. إضافة محتوى (فيديوهات / مذكرات PDF)</h3>
+                
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">اختر الكورس المستهدف</label>
+                    <select value={selectedCourseForContent} onChange={e => setSelectedCourseForContent(e.target.value)} className="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-teal-500">
+                      <option value="">-- اختر كورس من القائمة --</option>
+                      {courses.map(c => <option key={c.id} value={c.id}>{c.title} ({c.grade})</option>)}
+                    </select>
+                  </div>
+
+                  {/* إضافة فيديو */}
+                  <form onSubmit={handleAddVideoToCourse} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 space-y-3">
+                    <p className="text-xs font-bold text-teal-600 dark:text-teal-400">إضافة درس فيديو</p>
+                    <input type="text" value={newVideoTitle} onChange={e => setNewVideoTitle(e.target.value)} placeholder="عنوان الدرس (مثلاً: الدرس الثاني: قوانين نيوتن)" className="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-teal-500" />
+                    <div className="flex gap-4 items-center text-xs">
+                      <label className="flex items-center gap-1 font-medium"><input type="radio" checked={videoAddMethod === 'file'} onChange={() => setVideoAddMethod('file')} /> رفع ملف من الجهاز</label>
+                      <label className="flex items-center gap-1 font-medium"><input type="radio" checked={videoAddMethod === 'url'} onChange={() => setVideoAddMethod('url')} /> رابط مباشر (YouTube/MP4)</label>
+                    </div>
+                    {videoAddMethod === 'file' ? (
+                      <input type="file" accept="video/*" onChange={e => setNewVideoFile(e.target.files?.[0] || null)} className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100" />
+                    ) : (
+                      <input type="text" value={newVideoUrlInput} onChange={e => setNewVideoUrlInput(e.target.value)} placeholder="https://youtube.com/..." className="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-teal-500" />
+                    )}
+                    <button type="submit" className="w-full bg-teal-600 hover:bg-teal-500 text-white py-2.5 rounded-xl font-bold text-xs shadow-sm transition">إضافة الفيديو للكورس</button>
+                  </form>
+
+                  {/* إضافة PDF */}
+                  <form onSubmit={handleAddPdfToCourse} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 space-y-3">
+                    <p className="text-xs font-bold text-amber-600 dark:text-amber-400">إضافة مذكرة أو ملف PDF</p>
+                    <input type="text" value={newPdfTitle} onChange={e => setNewPdfTitle(e.target.value)} placeholder="عنوان المذكرة (مثلاً: ملخص الباب الأول)" className="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-teal-500" />
+                    <div className="flex gap-4 items-center text-xs">
+                      <label className="flex items-center gap-1 font-medium"><input type="radio" checked={pdfAddMethod === 'file'} onChange={() => setPdfAddMethod('file')} /> رفع ملف PDF من الجهاز</label>
+                      <label className="flex items-center gap-1 font-medium"><input type="radio" checked={pdfAddMethod === 'url'} onChange={() => setPdfAddMethod('url')} /> رابط مباشر للملف</label>
+                    </div>
+                    {pdfAddMethod === 'file' ? (
+                      <input type="file" accept=".pdf" onChange={e => setNewPdfFile(e.target.files?.[0] || null)} className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100" />
+                    ) : (
+                      <input type="text" value={newPdfUrlInput} onChange={e => setNewPdfUrlInput(e.target.value)} placeholder="https://..." className="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-teal-500" />
+                    )}
+                    <button type="submit" className="w-full bg-amber-500 hover:bg-amber-400 text-white py-2.5 rounded-xl font-bold text-xs shadow-sm transition">إضافة ملف الـ PDF للكورس</button>
+                  </form>
                 </div>
-                <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl font-bold text-xs shadow-sm transition">
-                  نشر الامتحان الذكي
-                </button>
-              </form>
+              </div>
             </div>
 
             {/* سجل درجات الطلاب */}
-            <div className={`p-6 rounded-3xl border shadow-sm space-y-4 ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-800'}`}>
-              <div className="flex justify-between items-center flex-wrap gap-2">
-                <h3 className="text-base font-bold text-emerald-600 dark:text-emerald-400">سجل درجات ومتابعة الطلاب</h3>
+            <div className={`p-6 rounded-3xl border shadow-sm transition-colors ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-bold text-teal-600 dark:text-teal-400">سجل درجات وحل الامتحانات للطلاب</h3>
                 {examResultsLog.length > 0 && (
-                  <button onClick={handleClearAllExamResults} className="bg-rose-50 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400 text-xs px-3 py-1.5 rounded-xl font-bold border border-rose-200 transition">
-                    مسح السجل بالكامل
-                  </button>
+                  <button onClick={handleClearAllExamResults} className="bg-rose-50 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400 text-xs px-3 py-1.5 rounded-xl font-bold border border-rose-200 dark:border-rose-500/30">مسح السجل بالكامل</button>
                 )}
               </div>
-              
-              {examResultsLog.length > 0 ? (
+
+              {examResultsLog.length === 0 ? (
+                <p className="text-xs text-slate-500 text-center py-6">لا توجد سجلات لدرجات الطلاب حتى الآن</p>
+              ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-right text-xs">
                     <thead>
-                      <tr className="border-b dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-                        <th className="p-3">اسم الطالب</th>
-                        <th className="p-3">هاتف الطالب / ولي الأمر</th>
-                        <th className="p-3">اسم الامتحان</th>
-                        <th className="p-3">الدرجة</th>
-                        <th className="p-3">إنذارات الغش</th>
-                        <th className="p-3">وقت الحل</th>
-                        <th className="p-3">التاريخ</th>
-                        <th className="p-3">الإجراء</th>
+                      <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-500">
+                        <th className="pb-3">اسم الطالب</th>
+                        <th className="pb-3">هاتف ولي الأمر</th>
+                        <th className="pb-3">اسم الامتحان</th>
+                        <th className="pb-3">الدرجة</th>
+                        <th className="pb-3">إنذارات الغش</th>
+                        <th className="pb-3">الوقت المستغرق</th>
+                        <th className="pb-3">التاريخ</th>
+                        <th className="pb-3">إجراء</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y dark:divide-slate-800">
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                       {examResultsLog.map(record => (
-                        <tr key={record.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
-                          <td className="p-3 font-bold">{record.studentName}</td>
-                          <td className="p-3">{record.studentPhone} / {record.parentPhone}</td>
-                          <td className="p-3">{record.examTitle}</td>
-                          <td className="p-3 font-extrabold text-teal-600">{record.score} / {record.total}</td>
-                          <td className="p-3 font-bold text-rose-500">{record.warnings} إنذارات</td>
-                          <td className="p-3">{record.duration}</td>
-                          <td className="p-3 text-slate-400">{record.date}</td>
-                          <td className="p-3">
-                            <button onClick={() => handleDeleteSingleExamResult(record.id)} className="bg-rose-50 text-rose-600 px-2.5 py-1 rounded-lg text-[10px] font-bold">
-                              حذف
-                            </button>
+                        <tr key={record.id}>
+                          <td className="py-3 font-bold">{record.studentName}</td>
+                          <td className="py-3 text-teal-600 dark:text-teal-400 font-bold">{record.parentPhone}</td>
+                          <td className="py-3">{record.examTitle}</td>
+                          <td className="py-3 font-bold text-emerald-600">{record.score} / {record.total}</td>
+                          <td className="py-3 font-bold text-rose-500">{record.warnings} إنذارات</td>
+                          <td className="py-3">{record.duration}</td>
+                          <td className="py-3 text-slate-400">{record.date}</td>
+                          <td className="py-3">
+                            <button onClick={() => handleDeleteSingleExamResult(record.id)} className="text-rose-600 dark:text-rose-400 font-bold hover:underline">حذف</button>
                           </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
-              ) : (
-                <p className="text-xs text-slate-400 italic text-center py-6">لا توجد سجلات درجات لامتحانات الطلاب حتى الآن.</p>
               )}
             </div>
           </div>
         )}
 
         {/* ADMIN DASHBOARD */}
-        {activeTab === 'admin-dashboard' && isLoggedIn && userRole === 'admin' && (
-          <div className="space-y-10">
-            <div className={`p-6 rounded-3xl border shadow-sm ${darkMode ? 'bg-emerald-950/20 border-emerald-800/40 text-emerald-200' : 'bg-emerald-50 border-emerald-200 text-emerald-900'}`}>
-              <h2 className="text-xl font-black mb-2">لوحة تحكم الأدمن والتحكم بالمستخدمين</h2>
-              <p className="text-xs opacity-90">إدارة حسابات المعلمين والطلاب، تفعيل أو تعطيل الحسابات، وإنشاء حسابات جديدة.</p>
-            </div>
+        {activeTab === 'admin-dashboard' && (isLoggedIn && userRole === 'admin') && (
+          <div className="space-y-12">
+            <h2 className="text-2xl font-black">لوحة إدارة الأدمن والمستخدمين</h2>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* إنشاء حساب معلم جديد */}
-              <div className={`p-6 rounded-3xl border shadow-sm space-y-4 ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-800'}`}>
-                <h3 className="text-base font-bold text-emerald-600 dark:text-emerald-400">إنشاء حساب معلم جديد</h3>
-                <form onSubmit={handleAdminCreateTeacher} className="space-y-3">
-                  <input 
-                    type="text" 
-                    value={newTeacherName} 
-                    onChange={e => setNewTeacherName(e.target.value)} 
-                    placeholder="اسم المعلم الكامل"
-                    className="w-full p-3 rounded-xl border text-xs bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700" 
-                  />
-                  <input 
-                    type="email" 
-                    value={newTeacherEmail} 
-                    onChange={e => setNewTeacherEmail(e.target.value)} 
-                    placeholder="البريد الإلكتروني للمعلم"
-                    className="w-full p-3 rounded-xl border text-xs bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700" 
-                  />
-                  <input 
-                    type="password" 
-                    value={newTeacherPassword} 
-                    onChange={e => setNewTeacherPassword(e.target.value)} 
-                    placeholder="كلمة المرور المؤقتة"
-                    className="w-full p-3 rounded-xl border text-xs bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700" 
-                  />
-                  <input 
-                    type="text" 
-                    value={newTeacherPhone} 
-                    onChange={e => setNewTeacherPhone(e.target.value)} 
-                    placeholder="رقم الهاتف"
-                    className="w-full p-3 rounded-xl border text-xs bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700" 
-                  />
-                  <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl font-bold text-xs transition">
-                    إنشاء حساب المعلم وتفعيله
-                  </button>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* إنشاء حساب مدرس */}
+              <div className={`p-6 rounded-3xl border shadow-sm transition-colors ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
+                <h3 className="text-lg font-bold mb-6 text-emerald-600 dark:text-emerald-400">إنشاء وتفعيل حساب مدرس جديد</h3>
+                <form onSubmit={handleAdminCreateTeacher} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">اسم المدرس</label>
+                    <input type="text" value={newTeacherName} onChange={e => setNewTeacherName(e.target.value)} className="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-teal-500" placeholder="أحمد المعلم" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">البريد الإلكتروني</label>
+                    <input type="email" value={newTeacherEmail} onChange={e => setNewTeacherEmail(e.target.value)} className="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-teal-500" placeholder="teacher@edu.com" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">كلمة المرور المؤقتة</label>
+                    <input type="password" value={newTeacherPassword} onChange={e => setNewTeacherPassword(e.target.value)} className="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-teal-500" placeholder="••••••••" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold mb-1 text-slate-700 dark:text-slate-300">رقم الهاتف</label>
+                    <input type="text" value={newTeacherPhone} onChange={e => setNewTeacherPhone(e.target.value)} className="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-teal-500" placeholder="010xxxxxxxx" />
+                  </div>
+                  <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl font-bold text-xs shadow-sm transition">إنشاء حساب المدرس وتفعيله</button>
                 </form>
               </div>
 
-              {/* جدول إدارة المستخدمين */}
-              <div className={`lg:col-span-2 p-6 rounded-3xl border shadow-sm space-y-4 ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-800'}`}>
-                <h3 className="text-base font-bold text-emerald-600 dark:text-emerald-400">قائمة مستخدمي المنصة (أدمن، معلمين، طلاب)</h3>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-right text-xs">
-                    <thead>
-                      <tr className="border-b dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-                        <th className="p-3">الاسم</th>
-                        <th className="p-3">البريد</th>
-                        <th className="p-3">الدور</th>
-                        <th className="p-3">الحالة</th>
-                        <th className="p-3">الإجراءات</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y dark:divide-slate-800">
-                      {usersList.map(u => (
-                        <tr key={u.email} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
-                          <td className="p-3 font-bold">{u.name}</td>
-                          <td className="p-3 text-slate-500 dark:text-slate-400">{u.email}</td>
-                          <td className="p-3">
-                            <span className="px-2 py-0.5 rounded-md font-bold text-[10px] bg-slate-100 dark:bg-slate-800">
-                              {u.role === 'admin' ? 'مدير' : u.role === 'instructor' ? 'معلم' : 'طالب'}
-                            </span>
-                          </td>
-                          <td className="p-3">
-                            <span className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${u.status === 'suspended' ? 'bg-rose-100 text-rose-600 dark:bg-rose-950/50 dark:text-rose-300' : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-300'}`}>
-                              {u.status === 'suspended' ? 'معطل' : 'مفعل'}
-                            </span>
-                          </td>
-                          <td className="p-3 flex gap-2">
-                            {u.email !== '250iie3@gmail.com' && (
-                              <>
-                                <button onClick={() => handleToggleUserStatus(u.email)} className="bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-300 px-2.5 py-1 rounded-lg text-[10px] font-bold">
-                                  {u.status === 'active' ? 'تعطيل' : 'تفعيل'}
-                                </button>
-                                <button onClick={() => handleDeleteUser(u.email)} className="bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-300 px-2.5 py-1 rounded-lg text-[10px] font-bold">
-                                  حذف
-                                </button>
-                              </>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+              {/* إدارة المستخدمين */}
+              <div className={`p-6 rounded-3xl border shadow-sm transition-colors ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
+                <h3 className="text-lg font-bold mb-6 text-emerald-600 dark:text-emerald-400">قائمة كافة المستخدمين (طلاب، معلمين، أدمن)</h3>
+                <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                  {usersList.map((u, i) => (
+                    <div key={i} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 flex justify-between items-center text-xs">
+                      <div>
+                        <p className="font-bold">{u.name} <span className="text-[10px] text-teal-600 dark:text-teal-400 font-normal">({u.role})</span></p>
+                        <p className="text-slate-400">{u.email}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        {u.email !== '250iie3@gmail.com' && (
+                          <>
+                            <button onClick={() => handleToggleUserStatus(u.email)} className={`px-2.5 py-1 rounded-lg text-[10px] font-bold ${u.status === 'suspended' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                              {u.status === 'suspended' ? 'تفعيل' : 'تعطيل'}
+                            </button>
+                            <button onClick={() => handleDeleteUser(u.email)} className="bg-rose-100 text-rose-700 px-2.5 py-1 rounded-lg text-[10px] font-bold">حذف</button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
           </div>
         )}
 
-      </main>
-
-      {/* نافذة الامتحان الذكي ونظام المراقبة */}
-      {activeExam && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" dir="rtl">
-          <div className="max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-6">
-            <div className="flex justify-between items-center border-b pb-4 dark:border-slate-800">
-              <div>
-                <h3 className="text-lg font-extrabold text-indigo-600 dark:text-indigo-400">{activeExam.title}</h3>
-                <p className="text-xs text-rose-500 font-bold mt-1">⚠️ تحذير: مغادرة النافذة أو فتح تبويب خارجي يعرضك للإنذار (3 إنذارات وتتم الإلغاء تلقائياً)</p>
+        {/* ACTIVE EXAM VIEW */}
+        {activeExam && (
+          <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex justify-center items-center p-4">
+            <div className={`w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl p-6 sm:p-8 border shadow-2xl transition-colors ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-900'}`}>
+              <div className="flex justify-between items-center mb-6 border-b pb-4 border-slate-200 dark:border-slate-800">
+                <h3 className="text-xl font-black text-teal-600 dark:text-teal-400">امتحان ذكي: {activeExam.title}</h3>
+                <span className="text-xs bg-rose-100 text-rose-700 font-bold px-3 py-1 rounded-full">محاولات الغش المرصودة: {cheatingWarnings}/3</span>
               </div>
-              <span className="bg-rose-50 text-rose-600 px-3 py-1 rounded-xl text-xs font-bold border border-rose-200">
-                الإنذارات: {cheatingWarnings} / 3
-              </span>
-            </div>
 
-            {!examSubmitted ? (
-              <div className="space-y-6">
-                {activeExam.questions.map((q: any, qIdx: number) => (
-                  <div key={qIdx} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 space-y-3">
-                    <h4 className="text-xs font-bold sm:text-sm">السؤال {qIdx + 1}: {q.question}</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {q.options.map((opt: string, optIdx: number) => (
-                        <label 
-                          key={optIdx} 
-                          className={`p-3 rounded-xl border text-xs flex items-center gap-2 cursor-pointer transition ${examAnswers[qIdx] === optIdx ? 'bg-indigo-50 border-indigo-500 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 font-bold' : 'border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
-                        >
-                          <input 
-                            type="radio" 
-                            name={`q-${qIdx}`} 
-                            checked={examAnswers[qIdx] === optIdx}
-                            onChange={() => setExamAnswers({ ...examAnswers, [qIdx]: optIdx })}
-                            className="accent-indigo-600"
-                          />
-                          <span>{opt}</span>
-                        </label>
-                      ))}
+              {examSubmitted ? (
+                <div className="text-center space-y-4 py-8">
+                  <h4 className="text-2xl font-black text-emerald-600">تم تسليم الامتحان بنجاح!</h4>
+                  <p className="text-lg font-bold">درجتك النهائية: {examScore} من {activeExam.questions.length}</p>
+                  <button onClick={() => setActiveExam(null)} className="bg-teal-600 hover:bg-teal-500 text-white px-6 py-2.5 rounded-xl font-bold text-xs">إغلاق نافذة الامتحان</button>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {activeExam.questions.map((q: any, qIdx: number) => (
+                    <div key={qIdx} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 space-y-3">
+                      <p className="font-bold text-xs sm:text-sm">السؤال {qIdx + 1}: {q.question}</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {q.options.map((opt: string, optIdx: number) => (
+                          <label key={optIdx} className={`p-3 rounded-xl border text-xs flex items-center gap-2 cursor-pointer transition ${examAnswers[qIdx] === optIdx ? 'bg-teal-50 border-teal-500 text-teal-900 dark:bg-teal-500/20 dark:text-teal-200' : 'border-slate-200 dark:border-slate-700'}`}>
+                            <input type="radio" name={`q-${qIdx}`} checked={examAnswers[qIdx] === optIdx} onChange={() => setExamAnswers({...examAnswers, [qIdx]: optIdx})} />
+                            <span>{opt}</span>
+                          </label>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
-                <button onClick={submitExam} className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl font-bold text-xs shadow-sm transition">
-                  تسليم الامتحان ورصد الدرجة
-                </button>
-              </div>
-            ) : (
-              <div className="text-center space-y-4 py-8">
-                <h4 className="text-2xl font-black text-teal-600">تم تسليم الامتحان بنجاح!</h4>
-                <p className="text-lg font-bold">درجتك النهائية: {examScore} / {activeExam.questions.length}</p>
-                <button onClick={() => setActiveExam(null)} className="bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 px-6 py-2.5 rounded-xl font-bold text-xs">
-                  إغلاق نافذة الامتحان
-                </button>
-              </div>
-            )}
+                  ))}
+                  <button onClick={submitExam} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl font-bold text-xs shadow-sm transition">تسليم الإجابات وإنهاء الامتحان</button>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
+      </main>
     </div>
   );
 }
