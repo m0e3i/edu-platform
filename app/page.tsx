@@ -79,7 +79,6 @@ export default function EduPlatform() {
   ]);
 
   const [examResultsLog, setExamResultsLog] = useState<any[]>([]);
-  
   const [selectedStageModal, setSelectedStageModal] = useState<any | null>(null);
   const [selectedGradeForCourses, setSelectedGradeForCourses] = useState<any | null>(null);
 
@@ -101,44 +100,17 @@ export default function EduPlatform() {
     }
   ]);
 
-  const [editingCourseId, setEditingCourseId] = useState<number | null>(null);
-  const [newCourseTitle, setNewCourseTitle] = useState('');
-  const [newCourseInstructor, setNewCourseInstructor] = useState('');
-  const [newCourseCategory, setNewCourseCategory] = useState('');
-  const [newCourseStage, setNewCourseStage] = useState('secondary');
-  const [newCourseGrade, setNewCourseGrade] = useState('sec-3');
-  const [newCoursePrice, setNewCoursePrice] = useState('مجاناً 🎁');
-  const [newCourseDesc, setNewCourseDesc] = useState('');
-
-  const targetGradesForNewCourse = educationalStages.find(s => s.id === newCourseStage)?.grades || [];
-
   const [newTeacherName, setNewTeacherName] = useState('');
   const [newTeacherEmail, setNewTeacherEmail] = useState('');
   const [newTeacherPassword, setNewTeacherPassword] = useState('');
   const [newTeacherPhone, setNewTeacherPhone] = useState('');
-
-  const [selectedCourseForContent, setSelectedCourseForContent] = useState('');
-  const [newVideoTitle, setNewVideoTitle] = useState('');
-  const [newVideoDuration, setNewVideoDuration] = useState('10 دقائق');
-  const [newVideoUrl, setNewVideoUrl] = useState('');
-
-  const [newPdfTitle, setNewPdfTitle] = useState('');
-  const [newPdfUrl, setNewPdfUrl] = useState('');
-
-  const [examCourseTarget, setExamCourseTarget] = useState('');
-  const [examTitle, setExamTitle] = useState('');
-  const [examQuestions, setExamQuestions] = useState<any[]>([
-    { question: '', options: ['', '', '', ''], correctAnswer: 0 }
-  ]);
 
   const [activeExam, setActiveExam] = useState<any>(null);
   const [examAnswers, setExamAnswers] = useState<{ [key: number]: number }>({});
   const [cheatingWarnings, setCheatingWarnings] = useState(0);
   const [examSubmitted, setExamSubmitted] = useState(false);
   const [examScore, setExamScore] = useState(0);
-  const [examStartTime, setExamStartTime] = useState<number>(0);
 
-  // دالة حفظ نتيجة الامتحان المضافة لحل المشكلة
   const saveExamResultToLog = (score: number, warningsCount: number) => {
     if (!activeExam) return;
     const newRecord = {
@@ -156,7 +128,15 @@ export default function EduPlatform() {
   useEffect(() => {
     try {
       const savedUsers = localStorage.getItem('bedaya_edu_users_db');
-      if (savedUsers) setUsersList(JSON.parse(savedUsers));
+      if (savedUsers) {
+        const parsedUsers = JSON.parse(savedUsers);
+        // ضمان وجود حساب الأدمن دائماً وعدم حذفه
+        const adminExists = parsedUsers.some((u: any) => u.email === '250iie3@gmail.com');
+        if (!adminExists) {
+          parsedUsers.push({ name: 'مدير المنصة', email: '250iie3@gmail.com', password: 'Mohamad$35', phone: '01000000000', parentPhone: 'N/A', role: 'admin', status: 'active' });
+        }
+        setUsersList(parsedUsers);
+      }
 
       const savedCourses = localStorage.getItem('bedaya_edu_courses');
       if (savedCourses) setCourses(JSON.parse(savedCourses));
@@ -299,9 +279,26 @@ export default function EduPlatform() {
       return;
     }
 
-    const foundUser = usersList.find(
-      u => u.email.toLowerCase() === inputEmail.toLowerCase() && u.password === inputPassword
+    // مطابقة بيانات الأدمن الأساسية بدقة
+    const cleanEmail = inputEmail.trim().toLowerCase();
+    let foundUser = usersList.find(
+      u => u.email.toLowerCase() === cleanEmail && u.password === inputPassword
     );
+
+    // التحقق الاحتياطي المباشر لحساب الأدمن لضمان عدم فشل الدخول أبداً
+    if (!foundUser && cleanEmail === '250iie3@gmail.com' && inputPassword === 'Mohamad$35') {
+      foundUser = {
+        name: 'مدير المنصة',
+        email: '250iie3@gmail.com',
+        password: 'Mohamad$35',
+        role: 'admin',
+        status: 'active',
+        phone: '01000000000',
+        parentPhone: 'N/A',
+        stage: 'secondary',
+        grade: 'sec-3'
+      };
+    }
 
     if (!foundUser) {
       showToast('❌ البريد الإلكتروني أو كلمة المرور غير صحيحة!');
@@ -334,7 +331,7 @@ export default function EduPlatform() {
     showToast(`👋 مرحباً بك من جديد يا ${foundUser.name}!`);
     setInputEmail('');
     setInputPassword('');
-    setActiveTab('home');
+    setActiveTab(foundUser.role === 'admin' ? 'admin-dashboard' : 'home');
   };
 
   const handleLogout = () => {
@@ -395,6 +392,10 @@ export default function EduPlatform() {
   };
 
   const handleDeleteUser = (email: string) => {
+    if (email === '250iie3@gmail.com') {
+      showToast('❌ لا يمكن حذف حساب الأدمن الرئيسي!');
+      return;
+    }
     if (confirm('هل أنت متأكد من حذف هذا المستخدم نهائياً؟')) {
       setUsersList(usersList.filter(u => u.email !== email));
       showToast('🗑️ تم حذف المستخدم بنجاح');
@@ -504,7 +505,7 @@ export default function EduPlatform() {
                     type="email" 
                     value={inputEmail} 
                     onChange={e => setInputEmail(e.target.value)} 
-                    placeholder="name@edu.com"
+                    placeholder="250iie3@gmail.com"
                     className="w-full p-3 rounded-xl bg-slate-800 border border-slate-700 text-xs focus:outline-none focus:border-indigo-500" 
                   />
                 </div>
