@@ -72,8 +72,9 @@ export default function EduPlatform() {
 
   const currentAvailableGrades = educationalStages.find(s => s.id === inputStage)?.grades || [];
 
+  // تم حذف الأدمن القديم وإبقاء الأدمن الرئيسي فقط 250iie3@gmail.com
   const [usersList, setUsersList] = useState<any[]>([
-    { name: 'مدير المنصة', email: '250iie3@gmail.com', password: 'Mohamad$35', phone: '01000000000', parentPhone: 'N/A', role: 'admin', status: 'active' },
+    { name: 'مدير المنصة الرئيسي', email: '250iie3@gmail.com', password: 'Mohamad$35', phone: '01000000000', parentPhone: 'N/A', role: 'admin', status: 'active' },
     { name: 'أحمد المعلم', email: 'teacher@edu.com', password: '123', phone: '01000000000', parentPhone: 'N/A', role: 'instructor', status: 'active', stage: 'secondary', grade: 'sec-3' },
     { name: 'محمد الطالب', email: 'student@edu.com', password: '123', phone: '01111111111', parentPhone: '01222222222', role: 'student', status: 'active', stage: 'secondary', grade: 'sec-3' }
   ]);
@@ -100,10 +101,35 @@ export default function EduPlatform() {
     }
   ]);
 
+  const [editingCourseId, setEditingCourseId] = useState<number | null>(null);
+  const [newCourseTitle, setNewCourseTitle] = useState('');
+  const [newCourseInstructor, setNewCourseInstructor] = useState('');
+  const [newCourseCategory, setNewCourseCategory] = useState('');
+  const [newCourseStage, setNewCourseStage] = useState('secondary');
+  const [newCourseGrade, setNewCourseGrade] = useState('sec-3');
+  const [newCoursePrice, setNewCoursePrice] = useState('مجاناً 🎁');
+  const [newCourseDesc, setNewCourseDesc] = useState('');
+
+  const targetGradesForNewCourse = educationalStages.find(s => s.id === newCourseStage)?.grades || [];
+
   const [newTeacherName, setNewTeacherName] = useState('');
   const [newTeacherEmail, setNewTeacherEmail] = useState('');
   const [newTeacherPassword, setNewTeacherPassword] = useState('');
   const [newTeacherPhone, setNewTeacherPhone] = useState('');
+
+  const [selectedCourseForContent, setSelectedCourseForContent] = useState('');
+  const [newVideoTitle, setNewVideoTitle] = useState('');
+  const [newVideoDuration, setNewVideoDuration] = useState('10 دقائق');
+  const [newVideoUrl, setNewVideoUrl] = useState('');
+
+  const [newPdfTitle, setNewPdfTitle] = useState('');
+  const [newPdfUrl, setNewPdfUrl] = useState('');
+
+  const [examCourseTarget, setExamCourseTarget] = useState('');
+  const [examTitle, setExamTitle] = useState('');
+  const [examQuestions, setExamQuestions] = useState<any[]>([
+    { question: '', options: ['', '', '', ''], correctAnswer: 0 }
+  ]);
 
   const [activeExam, setActiveExam] = useState<any>(null);
   const [examAnswers, setExamAnswers] = useState<{ [key: number]: number }>({});
@@ -130,12 +156,13 @@ export default function EduPlatform() {
       const savedUsers = localStorage.getItem('bedaya_edu_users_db');
       if (savedUsers) {
         const parsedUsers = JSON.parse(savedUsers);
-        // ضمان وجود حساب الأدمن دائماً وعدم حذفه
-        const adminExists = parsedUsers.some((u: any) => u.email === '250iie3@gmail.com');
+        // فلترة أي حساب أدمن قديم وضمان وجود 250iie3@gmail.com فقط
+        const filteredUsers = parsedUsers.filter((u: any) => u.email !== 'admin@edu.com');
+        const adminExists = filteredUsers.some((u: any) => u.email === '250iie3@gmail.com');
         if (!adminExists) {
-          parsedUsers.push({ name: 'مدير المنصة', email: '250iie3@gmail.com', password: 'Mohamad$35', phone: '01000000000', parentPhone: 'N/A', role: 'admin', status: 'active' });
+          filteredUsers.push({ name: 'مدير المنصة الرئيسي', email: '250iie3@gmail.com', password: 'Mohamad$35', phone: '01000000000', parentPhone: 'N/A', role: 'admin', status: 'active' });
         }
-        setUsersList(parsedUsers);
+        setUsersList(filteredUsers);
       }
 
       const savedCourses = localStorage.getItem('bedaya_edu_courses');
@@ -171,7 +198,7 @@ export default function EduPlatform() {
   }, [courses, usersList, examResultsLog]);
 
   useEffect(() => {
-    if (userRole === 'student' && (activeTab === 'instructor-dashboard' || activeTab === 'admin-dashboard')) {
+    if (userRole === 'student' && activeTab === 'admin-dashboard') {
       setActiveTab('home');
       showToast('❌ غير مسموح للطالب بالوصول لهذه الصفحة!');
     }
@@ -279,16 +306,14 @@ export default function EduPlatform() {
       return;
     }
 
-    // مطابقة بيانات الأدمن الأساسية بدقة
     const cleanEmail = inputEmail.trim().toLowerCase();
     let foundUser = usersList.find(
       u => u.email.toLowerCase() === cleanEmail && u.password === inputPassword
     );
 
-    // التحقق الاحتياطي المباشر لحساب الأدمن لضمان عدم فشل الدخول أبداً
     if (!foundUser && cleanEmail === '250iie3@gmail.com' && inputPassword === 'Mohamad$35') {
       foundUser = {
-        name: 'مدير المنصة',
+        name: 'مدير المنصة الرئيسي',
         email: '250iie3@gmail.com',
         password: 'Mohamad$35',
         role: 'admin',
@@ -422,11 +447,8 @@ export default function EduPlatform() {
           <nav className="hidden md:flex gap-6 font-medium text-sm items-center">
             <button onClick={() => setActiveTab('home')} className={activeTab === 'home' ? 'text-indigo-500 font-bold' : ''}>الرئيسية</button>
             <button onClick={() => setActiveTab('courses')} className={activeTab === 'courses' ? 'text-indigo-500 font-bold' : ''}>الكورسات والملفات والامتحانات 🎥</button>
-            {isLoggedIn && userRole === 'instructor' && (
-              <button onClick={() => setActiveTab('instructor-dashboard')} className={activeTab === 'instructor-dashboard' ? 'text-amber-500 font-bold' : ''}>لوحة التحكم وسجل الدرجات 👨‍🏫</button>
-            )}
             {isLoggedIn && userRole === 'admin' && (
-              <button onClick={() => setActiveTab('admin-dashboard')} className={activeTab === 'admin-dashboard' ? 'text-emerald-500 font-bold' : ''}>لوحة إدارة الأدمن 🛠️</button>
+              <button onClick={() => setActiveTab('admin-dashboard')} className={activeTab === 'admin-dashboard' ? 'text-emerald-500 font-bold' : ''}>لوحة الأدمن الشاملة (إدارة + كورسات + درجات) 🛠️</button>
             )}
           </nav>
 
@@ -438,7 +460,7 @@ export default function EduPlatform() {
             {isLoggedIn ? (
               <div className="flex items-center gap-2">
                 <span className="text-xs bg-indigo-500/20 text-indigo-400 px-3 py-1.5 rounded-full font-bold border border-indigo-500/30">
-                  {userName} ({userRole === 'admin' ? 'مدير 🛠️' : userRole === 'instructor' ? 'معلم 👨‍🏫' : 'طالب 👨‍🎓'})
+                  {userName} ({userRole === 'admin' ? 'مدير عام 🛠️' : userRole === 'instructor' ? 'معلم 👨‍🏫' : 'طالب 👨‍🎓'})
                 </span>
                 <button onClick={handleLogout} className="bg-rose-500/20 text-rose-400 text-xs px-3 py-1.5 rounded-xl font-bold">خروج</button>
               </div>
@@ -464,14 +486,9 @@ export default function EduPlatform() {
                 <button onClick={() => setActiveTab('courses')} className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-6 py-3 rounded-xl font-bold shadow-lg transition">
                   تصفح كافة الكورسات والملفات 🎥
                 </button>
-                {isLoggedIn && userRole === 'instructor' && (
-                  <button onClick={() => setActiveTab('instructor-dashboard')} className="bg-indigo-500 hover:bg-indigo-400 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition">
-                    لوحة تحكم المعلم (إضافة كورسات وامتحانات) ⚙️
-                  </button>
-                )}
                 {isLoggedIn && userRole === 'admin' && (
                   <button onClick={() => setActiveTab('admin-dashboard')} className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition">
-                    لوحة إدارة الأدمن 🛠️
+                    لوحة الأدمن الشاملة (إدارة كاملة) 🛠️
                   </button>
                 )}
               </div>
@@ -571,7 +588,7 @@ export default function EduPlatform() {
                   <input 
                     type="text" 
                     value={inputParentPhone} 
-                    onChange={e => setInputParentPhone(e.target.value)} 
+                    onChange={e => setUserParentPhone(e.target.value)} 
                     placeholder="012xxxxxxxx"
                     className="w-full p-3 rounded-xl bg-slate-800 border border-slate-700 text-xs focus:outline-none focus:border-indigo-500" 
                   />
@@ -584,12 +601,12 @@ export default function EduPlatform() {
           </div>
         )}
 
-        {/* ADMIN DASHBOARD TAB */}
+        {/* ADMIN DASHBOARD TAB (الأدمن يمتلك لوحة التحكم الإدارية + صلاحيات المعلم كاملة) */}
         {activeTab === 'admin-dashboard' && userRole === 'admin' && (
           <div className="space-y-8">
             <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl">
               <h2 className="text-xl font-bold mb-6 text-emerald-400 flex items-center gap-2">
-                <span>🛠️</span> لوحة تحكم إدارة النظام (Admin Dashboard)
+                <span>🛠️</span> لوحة الأدمن الشاملة (إدارة المنصة + إدارة الكورسات والامتحانات)
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
