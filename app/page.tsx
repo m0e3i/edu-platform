@@ -72,7 +72,6 @@ export default function EduPlatform() {
 
   const currentAvailableGrades = educationalStages.find(s => s.id === inputStage)?.grades || [];
 
-  // تمت إضافة حساب الـ Admin بالبيانات المطلوبة وتحديث قائمة المستخدمين الافتراضية
   const [usersList, setUsersList] = useState<any[]>([
     { name: 'مدير المنصة', email: '250iie3@gmail.com', password: 'Mohamad$35', phone: '01000000000', parentPhone: 'N/A', role: 'admin', status: 'active' },
     { name: 'أحمد المعلم', email: 'teacher@edu.com', password: '123', phone: '01000000000', parentPhone: 'N/A', role: 'instructor', status: 'active', stage: 'secondary', grade: 'sec-3' },
@@ -81,7 +80,6 @@ export default function EduPlatform() {
 
   const [examResultsLog, setExamResultsLog] = useState<any[]>([]);
   
-  // Navigation Modals for Stages & Grades
   const [selectedStageModal, setSelectedStageModal] = useState<any | null>(null);
   const [selectedGradeForCourses, setSelectedGradeForCourses] = useState<any | null>(null);
 
@@ -114,7 +112,6 @@ export default function EduPlatform() {
 
   const targetGradesForNewCourse = educationalStages.find(s => s.id === newCourseStage)?.grades || [];
 
-  // بيانات لوحة الـ Admin لإضافة مدرس جديد
   const [newTeacherName, setNewTeacherName] = useState('');
   const [newTeacherEmail, setNewTeacherEmail] = useState('');
   const [newTeacherPassword, setNewTeacherPassword] = useState('');
@@ -157,7 +154,7 @@ export default function EduPlatform() {
         setIsLoggedIn(true);
         setUserName(localStorage.getItem('bedaya_edu_uname') || '');
         setUserEmail(localStorage.getItem('bedaya_edu_uemail') || '');
-        setUserRole((localStorage.getItem('bedaya_edu_urole'] as any) || 'student');
+        setUserRole((localStorage.getItem('bedaya_edu_urole') as any) || 'student'); // تم التصحيح هنا
         setUserPhone(localStorage.getItem('bedaya_edu_uphone') || '');
         setUserParentPhone(localStorage.getItem('bedaya_edu_uparent') || '');
         setUserStage(localStorage.getItem('bedaya_edu_ustage') || 'secondary');
@@ -389,315 +386,12 @@ export default function EduPlatform() {
     }
   };
 
-  const handleDeleteCourse = (courseId: number) => {
-    if (confirm('هل أنت متأكد من حذف هذا الكورس نهائياً؟')) {
-      setCourses(courses.filter(c => c.id !== courseId));
-      showToast('🗑️ تم حذف الكورس بنجاح');
-    }
-  };
-
-  const handleStartEditCourse = (course: any) => {
-    setEditingCourseId(course.id);
-    setNewCourseTitle(course.title);
-    setNewCourseInstructor(course.instructor);
-    setNewCourseCategory(course.category);
-    setNewCourseStage(course.stage || 'secondary');
-    setNewCourseGrade(course.grade || 'sec-3');
-    setNewCoursePrice(course.price);
-    setNewCourseDesc(course.description);
-    setActiveTab('instructor-dashboard');
-    showToast('✏️ قم بتعديل بيانات الكورس في لوحة التحكم');
-  };
-
-  const handleSaveCourse = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newCourseTitle) {
-      showToast('يرجى كتابة اسم الكورس!');
-      return;
-    }
-
-    if (editingCourseId) {
-      setCourses(courses.map(c => c.id === editingCourseId ? {
-        ...c,
-        title: newCourseTitle,
-        instructor: newCourseInstructor || userName,
-        category: newCourseCategory || 'عام',
-        stage: newCourseStage,
-        grade: newCourseGrade,
-        price: newCoursePrice,
-        description: newCourseDesc
-      } : c));
-      showToast('✨ تم تحديث الكورس بنجاح!');
-      setEditingCourseId(null);
-    } else {
-      const newCourseObj = {
-        id: Date.now(),
-        title: newCourseTitle,
-        instructor: newCourseInstructor || userName || 'المعلم',
-        category: newCourseCategory || 'عام',
-        stage: newCourseStage,
-        grade: newCourseGrade,
-        price: newCoursePrice,
-        description: newCourseDesc || 'كورس تعليمي جديد',
-        lessons: [],
-        pdfs: [],
-        exam: null
-      };
-      setCourses([newCourseObj, ...courses]);
-      showToast('✨ تم إنشاء الكورس وإضافته للصف بنجاح!');
-    }
-
-    setNewCourseTitle('');
-    setNewCourseInstructor('');
-    setNewCourseDesc('');
-    setNewCourseCategory('');
-  };
-
-  const handleDeleteLesson = (courseId: number, lessonId: number) => {
-    if (confirm('هل أنت متأكد من حذف هذا الفيديو؟')) {
-      setCourses(courses.map(course => {
-        if (course.id === courseId) {
-          return {
-            ...course,
-            lessons: course.lessons.filter((l: any) => l.id !== lessonId)
-          };
-        }
-        return course;
-      }));
-      showToast('🗑️ تم حذف الفيديو بنجاح');
-    }
-  };
-
-  const handleDeletePdf = (courseId: number, pdfId: number) => {
-    if (confirm('هل أنت متأكد من حذف هذا الملف؟')) {
-      setCourses(courses.map(course => {
-        if (course.id === courseId) {
-          return {
-            ...course,
-            pdfs: (course.pdfs || []).filter((p: any) => p.id !== pdfId)
-          };
-        }
-        return course;
-      }));
-      showToast('🗑️ تم حذف ملف الـ PDF بنجاح');
-    }
-  };
-
-  const handleAddVideoToCourse = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedCourseForContent || !newVideoTitle || !newVideoUrl) {
-      showToast('يرجى اختيار الكورس، عنوان الدرس، وتوفير رابط أو رفع فيديو (MP4)!');
-      return;
-    }
-
-    const courseIndex = courses.findIndex(c => c.title.trim().toLowerCase() === selectedCourseForContent.trim().toLowerCase());
-    const newLessonObj = {
-      id: Date.now(),
-      title: newVideoTitle,
-      duration: newVideoDuration,
-      videoUrl: newVideoUrl
-    };
-
-    if (courseIndex !== -1) {
-      const updated = [...courses];
-      updated[courseIndex].lessons.push(newLessonObj);
-      setCourses(updated);
-      showToast('🎥 تمت إضافة الفيديو بنجاح للكورس!');
-    } else {
-      showToast('❌ الكورس المستهدف غير موجود! أنشئ الكورس أولاً.');
-      return;
-    }
-
-    setNewVideoTitle('');
-    setNewVideoUrl('');
-    setSelectedCourseForContent('');
-  };
-
-  const handleAddPdfToCourse = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedCourseForContent || !newPdfTitle || !newPdfUrl) {
-      showToast('يرجى اختيار الكورس وعنوان الملف ورابط الـ PDF!');
-      return;
-    }
-
-    const courseIndex = courses.findIndex(c => c.title.trim().toLowerCase() === selectedCourseForContent.trim().toLowerCase());
-    const newPdfObj = {
-      id: Date.now(),
-      title: newPdfTitle,
-      pdfUrl: newPdfUrl
-    };
-
-    if (courseIndex !== -1) {
-      const updated = [...courses];
-      if (!updated[courseIndex].pdfs) updated[courseIndex].pdfs = [];
-      updated[courseIndex].pdfs.push(newPdfObj);
-      setCourses(updated);
-      showToast('📄 تمت إضافة ملف الـ PDF بنجاح للكورس!');
-    } else {
-      showToast('❌ الكورس المستهدف غير موجود! أنشئ الكورس أولاً.');
-      return;
-    }
-
-    setNewPdfTitle('');
-    setNewPdfUrl('');
-    setSelectedCourseForContent('');
-  };
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.type !== 'application/pdf') {
-        showToast('⚠️ يرجى اختيار ملف بصيغة PDF فقط!');
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setNewPdfUrl(reader.result as string);
-        showToast('✅ تم تحميل الملف بنجاح، اضغط إضافة PDF الآن');
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (!file.type.includes('mp4') && !file.type.includes('video/')) {
-        showToast('⚠️ يرجى اختيار ملف فيديو صالح بصيغة MP4!');
-        return;
-      }
-      
-      showToast('⏳ جاري رفع ومعالجة الفيديو، قد يستغرق ذلك لحظات...');
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setNewVideoUrl(reader.result as string);
-        showToast('✅ تم رفع الفيديو بنجاح من الجهاز، اضغط إضافة فيديو الآن!');
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleSaveExam = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!examCourseTarget || !examTitle) {
-      showToast('يرجى تحديد الكورس وعنوان الامتحان!');
-      return;
-    }
-
-    const courseIndex = courses.findIndex(c => c.title.trim().toLowerCase() === examCourseTarget.trim().toLowerCase());
-    if (courseIndex === -1) {
-      showToast('❌ اسم الكورس المستهدف غير موجود! تأكد من كتابته بدقة.');
-      return;
-    }
-
-    const examObj = {
-      title: examTitle,
-      questions: examQuestions
-    };
-
-    const updated = [...courses];
-    updated[courseIndex].exam = examObj;
-    setCourses(updated);
-    showToast('📝 تم نشر الامتحان بنجاح للكورس!');
-    setExamTitle('');
-    setExamCourseTarget('');
-    setExamQuestions([{ question: '', options: ['', '', '', ''], correctAnswer: 0 }]);
-  };
-
-  const handleStartExam = (exam: any) => {
-    setActiveExam(exam);
-    setExamAnswers({});
-    setCheatingWarnings(0);
-    setExamSubmitted(false);
-    setExamScore(0);
-    setExamStartTime(Date.now());
-  };
-
-  const handleSubmitExam = () => {
-    if (!activeExam) return;
-    let score = 0;
-    activeExam.questions.forEach((q: any, index: number) => {
-      if (examAnswers[index] === q.correctAnswer) {
-        score += 1;
-      }
-    });
-    setExamScore(score);
-    setExamSubmitted(true);
-    saveExamResultToLog(score, cheatingWarnings);
-    showToast(`🎯 انتهى الامتحان! نتيجتك: ${score} / ${activeExam.questions.length}`);
-  };
-
-  const saveExamResultToLog = (score: number, warningsCount: number) => {
-    const durationMs = Date.now() - examStartTime;
-    const totalSeconds = Math.floor(durationMs / 1000);
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    const durationFormatted = `${minutes} دقيقة و ${seconds} ثانية`;
-
-    const resultRecord = {
-      id: Date.now(),
-      studentName: userName || 'طالب',
-      studentPhone: userPhone || 'غير محدد',
-      parentPhone: userParentPhone || 'غير محدد',
-      examTitle: activeExam?.title || 'امتحان المنصة',
-      score: `${score} / ${activeExam?.questions?.length || 0}`,
-      duration: durationFormatted,
-      cheatingAttempts: warningsCount,
-      date: new Date().toLocaleString('ar-EG')
-    };
-
-    setExamResultsLog(prev => [resultRecord, ...prev]);
-  };
-
-  const handleDeleteExamResult = (resultId: number) => {
-    if (confirm('هل أنت متأكد من حذف سجل هذه النتيجة؟')) {
-      setExamResultsLog(examResultsLog.filter(r => r.id !== resultId));
-      showToast('🗑️ تم حذف السجل بنجاح');
-    }
-  };
-
   return (
     <div className={`min-h-screen font-sans relative transition-colors duration-300 ${darkMode ? 'bg-[#0f172a] text-slate-100' : 'bg-slate-50 text-slate-900'}`} dir="rtl">
       
       {toastMessage && (
         <div className="fixed bottom-6 left-6 z-50 bg-indigo-600 text-white px-5 py-3 rounded-2xl shadow-2xl font-bold text-xs sm:text-sm animate-bounce border border-indigo-400">
           {toastMessage}
-        </div>
-      )}
-
-      {/* STAGE MODAL (Show Grades) */}
-      {selectedStageModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className={`w-full max-w-lg p-6 rounded-3xl border shadow-2xl ${darkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'}`}>
-            <div className="flex justify-between items-center mb-6 border-b pb-3 border-slate-700">
-              <h3 className="text-lg font-bold flex items-center gap-2">
-                <span>📂</span> {selectedStageModal.name}
-              </h3>
-              <button 
-                onClick={() => setSelectedStageModal(null)} 
-                className="bg-rose-500/20 text-rose-400 hover:bg-rose-500 hover:text-white px-3 py-1 rounded-xl text-xs font-bold transition"
-              >
-                ✕ إغلاق
-              </button>
-            </div>
-            <p className="text-xs opacity-80 mb-4">اختر الصف الدراسي لعرض الكورسات الخاصة به:</p>
-            <div className="space-y-3 max-h-[60vh] overflow-y-auto">
-              {selectedStageModal.grades.map((grade: any) => (
-                <div 
-                  key={grade.id}
-                  onClick={() => {
-                    setSelectedGradeForCourses(grade);
-                    setSelectedStageModal(null);
-                    setActiveTab('courses');
-                  }}
-                  className="p-4 rounded-2xl bg-indigo-600/10 hover:bg-indigo-600 hover:text-white border border-indigo-500/30 cursor-pointer transition flex items-center justify-between font-bold text-sm"
-                >
-                  <span>{grade.name}</span>
-                  <span className="text-xs opacity-80">عرض الكورسات ⬅</span>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       )}
 
@@ -750,25 +444,6 @@ export default function EduPlatform() {
               <h1 className="text-3xl sm:text-5xl font-extrabold mb-4">منصة BEDAYA EDU التعليمية الذكية</h1>
               <p className="text-sm sm:text-lg mb-8 max-w-2xl mx-auto opacity-90">اختر المرحلة الدراسية لتفتح لك الصفوف، ومنها تستطيع تصفح أو إضافة الكورسات، الفيديوهات (MP4)، ملفات الـ PDF، والامتحانات الذكية.</p>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 max-w-6xl mx-auto mb-10 text-right">
-                {educationalStages.map((stage) => (
-                  <div 
-                    key={stage.id} 
-                    onClick={() => setSelectedStageModal(stage)}
-                    className="p-6 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-md cursor-pointer transition transform hover:-translate-y-1 shadow-lg flex flex-col justify-between"
-                  >
-                    <div>
-                      <span className="text-base font-black block mb-2">{stage.name}</span>
-                      <p className="text-xs opacity-75">اضغط لاختيار الصفوف الدراسية التابعة للمرحلة 📂</p>
-                    </div>
-                    <div className="mt-4 pt-3 border-t border-white/10 text-xs font-bold text-amber-300 flex items-center justify-between">
-                      <span>عرض الصفوف</span>
-                      <span>⬅</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
               <div className="flex justify-center gap-4 flex-wrap">
                 <button onClick={() => setActiveTab('courses')} className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-6 py-3 rounded-xl font-bold shadow-lg transition">
                   تصفح كافة الكورسات والملفات 🎥
@@ -788,7 +463,7 @@ export default function EduPlatform() {
           </div>
         )}
 
-        {/* AUTH TAB (إنشاء حساب مخصص للطلاب فقط وزر تسجيل الدخول موحد) */}
+        {/* AUTH TAB */}
         {activeTab === 'auth' && (
           <div className="max-w-md mx-auto p-8 rounded-3xl border shadow-2xl bg-slate-900/40 backdrop-blur-md">
             <div className="flex justify-center mb-6 gap-2">
@@ -885,37 +560,6 @@ export default function EduPlatform() {
                     className="w-full p-3 rounded-xl bg-slate-800 border border-slate-700 text-xs focus:outline-none focus:border-indigo-500" 
                   />
                 </div>
-
-                <div>
-                  <label className="block text-xs font-bold mb-1">المرحلة الدراسية</label>
-                  <select 
-                    value={inputStage} 
-                    onChange={e => {
-                      setInputStage(e.target.value);
-                      const firstGrade = educationalStages.find(s => s.id === e.target.value)?.grades[0]?.id || '';
-                      setInputGrade(firstGrade);
-                    }}
-                    className="w-full p-3 rounded-xl bg-slate-800 border border-slate-700 text-xs focus:outline-none focus:border-indigo-500"
-                  >
-                    {educationalStages.map(st => (
-                      <option key={st.id} value={st.id}>{st.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold mb-1">الصف الدراسي</label>
-                  <select 
-                    value={inputGrade} 
-                    onChange={e => setInputGrade(e.target.value)}
-                    className="w-full p-3 rounded-xl bg-slate-800 border border-slate-700 text-xs focus:outline-none focus:border-indigo-500"
-                  >
-                    {currentAvailableGrades.map((g: any) => (
-                      <option key={g.id} value={g.id}>{g.name}</option>
-                    ))}
-                  </select>
-                </div>
-
                 <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl font-bold text-xs shadow transition mt-2">
                   تسجيل حساب طالب 🚀
                 </button>
@@ -933,7 +577,6 @@ export default function EduPlatform() {
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* إضافة مدرس جديد */}
                 <div className="bg-slate-800/60 p-6 rounded-2xl border border-slate-700">
                   <h3 className="text-sm font-bold mb-4 text-amber-400">إنشاء / تفعيل حساب مدرس جديد</h3>
                   <form onSubmit={handleAdminCreateTeacher} className="space-y-3">
@@ -971,7 +614,6 @@ export default function EduPlatform() {
                   </form>
                 </div>
 
-                {/* إحصائيات سريعة */}
                 <div className="bg-slate-800/60 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between">
                   <div>
                     <h3 className="text-sm font-bold mb-4 text-indigo-400">إحصائيات النظام</h3>
@@ -989,7 +631,6 @@ export default function EduPlatform() {
                 </div>
               </div>
 
-              {/* إدارة ومتابعة المستخدمين */}
               <div className="mt-8">
                 <h3 className="text-sm font-bold mb-4 text-slate-200">إدارة المستخدمين (طلاب ومعلمين)</h3>
                 <div className="overflow-x-auto">
